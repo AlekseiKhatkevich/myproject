@@ -1,7 +1,7 @@
 from django.db import models
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.core.exceptions import NON_FIELD_ERRORS
+from django.contrib.auth.models import AbstractUser
 
 
 class BoatImage(models.Model):
@@ -68,6 +68,14 @@ class BoatModel(models.Model):
             errors["boat_price"] = ValidationError("PRICE:Are you sure? It's almost free! ")
         if errors:
             raise ValidationError(errors)
+
+
+class ExtraUser(AbstractUser):
+    is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?")
+
+    class Meta(AbstractUser.Meta):
+        pass
+
 
 
 

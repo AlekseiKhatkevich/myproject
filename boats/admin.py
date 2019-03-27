@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from django.contrib.auth.admin import UserAdmin
 
 
 class BoatsAdmin(admin.ModelAdmin):
@@ -10,3 +11,4 @@ class BoatsAdmin(admin.ModelAdmin):
 
 admin.site.register(BoatModel, BoatsAdmin)
 admin.site.register(BoatImage, )
+admin.site.register(ExtraUser, )

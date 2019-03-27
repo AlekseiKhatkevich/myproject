@@ -1,0 +1,43 @@
+<!-- templates/admin/login.html  -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %}
+    Login
+{% endblock title %}
+{% block content %}
+    <div class="form-container container-fluid bg-light ">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="p-3 mb-2 bg-light text-muted text-center">
+                    <h5> User authentication </h5>
+                </div>
+                {% if user.is_authenticated %}
+                    <div class="p-3 mb-auto bg-warning text-dark text-center rounded">You have already logged in</div>
+
+                    </div>
+                {% else %}
+                    <div class="col-md-12">
+                    {% bootstrap_messages %}
+                    <form method="post" >
+                        {%  csrf_token %}
+                        {%   bootstrap_form form layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                {% buttons %}
+                                    <button type="submit" class="form-button btn btn-light">
+                                        Submit
+                                    </button>
+                                    <button type="reset" class="form-button btn btn-light">
+                                        Reset
+                                    </button>
+                                {% endbuttons %}
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
+                </div>
+        </div>
+    </div>
+
+{% endblock content %}

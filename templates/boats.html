@@ -2,12 +2,12 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% block content %}
-    <h5><a class="text-muted" href="{% url "boat_create" %}">Add a new sailboat:</a></h5>
+    <h5><a class="text-muted" href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
     {% for boat in boats %}
 
         <div class="container ">
 
-            <strong><a href="{% url "boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><br>
+            <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><br>
             <div class="row">
             <ul class = "col-md-auto" >
                 <li> boat length -{{ boat.boat_length }}</li>

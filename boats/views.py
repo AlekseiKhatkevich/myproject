@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import *
 from .forms import *
 
@@ -45,9 +47,17 @@ def viewname(request):
             BoatImage = form2.save(commit=False)
             BoatImage.boat = BoatModel
             BoatImage.save()
-            return redirect(reverse_lazy("boats"))
+            return redirect(reverse_lazy("boats:boats"))
     else:
         form1 = BoatForm(prefix="form1")
         form2 = BoatImageForm(prefix="form2")
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
+
+
+class AdminLoginView(LoginView):
+    template_name = "admin/login.html"
+
+
+class UserProfileView(LoginRequiredMixin, TemplateView):
+    template_name = "admin/userprofile.html"
