@@ -15,18 +15,17 @@
             <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
             <li>Country of origin-{{ current_boat.boat_country_of_origin }}</li>
             <li>Boat keel type -{{ current_boat.boat_keel_type }}</li>
-            <li>Publishing date-{{ current_boat.boat_publish_date  }}</li>
+            <li>Publishing date-{{ current_boat.boat_publish_date|date:"SHORT_DATE_FORMAT"  }}</li>
             <li>Price-{{ current_boat.boat_price }} euro</li>
+            <li> Link to the Sailboatdata-<a href="{{ current_boat.boat_sailboatdata_link }}">{{ current_boat.boat_name }}</a></li>
             <li>Description-{{ current_boat.boat_description }}</li>
-
-        </ul>
-
-
+            <li> General design -{{ current_boat.length_mast_keel }}</li>
+       </ul>
     </div>
 
-<div>
-   <img src="{{ current_boat.boat_primary_photo }}">
-</div>
+
+   <img src="{{ images.boat_photo }}">
+
 
 
 {% endblock content %}

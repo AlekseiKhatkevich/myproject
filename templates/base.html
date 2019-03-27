@@ -1,4 +1,8 @@
+{# load css and JavaScript #}
 {%  load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery="slim" %}
+{%  load static %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,10 +19,13 @@
         {% endblock title %}
     </title>
 </head>
+
+
 <body>
 <div >
     <nav class="navbar navbar-expand-lg navbar navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Ocean worth boats</a>
+        <img height=50 width=50 src="{% static "boats/5.png" %}" alt="boat image">
+        <a class="navbar-brand"  href="#"> Ocean worth boats</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -45,11 +52,13 @@
                 </li>
             </ul>
         </div>
-
+<img height=50 width=50 src="{% static "boats/1.png" %}" alt="boat image">
     </nav>
 </div>
 {% block content %}
 {% endblock content %}
+
+
 
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->

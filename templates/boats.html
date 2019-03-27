@@ -2,17 +2,21 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% block content %}
+    <h5><a class="text-muted" href="{% url "boat_create" %}">Add a new sailboat:</a></h5>
     {% for boat in boats %}
 
-        <div class="container-fluid">
+        <div class="container ">
+
             <strong><a href="{% url "boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><br>
-            <ul>
+            <div class="row">
+            <ul class = "col-md-auto" >
                 <li> boat length -{{ boat.boat_length }}</li>
                 <li>boat rigging - {{ boat.boat_mast_type }}</li>
                 <li> boat keel type -{{ boat.boat_keel_type }}</li>
                 <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
                 </ul>
         <p></p>
+        </div>
         </div>
     {%  endfor %}
 {% endblock content%}

@@ -8,6 +8,5 @@ class BoatsAdmin(admin.ModelAdmin):
     search_fields = ("boat_name",)
 
 
-
 admin.site.register(BoatModel, BoatsAdmin)
 admin.site.register(BoatImage, )

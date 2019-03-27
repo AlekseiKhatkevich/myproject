@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # custom
     "boats.apps.BoatsConfig",
+    "articles.apps.ArticlesConfig",
     #3rd party
     "bootstrap4"
 ]
@@ -99,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -107,12 +108,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+SHORT_DATE_FORMAT = "j.m.Y"
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"), ] #new
 #  Настройка подсистемы обработки выгруженных файлов
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
