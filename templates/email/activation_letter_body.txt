@@ -1,0 +1,10 @@
+Dear {{user.username}}.
+You have registered precious yourself  on the web site "Ocean worth boats".
+In order to proceed further and fully enjoy your splendid experience at the
+aforementioned web site  - we would like to ask you humbly to click with your mouse or finger
+or whatever you have to click with on the URL that you see  bellow this long long text.
+{{host}}{% url "boats:register_activate" sign=sign %}
+
+Sincerely yours -
+Aleksei Khatkevich
+

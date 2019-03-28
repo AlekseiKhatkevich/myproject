@@ -1,0 +1,19 @@
+<!-- templates/admin/register_done.html  -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %}
+    Registration is done
+{% endblock title %}
+{% block content %}
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h2 class="panel-title"></h2>
+        </div>
+        <div class="panel-body">
+            <div class="well well-lg" align="center">
+                <h5>Registration is done. Please check you email and confirm your registration within 24 hours!</h5>
+                <div align="center"><a href="{% url "boats:index" %}"><button type="button" class="btn btn-info">Back to the main page</button></a></div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

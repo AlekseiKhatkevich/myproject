@@ -132,5 +132,12 @@ LOGIN_REDIRECT_URL = "boats:user_profile"  # works
 LOGOUT_REDIRECT_URL = None  # см. стр 289
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 
+# настройки SMTP для отправки почты
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'hardcase@inbox.ru'
+EMAIL_HOST_PASSWORD = 'sosihui56842'
+DEFAULT_FROM_EMAIL = 'hardcase@inbox.ru'
 
 
