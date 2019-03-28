@@ -71,7 +71,7 @@ class BoatModel(models.Model):
 
 
 class ExtraUser(AbstractUser):
-    is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?")
+    is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?", help_text= "Specifies whether user has been activated or not")
 
     class Meta(AbstractUser.Meta):
         pass

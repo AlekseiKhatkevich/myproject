@@ -127,7 +127,7 @@ AUTH_USER_MODEL = "boats.ExtraUser"
 
 # система разграничения доступа
 
-LOGIN_URL = "accounts/login/"
+LOGIN_URL = "boats:login"  # works
 LOGIN_REDIRECT_URL = "boats:user_profile"  # works
 LOGOUT_REDIRECT_URL = None  # см. стр 289
 PASSWORD_RESET_TIMEOUT_DAYS = 1

@@ -1,21 +1,21 @@
-<!-- templates/create.html   -->
+<!-- templates/admin/correct_user_info.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
-{%  bootstrap_css %}
-{% bootstrap_javascript jquery='slim' %}
-{% block title %} Adding new boat{% endblock title %}
+{% block title %}
+correction of the user's info
+{% endblock title%}
 {% block content %}
-    <div class="form-container container col-md-6 bg-light">
+<div class="form-container container col-md-6 bg-light">
         <div class="row">
             <div class="col-md-12">
                 <h1 class="form__section-title">{{ title }}</h1>
             </div>
             <div class="col-md-12">
+                {% bootstrap_messages %}
 
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" >
                     {%  csrf_token %}
-                    {%   bootstrap_form form1 layout='inline' size="small" label_class="form-label col-md-3"%}
-                    {%   bootstrap_form form2 layout='inline' size="small" label_class="form-label col-md-3"%}
+                    {%   bootstrap_form form layout='horizontal' size="small" label_class="form-label col-md-3"%}
                     <div class="row">
                         <div class="col-12 text-center">
                             {% buttons %}

@@ -1,0 +1,21 @@
+<!-- templates/admin/logout.html  -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %} Logging out page{% endblock title %}
+{% block content %}
+
+    <div class="container-fluid md-6 bg-light">
+
+        <div class="row">
+
+            <div class="col-md-auto text-muted">
+                 {% bootstrap_messages %}
+                <h5> You have successfully exited the web site<br>
+                    Looking forward to see you again!
+                </h5>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock content %}

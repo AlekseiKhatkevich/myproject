@@ -2,7 +2,10 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% block content %}
-    <h5><a class="text-muted" href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
+    <div class="container ">
+    <h5><a class="text-muted  " href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
+    </div>
+
     {% for boat in boats %}
 
         <div class="container ">

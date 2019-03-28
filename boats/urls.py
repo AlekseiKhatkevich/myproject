@@ -3,6 +3,9 @@ from .views import *
 
 app_name = 'boats'
 urlpatterns = [
+    path('account/password/change', PasswordCorrectionView.as_view(), name="password_change"),
+    path("accounts/profile/change/", CorrectUserInfoView.as_view(), name="profile_change"),
+    path("accounts/logout/", AdminLogoutView.as_view(), name="logout"),
     path("accounts/profile/", UserProfileView.as_view(), name='user_profile'),
     path("accounts/login/", AdminLoginView.as_view(), name="login"),
     path("boats/detail/<int:boat_id>/", boat_detail_view, name="boat_detail"),

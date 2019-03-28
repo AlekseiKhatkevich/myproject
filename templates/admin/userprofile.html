@@ -2,8 +2,25 @@
 {% extends 'base.html' %}
 {%  load bootstrap4 %}
 {% block title %}
-User profile
+    User profile
 {% endblock title %}
 {% block content %}
-<p>Profile</p>
+    <div class="container-fluid md-12 bg-light">
+        <div class="row">
+            <div class="col-md-12">
+                <p>User profile&nbsp;<strong>&diams;{{ user.username }}&diams;</strong></p>
+            </div>
+            <div class="col-md-12">
+                {% if user.first_name and user.last_name %}
+                    <p> Welcome, <strong>{{ user.first_name }} &nbsp;{{ user.last_name }}</strong></p>
+                {% else %}
+                    <p> Welcome, <strong>{{ user.username }}</strong></p>
+                    </div>
+                    </div >
+                {% endif %}
+    <p><a href="{% url "boats:profile_change" %}">Correct your profile here</a></p>
+    <p><a href="{% url "boats:password_change" %}">Change your password here</a></p>
+        <p>Here is what you have added:&rarr;<p>
+    </div>
+
 {% endblock content %}
