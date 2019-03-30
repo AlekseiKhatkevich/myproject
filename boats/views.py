@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
@@ -8,8 +8,39 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from .utilities import signer
 from django.core.signing import BadSignature
+from django.contrib.auth import logout
+from django.contrib import messages
 from .models import *
 from .forms import *
+
+
+""" контроллер удаления лодки"""
+
+
+# todo Только пользователь создавший может удалить, попробовать реализовать функционал в контроллере
+# @ login required
+class BoatDeleteView(LoginRequiredMixin, DeleteView):
+    model = BoatModel
+    success_url = reverse_lazy("boats:boats")
+    template_name = "delete_boat.html"
+
+    def post(self, request, *args, **kwargs):
+        messages.add_message(request, messages.SUCCESS, "Boat has deleted from the database")
+        return DeleteView.post(self, request, *args, **kwargs)
+
+    def dispatch(self, request, *args, **kwargs):
+        self.user_id = request.user.pk
+        return DeleteView.dispatch(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = DeleteView.get_context_data(self, **kwargs)
+        context['user'] = ExtraUser.objects.filter(pk=self.user_id)
+
+        return context
+
+
+class TestView(TemplateView):
+    template_name = "newtemplate.html"
 
 
 """ Индекс"""
@@ -32,8 +63,9 @@ def boat_view(request):
 """ просмотр  детальной информации о лодке"""
 
 
-def boat_detail_view(request, boat_id):
-    current_boat = BoatModel.objects.get(pk=boat_id)  # primary
+# todo формсет
+def boat_detail_view(request, pk):
+    current_boat = BoatModel.objects.get(pk=pk)  # primary
     images = current_boat.boatimage_set.all()
     context = {"images": images, "current_boat": current_boat}
     return render(request, "boat_detail.html", context)
@@ -41,7 +73,7 @@ def boat_detail_view(request, boat_id):
 
 """ Контроллер добавления новой лодки"""
 
-
+# todo добавить автора в сохранение
 @login_required
 def viewname(request):
     if request.method == 'POST':
@@ -52,6 +84,7 @@ def viewname(request):
             BoatImage = form2.save(commit=False)
             BoatImage.boat = BoatModel
             BoatImage.save()
+            messages.add_message(request, messages.SUCCESS, "you added a new boat")
             return redirect(reverse_lazy("boats:boats"))
     else:
         form1 = BoatForm(prefix="form1")
@@ -72,9 +105,14 @@ class AdminLoginView(SuccessMessageMixin, LoginView):
 
 
 # @login required
-class AdminLogoutView(LoginRequiredMixin, SuccessMessageMixin,  LogoutView):
+class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
     success_message = "You have logged out"
+
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        messages.add_message(request, messages.SUCCESS, "You have logged out")
+        return LogoutView.get(self, request, *args, **kwargs)
 
 
 """ контроллер страницы профиля пользователя"""
@@ -152,5 +190,26 @@ def user_activate_view(request, sign):  # 575
     return render(request, template)
 
 
+"""Контроллер удаления зарегестрированного пользователя"""
 
+
+#   @login required
+class DeleteUserView(LoginRequiredMixin, DeleteView):
+    model = ExtraUser
+    template_name = 'admin/delete_user.html'
+    success_url = reverse_lazy("boats:index")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.user_id = request.user.pk
+        return DeleteView.dispatch(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        messages.add_message(request, messages.SUCCESS, "your account is deleted")
+        return DeleteView.post(self, request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+        return get_object_or_404(queryset, pk=self.user_id)
 

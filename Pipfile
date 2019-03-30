@@ -9,6 +9,8 @@ verify_ssl = true
 django = "*"
 django-bootstrap4 = "*"
 pillow = "*"
+easy-thumbnails = "*"
+django-cleanup = "*"
 
 [requires]
 python_version = "3.7"

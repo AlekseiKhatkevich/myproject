@@ -64,7 +64,11 @@ class NewUserForm(forms.ModelForm):
         fields = ("username", 'email', "password1", "password2", "first_name", "last_name")
 
 
+"""search form"""
 
+
+class SearchForm(forms.Form):
+    keyword = forms.CharField(required=False, max_length=20, label="")
 
 
 

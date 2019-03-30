@@ -2,7 +2,8 @@
 {% extends "base.html" %}
 {% load bootstrap4 %}
 {% load static %}
-{%  load staticfiles %}
+{%  load thumbnail %}
+
 {% block title %}
     {{ current_boat.boat_name }}
 {% endblock title %}
@@ -20,11 +21,22 @@
             <li> Link to the Sailboatdata-<a href="{{ current_boat.boat_sailboatdata_link }}">{{ current_boat.boat_name }}</a></li>
             <li>Description-{{ current_boat.boat_description }}</li>
             <li> General design -{{ current_boat.length_mast_keel }}</li>
-       </ul>
+            <li> Boat pk or id -{{ current_boat.id}}</li>
+        </ul>
+        <h6><a href="{% url "boats:boat_delete" current_boat.pk %}"> Delete this boat</a> </h6>
+
+{% if current_boat.boat_primary_photo %}
+            <img class="mr-3" src="{% thumbnail current_boat.boat_primary_photo "default" %}">
+      {%  endif %}
+
+    {% for instance in images %}
+    <img class="mr-3" src="{% thumbnail instance.boat_photo "default" %}">
+    {% endfor %}
+
     </div>
 
 
-   <img src="{{ images.boat_photo }}">
+
 
 
 

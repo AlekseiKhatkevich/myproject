@@ -1,0 +1,28 @@
+{# Load the tag library #}
+{% load bootstrap4 %}
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+
+
+  <style>
+  .row div {padding:20px 10px; border: 1px solid;}
+</style>
+<div class="container-fluid">
+  <div class="row justify-content-md-center">
+  <div class="col-md-2">col-md</div>
+  <div class="col-md-2">col-md</div>
+  <div class="col-md-2">col-md</div>
+</div>
+     <div class="row justify-content-md-end">
+  <div class="col-md-2">col-md</div>
+  <div class="col-md-2">col-md</div>
+  <div class="col-md-2">col-md</div>
+</div>
+</div>
+
+
+

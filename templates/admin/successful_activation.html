@@ -1,2 +1,21 @@
-<!--   -->
-<!DOCTYPE html>
+<!--templates/admin/successful_activation.html   -->
+ {% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %}
+Successful activation of a new user
+{% endblock title %}
+
+{% block content %}
+<div class="panel panel-success">
+        <div class="panel-heading">
+            <h2 class="panel-title"></h2>
+        </div>
+        <div class="panel-body">
+            <div class="well well-lg" align="center">
+                <h5>Your account has been activated.</h5>
+                <div align="center"><a href="{% url "boats:user_profile" %}"><button type="button" class="btn btn-info">User profile page</button></a></div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+

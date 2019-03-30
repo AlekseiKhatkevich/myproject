@@ -1,1 +1,1 @@
-User activation {{user.username}}
+New user activation {{ user.username}}

@@ -1,0 +1,37 @@
+<!-- templates/admin/delete_user.html  -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %}
+    Deletion of the user's account
+{% endblock title %}
+{% block content %}
+
+    <div class="form-container container col-md-6 bg-light">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="form__section-title">{{ title }}</h1>
+            </div>
+            <div class="col-md-12">
+
+                <form method="post" >
+                    {%  csrf_token %}
+                    <div class="row">
+                        <div class="col-12 text-center">
+                        <h5> Are you sure that you want to delete your account?</h5>
+                            {% buttons %}
+                                <button type="submit" class="form-button btn btn-danger">
+                                    Confirm
+                                </button>
+                                 <a href="{% url "boats:user_profile"   %}">
+                                     <button type="button" class="form-button btn btn-info">
+                                    Back</button></a>
+
+                            {% endbuttons %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

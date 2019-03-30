@@ -1,12 +1,14 @@
 <!--templates/boats.html   -->
 {% extends 'base.html' %}
 {% load bootstrap4 %}
+{% load thumbnail %}
 {% block content %}
     <div class="container ">
     <h5><a class="text-muted  " href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
     </div>
 
     {% for boat in boats %}
+
 
         <div class="container ">
 
@@ -17,9 +19,14 @@
                 <li>boat rigging - {{ boat.boat_mast_type }}</li>
                 <li> boat keel type -{{ boat.boat_keel_type }}</li>
                 <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
+                <li>boat primary photo - <img class="mr-3" src="{% thumbnail boat.boat_primary_photo "default" %}"></li>
+
+
+
                 </ul>
         <p></p>
         </div>
         </div>
+
     {%  endfor %}
 {% endblock content%}

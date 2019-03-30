@@ -30,7 +30,10 @@ INSTALLED_APPS = [
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
     #3rd party
-    "bootstrap4"
+    "bootstrap4",
+    "django_cleanup",
+    "easy_thumbnails",
+
 ]
 
 MIDDLEWARE = [
@@ -57,6 +60,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },
@@ -141,3 +145,12 @@ EMAIL_HOST_PASSWORD = 'sosihui56842'
 DEFAULT_FROM_EMAIL = 'hardcase@inbox.ru'
 
 
+THUMBNAIL_ALIASES = {
+    "": {
+        "default": {
+            "size": (96, 96),
+            "crop": "scale",
+        },
+    },
+}
+THUMBNAIL_BASEDIR = "thumbnails"

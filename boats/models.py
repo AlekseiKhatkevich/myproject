@@ -3,6 +3,7 @@ from django.dispatch import Signal
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
+from .utilities import get_timestamp_path
 from .utilities import *
 
 """Сигнал user_registrated
@@ -21,7 +22,7 @@ user_registrated.connect(user_registrated_dispatcher)
 
 
 class BoatImage(models.Model):
-    boat_photo = models.ImageField(upload_to="photos/", blank=True, verbose_name='Boat photo',
+    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, verbose_name='Boat photo',
                                    help_text="Please attach any photo of the boat")
 
     boat = models.ForeignKey("BoatModel",  on_delete=models.CASCADE, verbose_name="Boat ForeignKey",
@@ -48,6 +49,10 @@ class BoatModel(models.Model):
         (YAWL, "Yawl"),
         (CAT_KETCH, "Cat Ketch"),
     )
+    #593
+    author = models.ForeignKey("ExtraUser", on_delete=models.DO_NOTHING,
+                               null=True, blank=True,
+                               verbose_name="Author of the entry")
 
     boat_name = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Boat model",
                                  help_text="Please input boat model")
@@ -75,7 +80,7 @@ class BoatModel(models.Model):
 
     boat_publish_date = models.DateTimeField(auto_now_add=True)
 
-    boat_primary_photo = models.ImageField(upload_to="photos/", blank=False,
+    boat_primary_photo = models.ImageField(upload_to=get_timestamp_path, blank=False, #"photos/"
                                            verbose_name='Boat primary photo',
                                            help_text="Please attach a primary photo of the boat")
 
