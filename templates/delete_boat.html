@@ -1,3 +1,4 @@
+
 <!-- templates/delete_boat.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
@@ -25,8 +26,9 @@
                         <button type="submit" class=" btn btn-outline-danger btn-lg">
                             Delete
                         </button>
-                        <a href="{% url "boats:boat_detail" object.pk  %}"><button type="button" class="btn btn-outline-info btn-lg">
-                            Back</button></a>
+                        <a href="{% url "boats:boat_detail" object.pk  %}">
+                            <button type="button" class="btn btn-outline-info btn-lg">
+                                Back</button></a>
                     {% endbuttons %}
 
                 {% else %}
@@ -35,12 +37,13 @@
 
                     <div class="row">
                     <div class="col-12 text-center">
-                    <h6> You only can delete the entry you have created yourself </h6>
+                    <h6> You only can delete an entry you have created yourself </h6>
                     <h6> {{ object.boat_name }}</h6>
                     {% buttons %}
 
-                        <a href="{% url "boats:boat_detail" object.pk  %}"><button type="button" class="btn btn-outline-info btn-lg">
-                            Back</button></a>
+                        <a href="{% url "boats:boat_detail" object.pk  %}">
+                            <button type="button" class="btn btn-outline-info btn-lg">
+                                Back</button></a>
                     {% endbuttons %}
 
 
@@ -55,5 +58,6 @@
     </div>
 
 {% endblock content %}
+
 
 

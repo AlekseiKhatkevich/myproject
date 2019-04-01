@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from .utilities import signer
 from django.core.signing import BadSignature
@@ -12,14 +12,66 @@ from django.contrib.auth import logout
 from django.contrib import messages
 from .models import *
 from .forms import *
+from django.http import Http404, HttpResponseRedirect
+from django.utils.decorators import method_decorator
+
+"""Контроллер редактирования данных о лодке"""
+
+# todo redirect,  multiple objects
+@login_required
+def viewname_edit(request, pk):
+    obj1 = BoatModel.objects.get(pk=pk)
+    obj2 = BoatImage.objects.get(boat_id=pk)  # множественные объекты???
+    if request.method == 'POST':
+        form1 = BoatForm(request.POST, request.FILES, prefix="form1", instance=obj1)
+        form2 = BoatImageForm(request.POST, request.FILES, prefix="form2", instance=obj2)
+        if form1.is_valid() and form2.is_valid():
+            prim = form1.save()
+            second = form2.save(commit=False)
+            second.boat = prim
+            second.save()
+            messages.add_message(request, messages.SUCCESS, "You successfully edited a  boat's data")
+            return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
+
+        else:
+            messages.add_message(request, messages.WARNING, "Forms are not valid. Please check the data")
+            context = {"form1": form1, "form2": form2}
+            return render(request, "edit_boat.html", context)
+    else:
+        if request.user == obj1.author:
+            form1 = BoatForm(prefix="form1", instance=obj1)
+            form2 = BoatImageForm(prefix="form2", instance=obj2)
+            context = {"form1": form1, "form2": form2}
+            return render(request, "edit_boat.html", context)
+        else:
+            messages.add_message(request, messages.WARNING, "You can only change your own entries!")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+# не используется
+class BoatUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = BoatModel
+    template_name = "edit_boat.html"
+    form_class = BoatForm
+    success_message = "Boat data has been edited and saved successfully"
+
+    def get(self, request, *args, **kwargs):
+        if self.get_object().author == self.request.user:
+            return UpdateView.get(self, request, *args,  **kwargs)
+        else:
+            messages.add_message(request, messages.WARNING, "You can only change your own entries!")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    def get_success_url(self):
+        return reverse('boats:boat_detail', args=(self.object.pk, ))
 
 
 """ контроллер удаления лодки"""
 
 
-# todo Только пользователь создавший может удалить, попробовать реализовать функционал в контроллере
-# @ login required
-class BoatDeleteView(LoginRequiredMixin, DeleteView):
+#  todo  кнопки руский шрифт в форме
+@ method_decorator(login_required, name="dispatch")
+class BoatDeleteView(DeleteView):
     model = BoatModel
     success_url = reverse_lazy("boats:boats")
     template_name = "delete_boat.html"
@@ -35,7 +87,6 @@ class BoatDeleteView(LoginRequiredMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = DeleteView.get_context_data(self, **kwargs)
         context['user'] = ExtraUser.objects.filter(pk=self.user_id)
-
         return context
 
 
@@ -73,19 +124,22 @@ def boat_detail_view(request, pk):
 
 """ Контроллер добавления новой лодки"""
 
-# todo добавить автора в сохранение
+# todo перенаправление на только что созданное объявление
 @login_required
 def viewname(request):
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1")
         form2 = BoatImageForm(request.POST, request.FILES, prefix="form2")
         if form1.is_valid() and form2.is_valid():
-            BoatModel = form1.save()
-            BoatImage = form2.save(commit=False)
-            BoatImage.boat = BoatModel
-            BoatImage.save()
+            prim = form1.save(commit=False)
+            prim.author = request.user
+            prim.save()
+            second = form2.save(commit=False)
+            second.boat = prim
+            second.save()
             messages.add_message(request, messages.SUCCESS, "you added a new boat")
-            return redirect(reverse_lazy("boats:boats"))
+            return redirect(reverse_lazy("boats:boats",
+                                                     args=form1.cleaned_data["pk"]))
     else:
         form1 = BoatForm(prefix="form1")
         form2 = BoatImageForm(prefix="form2")

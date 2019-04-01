@@ -13,6 +13,7 @@ urlpatterns = [
     path("accounts/logout/", AdminLogoutView.as_view(), name="logout"),
     path("accounts/profile/", UserProfileView.as_view(), name='user_profile'),
     path("accounts/login/", AdminLoginView.as_view(), name="login"),
+    path("boats/edit/<int:pk>/", viewname_edit, name="boat_edit"),
     path("boats/detail/<int:pk>/", boat_detail_view, name="boat_detail"),
     path("boats/delete/<int:pk>/", BoatDeleteView.as_view(), name="boat_delete"),
     path("boats/create/", viewname, name="boat_create"),
