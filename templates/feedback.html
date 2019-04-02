@@ -1,0 +1,36 @@
+<!--templates/feedback.html  -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %} Feedback {% endblock title %}
+
+{%  block content %}
+    <div class="form-container container col-md-6 bg-light">
+    <div class="row  ">
+        <div class="col-md-auto text-center">
+
+    </div>
+        <div class="row ">
+            <div class="col-md-auto " >
+            <h5 class="text-center text-muted"> Enter and submit your message</h5>
+                <form  method="post" class="form">
+                    {% csrf_token %}
+                    {% bootstrap_form form  layout="horizontal"  label_class="form-label col-md-3" %}
+                    {% bootstrap_form_errors form layout="horizontal"  label_class="form-label col-md-3" %}
+                 <div class="row">
+                        <div class="col-12 text-center">
+                    {% buttons %}
+
+                        <button type="submit" class="btn-light btn-lg">Submit</button>
+                        <button type="reset" class="btn-light btn-lg ">Reset</button>
+
+                    {% endbuttons %}
+                        </div>
+                 </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+{%  endblock content %}

@@ -4,35 +4,35 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.contrib import messages, auth
 from .utilities import signer
 from django.core.signing import BadSignature
-from django.contrib.auth import logout
-from django.contrib import messages
 from .models import *
 from .forms import *
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
+from django.db.transaction import atomic
+from django.core.mail import send_mail, BadHeaderError
+
 
 """Контроллер редактирования данных о лодке"""
 
-# todo redirect,  multiple objects
+
+@atomic
 @login_required
 def viewname_edit(request, pk):
     obj1 = BoatModel.objects.get(pk=pk)
-    obj2 = BoatImage.objects.get(boat_id=pk)  # множественные объекты???
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1", instance=obj1)
-        form2 = BoatImageForm(request.POST, request.FILES, prefix="form2", instance=obj2)
+        form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=obj1)
         if form1.is_valid() and form2.is_valid():
-            prim = form1.save()
-            second = form2.save(commit=False)
-            second.boat = prim
-            second.save()
-            messages.add_message(request, messages.SUCCESS, "You successfully edited a  boat's data")
+            form1.save()
+            form2.save()
+            messages.add_message(request, messages.SUCCESS, "You successfully edited boat's data")
             return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
-
         else:
             messages.add_message(request, messages.WARNING, "Forms are not valid. Please check the data")
             context = {"form1": form1, "form2": form2}
@@ -40,7 +40,7 @@ def viewname_edit(request, pk):
     else:
         if request.user == obj1.author:
             form1 = BoatForm(prefix="form1", instance=obj1)
-            form2 = BoatImageForm(prefix="form2", instance=obj2)
+            form2 = boat_image_inline_formset(prefix="form2", instance=obj1)
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
         else:
@@ -114,7 +114,7 @@ def boat_view(request):
 """ просмотр  детальной информации о лодке"""
 
 
-# todo формсет
+#
 def boat_detail_view(request, pk):
     current_boat = BoatModel.objects.get(pk=pk)  # primary
     images = current_boat.boatimage_set.all()
@@ -124,25 +124,32 @@ def boat_detail_view(request, pk):
 
 """ Контроллер добавления новой лодки"""
 
-# todo перенаправление на только что созданное объявление
+
+@atomic
 @login_required
 def viewname(request):
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1")
-        form2 = BoatImageForm(request.POST, request.FILES, prefix="form2")
-        if form1.is_valid() and form2.is_valid():
+        form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", )
+        if form1.is_valid():
             prim = form1.save(commit=False)
             prim.author = request.user
-            prim.save()
-            second = form2.save(commit=False)
-            second.boat = prim
-            second.save()
-            messages.add_message(request, messages.SUCCESS, "you added a new boat")
-            return redirect(reverse_lazy("boats:boats",
-                                                     args=form1.cleaned_data["pk"]))
+            form1.save()
+            form2 = boat_image_inline_formset(request.POST, request.FILES,
+                                              prefix="form2", instance=prim)
+            if form2.is_valid():
+                form2.save()
+                messages.add_message(request, messages.SUCCESS, "You added a new boat")
+                return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
+                                                     args=(prim.pk, )))
+        else:
+            messages.add_message(request, messages.WARNING, "Forms are not valid. Please check the data")
+            context = {"form1": form1, "form2": form2}
+            return render(request, "create.html", context)
     else:
+
         form1 = BoatForm(prefix="form1")
-        form2 = BoatImageForm(prefix="form2")
+        form2 = boat_image_inline_formset(request.POST or None, request.FILES or None, prefix="form2", )
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
 
@@ -267,3 +274,41 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
             queryset = self.get_queryset()
         return get_object_or_404(queryset, pk=self.user_id)
 
+
+"""Контроллер формы обратной связи"""
+
+
+def feedback_view(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["name"]
+            subject = form.cleaned_data["subject"] + " from " + name
+            sender = form.cleaned_data["sender"]
+            message = form.cleaned_data['message']
+            copy = form.cleaned_data['copy']
+            recipients = ["hardcase@inbox.ru", ]
+            if copy:
+                recipients.append(sender)
+            try:
+                from myproject.settings import EMAIL_HOST_USER
+                send_mail(subject, message, EMAIL_HOST_USER, recipients, fail_silently=False)
+            except BadHeaderError:
+                return HttpResponse("Invalid header found")
+            else:
+                messages.add_message(request, messages.SUCCESS,
+                                     "You have successfully sent your  message to the administration ")
+                return HttpResponseRedirect(reverse_lazy("boats:index"))
+        else:
+            messages.add_message(request, messages.WARNING,
+                                 "Form is not valid. Please check the data")
+            context = {"form": form, }
+            return render(request, "feedback.html", context)
+    else:
+        if request.user.is_authenticated:
+            form = ContactForm(initial={"sender": auth.get_user(request).email,
+                                        "name": auth.get_user(request).username})
+        else:
+            form = ContactForm()
+        context = {"form": form, "username": auth.get_user(request).username}
+        return render(request, "feedback.html", context)

@@ -2,7 +2,12 @@
 {%  extends "base.html" %}
 {%  load bootstrap4 %}
 {%  load static %}
+
 {% block content %}
 
+
 <a href="{%  url "boats:test" %}">Bootstrap test page</a>
+    <a href="{%  url "boats:feedback" %}">Send feedback to administration</a>
+</div>
+
 {% endblock content %}

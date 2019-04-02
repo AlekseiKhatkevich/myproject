@@ -18,5 +18,6 @@ urlpatterns = [
     path("boats/delete/<int:pk>/", BoatDeleteView.as_view(), name="boat_delete"),
     path("boats/create/", viewname, name="boat_create"),
     path("boats/", boat_view, name="boats"),
+    path("feedback/", feedback_view, name="feedback"),
     path("", IndexPageView.as_view(), name="index"),
 ]

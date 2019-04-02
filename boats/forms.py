@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 from .models import *
+from django.forms import modelformset_factory, inlineformset_factory
 
 
 class BoatForm(forms.ModelForm):
@@ -14,6 +15,13 @@ class BoatImageForm(forms.ModelForm):
     class Meta:
         model = BoatImage
         fields = ("boat_photo", )
+
+
+"""обычный формсет"""
+boat_image_formset = modelformset_factory(BoatImage, form=BoatImageForm, fields=("boat_photo", ), extra=3,
+                                          can_delete=True, )
+"""формсет связанный с вторичной моделью"""
+boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage, form=BoatImageForm, extra=3, can_delete=True, )
 
 
 class CorrectUserInfoForm(forms.ModelForm):
@@ -71,5 +79,15 @@ class SearchForm(forms.Form):
     keyword = forms.CharField(required=False, max_length=20, label="")
 
 
+""" форма обратной связи"""
 
 
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=20, help_text="Enter your name",
+                           widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
+    subject = forms.CharField(max_length=999, help_text="Enter  a subject of the message",
+                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
+    sender = forms.EmailField(help_text="Enter your email address",
+                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
+    message = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control", }))
+    copy = forms.BooleanField(required=False, label="Send copy to your email")

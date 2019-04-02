@@ -142,7 +142,13 @@ EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'hardcase@inbox.ru'
 EMAIL_HOST_PASSWORD = 'sosihui56842'
-DEFAULT_FROM_EMAIL = 'hardcase@inbox.ru'
+#DEFAULT_FROM_EMAIL = 'hardcase@inbox.ru'
+
+#  https://vivazzi.pro/it/sender-address-must-match-authenticated-user/
+# Error: SMTPRecipientsRefused 501  решение вопроса
+
+SERVER_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 THUMBNAIL_ALIASES = {
