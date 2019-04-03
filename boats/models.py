@@ -49,7 +49,7 @@ class BoatModel(models.Model):
         (YAWL, "Yawl"),
         (CAT_KETCH, "Cat Ketch"),
     )
-    #593
+
     author = models.ForeignKey("ExtraUser", on_delete=models.DO_NOTHING,
                                null=True, blank=True,
                                verbose_name="Author of the entry")

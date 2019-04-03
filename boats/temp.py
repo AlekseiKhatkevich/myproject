@@ -86,4 +86,8 @@ def viewname(request):
                 img.boat = prim
                 img.save()
             form2.save()
+
+rgba(41,41,41,0.75)
+
+
 """

@@ -23,7 +23,8 @@
 <body>
 
 <div >
-    <nav class="navbar navbar-expand-lg navbar navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar navbar-dark "
+         style="background-color: rgba(41,41,41,0.8) ">
         <img height=50 width=50 src="{% static "boats/5.png" %}" alt="boat image">
         <em><a class="navbar-brand text-muted "  href="#"> Ocean worth boats</a></em>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,10 +65,33 @@
         <img height=50 width=50 src="{% static "boats/1.png" %}" alt="boat image">
     </nav>
 </div>
+
 {% bootstrap_messages %}
 
 {% block content %}
 {% endblock content %}
+
+<style>
+    #footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: fit-content;
+   ;
+}
+</style>
+
+<footer id="footer" class="page-footer font-small blue" style="background-color: rgba(41,41,41,0.05)" >
+  <div class="footer-copyright text-center ">
+    <p class=" font-weight-light text-muted ">How do you like this awesome photo?</p>
+  </div>
+
+
+</footer>
+
+
+
 
 
 <!-- Optional JavaScript -->

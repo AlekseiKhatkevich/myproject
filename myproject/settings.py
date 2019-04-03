@@ -33,6 +33,11 @@ INSTALLED_APPS = [
     "bootstrap4",
     "django_cleanup",
     "easy_thumbnails",
+    "captcha",
+    "social_django"
+
+
+
 
 ]
 
@@ -60,6 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
 
             ],
         },
@@ -142,7 +149,6 @@ EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'hardcase@inbox.ru'
 EMAIL_HOST_PASSWORD = 'sosihui56842'
-#DEFAULT_FROM_EMAIL = 'hardcase@inbox.ru'
 
 #  https://vivazzi.pro/it/sender-address-must-match-authenticated-user/
 # Error: SMTPRecipientsRefused 501  решение вопроса
@@ -160,3 +166,32 @@ THUMBNAIL_ALIASES = {
     },
 }
 THUMBNAIL_BASEDIR = "thumbnails"
+
+# аутентификация через соц. сети
+
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.vk.VKOAuth2",
+    "django.contrib.auth.backends.ModelBackend"
+)
+SOCIAL_AUTH_URL_NAMESPACE = 'social' #  new
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',  # <--- enable this one
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
+
+# в контактике
+SOCIAL_AUTH_VK_OAUTH2_KEY = "6925818"
+SOCIAL_AUTH_VK_OAUTH2_SECRET = "8Nw5zHZmFk8hwEFWwRDP"
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
+SOCIAL_AUTH_VK_APP_USER_MODE = 2
+

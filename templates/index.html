@@ -4,10 +4,18 @@
 {%  load static %}
 
 {% block content %}
-
-
+<style>
+#bg{
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+</style>
+<body id="bg" style="background-image: url('{% static "boats/yacht-sunset.jpg"%}')";>
 <a href="{%  url "boats:test" %}">Bootstrap test page</a>
-    <a href="{%  url "boats:feedback" %}">Send feedback to administration</a>
-</div>
+    <a href="{%  url "boats:feedback" %}">Send feedback to the  administration</a>
+
+
 
 {% endblock content %}

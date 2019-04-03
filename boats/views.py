@@ -300,8 +300,6 @@ def feedback_view(request):
                                      "You have successfully sent your  message to the administration ")
                 return HttpResponseRedirect(reverse_lazy("boats:index"))
         else:
-            messages.add_message(request, messages.WARNING,
-                                 "Form is not valid. Please check the data")
             context = {"form": form, }
             return render(request, "feedback.html", context)
     else:

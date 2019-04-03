@@ -7,7 +7,9 @@ from django.contrib. staticfiles.views import serve
 from django.views.decorators.cache import never_cache
 
 urlpatterns = [
-    path('admin/', admin.site.urls ),
+    path("social/", include('social_django.urls', namespace='social')),
+    path("captcha/", include("captcha.urls")),
+    path('admin/', admin.site.urls),
     path("articles/", include("articles.urls")),
     path("", include("boats.urls")),
 ]

@@ -2,13 +2,14 @@ from django import forms
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 from .models import *
-from django.forms import modelformset_factory, inlineformset_factory
+from django.forms import inlineformset_factory
+from captcha.fields import CaptchaField
 
 
 class BoatForm(forms.ModelForm):
     class Meta:
         model = BoatModel
-        fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type", "boat_primary_photo",  "boat_price", "boat_country_of_origin", "boat_sailboatdata_link", "boat_primary_photo", "boat_description")
+        fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price", "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description")
 
 
 class BoatImageForm(forms.ModelForm):
@@ -17,9 +18,6 @@ class BoatImageForm(forms.ModelForm):
         fields = ("boat_photo", )
 
 
-"""обычный формсет"""
-boat_image_formset = modelformset_factory(BoatImage, form=BoatImageForm, fields=("boat_photo", ), extra=3,
-                                          can_delete=True, )
 """формсет связанный с вторичной моделью"""
 boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage, form=BoatImageForm, extra=3, can_delete=True, )
 
@@ -91,3 +89,4 @@ class ContactForm(forms.Form):
                               widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
     message = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control", }))
     copy = forms.BooleanField(required=False, label="Send copy to your email")
+    captcha = CaptchaField()

@@ -11,6 +11,8 @@ django-bootstrap4 = "*"
 pillow = "*"
 easy-thumbnails = "*"
 django-cleanup = "*"
+django-simple-captcha = "*"
+social-auth-app-django = "*"
 
 [requires]
 python_version = "3.7"
