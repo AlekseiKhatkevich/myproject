@@ -26,5 +26,4 @@ class ExtraUserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(BoatModel, BoatsAdmin)
-#admin.site.register(BoatImage, )
 admin.site.register(ExtraUser, ExtraUserAdmin)

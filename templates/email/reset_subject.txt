@@ -1,0 +1,1 @@
+{{user.username}}: request for the password reset

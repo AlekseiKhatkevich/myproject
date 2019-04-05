@@ -13,6 +13,7 @@ easy-thumbnails = "*"
 django-cleanup = "*"
 django-simple-captcha = "*"
 social-auth-app-django = "*"
+django-ratelimit = "*"
 
 [requires]
 python_version = "3.7"

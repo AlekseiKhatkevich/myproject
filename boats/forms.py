@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import password_validation
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.core.exceptions import ValidationError
 from .models import *
 from django.forms import inlineformset_factory
@@ -90,3 +91,33 @@ class ContactForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control", }))
     copy = forms.BooleanField(required=False, label="Send copy to your email")
     captcha = CaptchaField()
+
+
+"""кастомная форма сброса пароля(первая часть)"""
+
+
+class PRForm(PasswordResetForm):
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not ExtraUser.objects.filter(email__iexact=email, is_active=True, is_activated=True).exists():
+            msg = "There is no user registered with the specified E-Mail address."
+            self.add_error('email', msg)
+        else:
+            current_user = ExtraUser.objects.get(email__iexact=email, is_active=True, is_activated=True)
+            if current_user:
+                self.cleaned_data["username"] = current_user
+        return email
+
+
+"""кастомная форма сброса пароля(вторая часть)"""
+
+
+class SPForm(SetPasswordForm):
+    def clean(self):
+        if self.user.username:
+            self.cleaned_data["username"] = self.user.username
+        else:
+            self.cleaned_data["username"] = "Anonymous user"
+        SetPasswordForm.clean(self)
+
+

@@ -3,7 +3,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -16,6 +16,7 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
 from django.core.mail import send_mail, BadHeaderError
+from ratelimit.mixins import RatelimitMixin
 
 
 """Контроллер редактирования данных о лодке"""
@@ -29,12 +30,20 @@ def viewname_edit(request, pk):
         form1 = BoatForm(request.POST, request.FILES, prefix="form1", instance=obj1)
         form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=obj1)
         if form1.is_valid() and form2.is_valid():
-            form1.save()
-            form2.save()
-            messages.add_message(request, messages.SUCCESS, "You successfully edited boat's data")
-            return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
+            if form1.has_changed() or form2.has_changed():
+                form1.save()
+                form2.save()
+                messages.add_message(request, messages.SUCCESS,
+                                 "You successfully edited boat's data", fail_silently=True)
+                return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
+            else:
+                messages.add_message(request, messages.INFO,
+                                     "You have changed nothing in this form yet", fail_silently=True)
+                context = {"form1": form1, "form2": form2}
+                return render(request, "edit_boat.html", context)
         else:
-            messages.add_message(request, messages.WARNING, "Forms are not valid. Please check the data")
+            messages.add_message(request, messages.WARNING,
+                                 "Forms are not valid. Please check the data", fail_silently=True)
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
     else:
@@ -44,11 +53,12 @@ def viewname_edit(request, pk):
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
         else:
-            messages.add_message(request, messages.WARNING, "You can only change your own entries!")
+            messages.add_message(request, messages.WARNING, "You can only edit your own entries!",
+                                 extra_tags="text-muted  font-weight-bold", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-# не используется
+# контроллер не используется
 class BoatUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = BoatModel
     template_name = "edit_boat.html"
@@ -77,7 +87,8 @@ class BoatDeleteView(DeleteView):
     template_name = "delete_boat.html"
 
     def post(self, request, *args, **kwargs):
-        messages.add_message(request, messages.SUCCESS, "Boat has deleted from the database")
+        messages.add_message(request, messages.SUCCESS,
+                             "Boat has deleted from the database", fail_silently=True)
         return DeleteView.post(self, request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
@@ -143,7 +154,8 @@ def viewname(request):
                 return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
                                                      args=(prim.pk, )))
         else:
-            messages.add_message(request, messages.WARNING, "Forms are not valid. Please check the data")
+            messages.add_message(request, messages.WARNING,
+                                 "Forms are not valid. Please check the data", fail_silently=True)
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
     else:
@@ -159,7 +171,7 @@ def viewname(request):
 
 class AdminLoginView(SuccessMessageMixin, LoginView):
     template_name = "admin/login.html"
-    success_message = "You have logged in"
+    success_message = "You have logged in, %(username)s"
 
 
 """ контроллер LOGOUT"""
@@ -168,11 +180,10 @@ class AdminLoginView(SuccessMessageMixin, LoginView):
 # @login required
 class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
-    success_message = "You have logged out"
 
     def get(self, request, *args, **kwargs):
         logout(request)
-        messages.add_message(request, messages.SUCCESS, "You have logged out")
+        messages.add_message(request, messages.SUCCESS, "You have logged out", fail_silently=True)
         return LogoutView.get(self, request, *args, **kwargs)
 
 
@@ -193,7 +204,7 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView): 
     template_name = "admin/correct_user_info.html"
     form_class = CorrectUserInfoForm
     success_url = reverse_lazy("boats:user_profile")
-    success_message = "Your personal data has been corrected"
+    success_message = "Your personal data has been corrected, %(username)s"
 
     def dispatch(self, request, *args, **kwargs):
         self.user_id = request.user.pk
@@ -212,7 +223,7 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView): 
 class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
     template_name = "admin/password_change.html"
     success_url = reverse_lazy("boats:user_profile")
-    success_message = "your password has been changed"
+    success_message = "your password has been changed "
 
 
 """ добавление нового пользователя"""
@@ -266,7 +277,7 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         logout(request)
-        messages.add_message(request, messages.SUCCESS, "your account is deleted")
+        messages.add_message(request, messages.SUCCESS, "Your account is deleted", fail_silently=True)
         return DeleteView.post(self, request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -297,7 +308,8 @@ def feedback_view(request):
                 return HttpResponse("Invalid header found")
             else:
                 messages.add_message(request, messages.SUCCESS,
-                                     "You have successfully sent your  message to the administration ")
+                                     "You have successfully sent your  message to the administration ",
+                                     fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:index"))
         else:
             context = {"form": form, }
@@ -310,3 +322,36 @@ def feedback_view(request):
             form = ContactForm()
         context = {"form": form, "username": auth.get_user(request).username}
         return render(request, "feedback.html", context)
+
+
+""" контроллер отправки письма для сброса пароля"""
+
+
+class PassResView(RatelimitMixin, SuccessMessageMixin, PasswordResetView):
+    success_url = reverse_lazy("boats:index")
+    from_email = "hardcase@inbox.ru"
+    subject_template_name = 'email/reset_subject.txt'
+    email_template_name = "email/reset_email.html"
+    success_message = "Dear %(username)s , " \
+                      "email with the instructions has been sent to your email - %(email)s"
+    template_name = "admin/password_reset.html"
+    form_class = PRForm
+    ratelimit_key = 'ip'
+    ratelimit_rate = '10/5m'
+    ratelimit_block = True
+    ratelimit_method = ('GET', 'POST')
+
+
+""" контроллер проверки UID , ключа и сброс пароля"""
+
+
+class PassResConfView(SuccessMessageMixin, PasswordResetConfirmView):
+    post_reset_login = True
+    post_reset_login_backend = "django.contrib.auth.backends.ModelBackend"
+    success_url = reverse_lazy("boats:user_profile")
+    success_message = "Dear %(username)s , your password has changed . " \
+                      "Please do not forget your new password!"
+    template_name = "admin/password_reset_confirmation.html"
+    form_class = SPForm
+
+

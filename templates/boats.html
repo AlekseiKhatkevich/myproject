@@ -3,12 +3,11 @@
 {% load bootstrap4 %}
 {% load thumbnail %}
 {% block content %}
-    <div class="container ">
-    <h5><a class="text-muted  " href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
+    <div class="container " style="margin-top: 15px">
+    <h5><a class="text-muted  "  href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
     </div>
 
     {% for boat in boats %}
-
 
         <div class="container ">
 

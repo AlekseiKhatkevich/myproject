@@ -18,7 +18,7 @@
                     </div>
                 {% else %}
                     <div class="col-md-12">
-                    {% bootstrap_messages %}
+
                     <form method="post" >
                         {%  csrf_token %}
                         {%   bootstrap_form form layout='horizontal' size="small" label_class="form-label col-md-3"%}
@@ -39,6 +39,7 @@
                 {% endif %}
                 <p> <a href="{% url "boats:add_new_user" %}">Register new account</a> </p>
             <p> <a href="{% url "social:begin" "vk-oauth2" %}">LogIn   via VK</a> </p>
+            <p> <a href="{% url "boats:password_reset" %}">Reset your password</a> </p>
                 </div>
 
         </div>

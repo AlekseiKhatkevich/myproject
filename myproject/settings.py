@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     "django_cleanup",
     "easy_thumbnails",
     "captcha",
-    "social_django"
+    "social_django",
+
 
 
 
@@ -195,3 +196,6 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = "8Nw5zHZmFk8hwEFWwRDP"
 SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
 SOCIAL_AUTH_VK_APP_USER_MODE = 2
 
+#   всплывающие сообщения
+if DEBUG: MESSAGE_LEVEL = 0
+else: MESSAGE_LEVEL = 20

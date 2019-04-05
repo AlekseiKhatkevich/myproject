@@ -61,10 +61,11 @@ class BoatModel(models.Model):
                                     help_text="Please input boat water-line length", )
 
     boat_description = models.TextField(blank=True, verbose_name="Boat description",
-                                        help_text="Please describe the boat")
+                                        help_text="Please describe the boat", )
 
     boat_mast_type = models.CharField(max_length=10, choices=CHOICES, default=SLOOP,
-                                      verbose_name="Boat rigging type", help_text="Please input boat rigging type")
+                                      verbose_name="Boat rigging type",
+                                      help_text="Please input boat rigging type")
 
     boat_price = models.PositiveSmallIntegerField(verbose_name="price of the boat",
                                                   help_text="Please input boat price", )
@@ -72,8 +73,10 @@ class BoatModel(models.Model):
     boat_country_of_origin = models.CharField(max_length=20, verbose_name="Boat country of origin",
                                               help_text="Please specify boat's country of origin")
 
-    boat_sailboatdata_link = models.URLField(max_length=100, blank=True, verbose_name="URL to Sailboatdata",
-                                             help_text="Please type in URL to Sailboatdata page for this boat")
+    boat_sailboatdata_link = models.URLField(max_length=100, blank=True,
+                                             verbose_name="URL to Sailboatdata",
+                                             help_text="Please type in URL to Sailboatdata "
+                                                       "page for this boat")
 
     boat_keel_type = models.CharField(max_length=50, verbose_name="Boat keel type",
                                       help_text="Please specify boat's keel type")

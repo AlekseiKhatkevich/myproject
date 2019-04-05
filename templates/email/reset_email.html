@@ -1,0 +1,12 @@
+
+ {% autoescape off %}
+Dear {{ user.username }}.
+You have sent us request for the password reset. For doing that, please proceed by the following URL:
+{{ protocol }}://{{ domain }}{% url "boats:password_reset_confirm" uidb64=uid token=token %}
+     {% comment %}
+
+     {% endcomment %}
+
+See you soon
+BR, "Ocean worth boats"
+{% endautoescape %}
