@@ -1,6 +1,7 @@
 {# load css and JavaScript #}
 {% load bootstrap4 %}
 {%  load static %}
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -65,7 +66,12 @@
     </nav>
 </div>
 
+
+<div class="messages" id="message_container">
 {% bootstrap_messages %}
+</div>
+
+
 
 {% block content %}
 {% endblock content %}
@@ -103,3 +109,16 @@
 
 </body>
 </html>
+
+{% comment %}
+https://stackoverflow.com/questions/51682084/how-to-hide-django-message-after-it-is-displayed-for-few-seconds?rq=1
+скрипт ниже убирает сообщения от Successmessagemixin и ему подобных через х секунд
+{% endcomment %}
+<script>
+    var message_ele = document.getElementById("message_container");
+
+setTimeout(function(){
+   message_ele.style.display = "none";
+}, 6000);
+</script>
+

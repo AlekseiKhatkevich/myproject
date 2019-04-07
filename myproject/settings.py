@@ -35,10 +35,8 @@ INSTALLED_APPS = [
     "easy_thumbnails",
     "captcha",
     "social_django",
-
-
-
-
+    "crispy_forms",
+    
 
 ]
 
@@ -199,3 +197,6 @@ SOCIAL_AUTH_VK_APP_USER_MODE = 2
 #   всплывающие сообщения
 if DEBUG: MESSAGE_LEVEL = 0
 else: MESSAGE_LEVEL = 20
+
+# crispy forms
+CRISPY_TEMPLATE_PACK = 'uni_form'

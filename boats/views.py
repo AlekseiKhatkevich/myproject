@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404, reverse
+from django.shortcuts import render, redirect, get_object_or_404, reverse, render_to_response
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth import logout
 from django.contrib import messages, auth
 from .utilities import signer
@@ -139,29 +139,39 @@ def boat_detail_view(request, pk):
 @atomic
 @login_required
 def viewname(request):
+
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1")
-        form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", )
         if form1.is_valid():
             prim = form1.save(commit=False)
             prim.author = request.user
-            form1.save()
+            form1.save(commit=False)
             form2 = boat_image_inline_formset(request.POST, request.FILES,
                                               prefix="form2", instance=prim)
-            if form2.is_valid():
-                form2.save()
-                messages.add_message(request, messages.SUCCESS, "You added a new boat")
-                return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
+            if "add_photo" in request.POST:
+                cp = request.POST.copy()
+                cp['form2-TOTAL_FORMS'] = int(cp['form2-TOTAL_FORMS']) + 1
+                form1 = BoatForm(request.POST, request.FILES, prefix="form1")
+                form2 = boat_image_inline_formset(cp, request.FILES,
+                                                  prefix="form2", instance=prim)
+                context = {"form1": form1, "form2": form2}
+                return render(request, "create.html", context)
+            elif 'submit' in request.POST:
+                if form2.is_valid():
+                    form1.save()
+                    form2.save()
+                    messages.add_message(request, messages.SUCCESS, "You added a new boat")
+                    return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
                                                      args=(prim.pk, )))
         else:
-            messages.add_message(request, messages.WARNING,
-                                 "Forms are not valid. Please check the data", fail_silently=True)
+            form1 = BoatForm(prefix="form1")
+            form2 = boat_image_inline_formset(prefix="form2", )
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
-    else:
 
+    else:
         form1 = BoatForm(prefix="form1")
-        form2 = boat_image_inline_formset(request.POST or None, request.FILES or None, prefix="form2", )
+        form2 = boat_image_inline_formset(prefix="form2", )
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
 
@@ -177,7 +187,6 @@ class AdminLoginView(SuccessMessageMixin, LoginView):
 """ контроллер LOGOUT"""
 
 
-# @login required
 class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
 
@@ -190,7 +199,6 @@ class AdminLogoutView(LoginRequiredMixin, LogoutView):
 """ контроллер страницы профиля пользователя"""
 
 
-# @login required
 class UserProfileView(LoginRequiredMixin,  TemplateView):
     template_name = "admin/userprofile.html"
 
@@ -198,7 +206,6 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
 """ корректировка данных пользователя"""
 
 
-# @login required
 class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):  #  566, 205
     model = ExtraUser
     template_name = "admin/correct_user_info.html"
@@ -223,7 +230,14 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView): 
 class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
     template_name = "admin/password_change.html"
     success_url = reverse_lazy("boats:user_profile")
-    success_message = "your password has been changed "
+    success_message = "your password has been changed. Please confirm the change " \
+                      "via email you will have received shortly "
+    form_class = PwdChgForm
+
+    def post(self, request, *args, **kwargs):
+        PasswordChangeView.post(self, request, *args, **kwargs)
+        logout(request)
+        return HttpResponseRedirect(reverse_lazy("boats:user_profile"))
 
 
 """ добавление нового пользователя"""

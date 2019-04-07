@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
 from .models import *
 from django.forms import inlineformset_factory
@@ -20,7 +20,7 @@ class BoatImageForm(forms.ModelForm):
 
 
 """формсет связанный с вторичной моделью"""
-boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage, form=BoatImageForm, extra=3, can_delete=True, )
+boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=1, can_delete=True, )
 
 
 class CorrectUserInfoForm(forms.ModelForm):
@@ -121,3 +121,13 @@ class SPForm(SetPasswordForm):
         SetPasswordForm.clean(self)
 
 
+""" форма для смены пароля - отправляет письмо для подтверждения активации смены пароля"""
+
+
+class PwdChgForm(PasswordChangeForm):
+
+    def save(self, commit=True):
+        self.user.is_activated = False
+        self.user.is_active = False
+        user_registrated.send(PwdChgForm, instance=self.user)
+        PasswordChangeForm.save(self, commit=True)

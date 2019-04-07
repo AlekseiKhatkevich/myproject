@@ -90,4 +90,82 @@ def viewname(request):
 rgba(41,41,41,0.75)
 
 
+
+
+@atomic
+@login_required
+def viewname(request):
+    if request.method == 'POST':
+        form1 = BoatForm(request.POST, request.FILES, prefix="form1")
+        form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", )
+        if form1.is_valid():
+            prim = form1.save(commit=False)
+            prim.author = request.user
+            form1.save()
+            form2 = boat_image_inline_formset(request.POST, request.FILES,
+                                              prefix="form2", instance=prim)
+            if form2.is_valid():
+                form2.save()
+                messages.add_message(request, messages.SUCCESS, "You added a new boat")
+                return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
+                                                     args=(prim.pk, )))
+        else:
+            messages.add_message(request, messages.WARNING,
+                                 "Forms are not valid. Please check the data", fail_silently=True)
+            context = {"form1": form1, "form2": form2}
+            return render(request, "create.html", context)
+    else:
+
+        form1 = BoatForm(prefix="form1")
+        form2 = boat_image_inline_formset(request.POST or None, request.FILES or None, prefix="form2", )
+        context = {"form1": form1, "form2": form2}
+        return render(request, "create.html", context)
+
+
+
+
+
+
+Рабочая создания лодки. Файлы вторичной модели не сохраняются!!! Динамический формсет
+@atomic
+@login_required
+def viewname(request):
+
+    if request.method == 'POST':
+        form1 = BoatForm(request.POST, request.FILES, prefix="form1")
+        if form1.is_valid():
+            prim = form1.save(commit=False)
+            prim.author = request.user
+            form1.save(commit=False)
+            form2 = boat_image_inline_formset(request.POST, request.FILES,
+                                              prefix="form2", instance=prim)
+            if "add_photo" in request.POST:
+                cp = request.POST.copy()
+                cp['form2-TOTAL_FORMS'] = int(cp['form2-TOTAL_FORMS']) + 1
+                form1 = BoatForm(request.POST, request.FILES, prefix="form1")
+                form2 = boat_image_inline_formset(cp, request.FILES,
+                                                  prefix="form2", instance=prim)
+                context = {"form1": form1, "form2": form2}
+                return render(request, "create.html", context)
+            elif 'submit' in request.POST:
+                if form2.is_valid():
+                    form1.save()
+                    form2.save()
+                    messages.add_message(request, messages.SUCCESS, "You added a new boat")
+                    return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
+                                                     args=(prim.pk, )))
+        else:
+            form1 = BoatForm(prefix="form1")
+            form2 = boat_image_inline_formset(prefix="form2", )
+            context = {"form1": form1, "form2": form2}
+            return render(request, "create.html", context)
+
+    else:
+        form1 = BoatForm(prefix="form1")
+        form2 = boat_image_inline_formset(prefix="form2", )
+        context = {"form1": form1, "form2": form2}
+        return render(request, "create.html", context)
+
+
+
 """

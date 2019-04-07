@@ -1,6 +1,8 @@
 <!-- templates/admin/logout.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
+{%  load static %}
+{% load staticfiles %}
 {% block title %} Logging out page{% endblock title %}
 {% block content %}
 
@@ -10,9 +12,20 @@
 
             <div class="col-md-auto text-muted">
 
-                <h5> You have successfully exited the web site<br>
-                    Looking forward to see you again!
-                </h5>
+
+<style>
+#bg{
+    background-size: 35%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+</style>
+
+<body id="bg" style="background-image: url('{% static "boats/565E97DC-1A97-49BB-B103-6CF76F69861E.jpeg"%}')";>
+</body>
+
+
             </div>
         </div>
 

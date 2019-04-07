@@ -4,18 +4,34 @@
 {%  load static %}
 
 {% block content %}
-<style>
-#bg{
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: fixed;
-}
-</style>
-<body id="bg" style="background-image: url('{% static "boats/yacht-sunset.jpg"%}')";>
-<a href="{%  url "boats:test" %}">Bootstrap test page</a>
-    <a href="{%  url "boats:feedback" %}">Send feedback to the  administration</a>
+    <style>
+        #bg{
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+    <body id="bg" style="background-image: url('{% static "boats/yacht-sunset.jpg"%}')";>
+    <a href="{%  url "boats:test" %}">Bootstrap test page</a>
 
 
 
+
+
+
+    <div class="container " style="position: fixed; bottom: 0; left: 0;z-index: 500; margin-bottom: 27px;  background-color: rgba(41,41,41,0.30)  " >
+        <div class="row ">
+            <div class="col ">
+                <div class=" w-25 h-25" >
+                    <h5 class="card-header w-25 h-25" style="background-color: rgba(41,41,41,0.0) "> </h5>
+                    <div class="card-body">
+                        <p class="card-text  font-weight-bolder " style="font-size: 17px">if you want to communicate something to the site owner - click the button bellow and fill in the form.</p>
+                        <a href="{%  url "boats:feedback" %}" class="btn btn-primary  font-weight-bold text-dark border-warning " style=" background-color: rgba(169,139,68,0.61)">Feedback </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 {% endblock content %}

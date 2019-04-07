@@ -1,0 +1,18 @@
+<!-- templates/errors/403.html  -->
+{% extends "base.html" %}
+{% block title %} error 403 forbidden {%  endblock %}
+{% block content %}
+    <div class="jumbotron">
+  <h1 class="display-3">Access denied !!!</h1>
+  <p class="lead">You seeing this page probably because you have done something wrong against security policy of this site.</p>
+  <hr class="my-2">
+  <p>If you desire, you could go back on the main page or click  small [x] button at  the right - top corner of your web browser.</p>
+  <p class="lead">
+    <a href="{% url "boats:index"  %}">
+    <button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title=" Back to the main page!"> Back to the main page
+</button></a>
+  </p>
+</div>
+
+
+{% endblock content %}
