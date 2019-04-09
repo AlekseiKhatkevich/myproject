@@ -15,6 +15,7 @@ django-simple-captcha = "*"
 social-auth-app-django = "*"
 django-ratelimit = "*"
 django-crispy-forms = "*"
+django-extra-views = "*"
 
 [requires]
 python_version = "3.7"

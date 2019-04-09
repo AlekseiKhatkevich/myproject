@@ -1,22 +1,23 @@
-from django.shortcuts import render, redirect, get_object_or_404, reverse, render_to_response
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages, auth
-from .utilities import signer
 from django.core.signing import BadSignature
 from .models import *
 from .forms import *
+from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
+from extra_views import CreateWithInlinesView
 
 
 """Контроллер редактирования данных о лодке"""
@@ -59,11 +60,11 @@ def viewname_edit(request, pk):
 
 
 # контроллер не используется
-class BoatUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+class BoatUpdateView(LoginRequiredMixin, UpdateView):
     model = BoatModel
     template_name = "edit_boat.html"
     form_class = BoatForm
-    success_message = "Boat data has been edited and saved successfully"
+    success_message = "Boat has been added and  saved successfully"
 
     def get(self, request, *args, **kwargs):
         if self.get_object().author == self.request.user:
@@ -145,7 +146,6 @@ def viewname(request):
         if form1.is_valid():
             prim = form1.save(commit=False)
             prim.author = request.user
-            form1.save(commit=False)
             form2 = boat_image_inline_formset(request.POST, request.FILES,
                                               prefix="form2", instance=prim)
             if "add_photo" in request.POST:
@@ -174,6 +174,31 @@ def viewname(request):
         form2 = boat_image_inline_formset(prefix="form2", )
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
+
+
+# альтернативный вариант
+@ method_decorator(atomic, name="forms_valid")
+class CreateBoatView(LoginRequiredMixin, CreateWithInlinesView):
+    model = BoatModel
+    inlines = [ItemInline]
+    fields = ["boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price", "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description"]
+    template_name = 'create.html'
+
+    def get_success_url(self):
+        return reverse('boats:boat_detail', args=(self.object.pk, ))
+
+    def forms_valid(self, form, inlines):
+        self.object = form.save(commit=False)
+        self.object.author = self.request.user
+        form.save(commit=True)
+        for formset in inlines:
+            formset.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        messages.add_message(request, messages.SUCCESS,
+                             "Boat has been added", fail_silently=True)
+        return CreateWithInlinesView.post(self, request, *args, **kwargs)
 
 
 """ контроллер LOGIN"""
@@ -226,7 +251,6 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView): 
 """ Изменение пароля"""
 
 
-# @login required
 class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
     template_name = "admin/password_change.html"
     success_url = reverse_lazy("boats:user_profile")
@@ -279,7 +303,6 @@ def user_activate_view(request, sign):  # 575
 """Контроллер удаления зарегестрированного пользователя"""
 
 
-#   @login required
 class DeleteUserView(LoginRequiredMixin, DeleteView):
     model = ExtraUser
     template_name = 'admin/delete_user.html'

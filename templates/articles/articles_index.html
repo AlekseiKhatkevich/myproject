@@ -2,6 +2,19 @@
 {%  extends "base.html" %}
 {% load bootstrap4 %}
 {% block content %}
-<p>ARTICLES</p>
+
+{%  for heading in subheadings %}
+    {%  ifchanged  heading.foreignkey.pk %}
+        <span class="nav-link root font-weight-bold">
+        {{ heading.foreignkey.name }}
+        </span>
+    {% endifchanged %}
+    <a class="nav-link" href="{% url "articles:show_by_heading" pk=heading.pk %}">
+    {{ heading.name }}</a>
+    {% endfor %}
+
+
+
+
 {% endblock content%}
 

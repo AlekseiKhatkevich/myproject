@@ -3,6 +3,7 @@ from django.core.signing import Signer
 from myproject.settings import ALLOWED_HOSTS
 from datetime import datetime
 from os.path import splitext
+from django.contrib import messages
 
 signer = Signer()
 
@@ -22,3 +23,6 @@ def send_activation_notofication(user):
 
 def get_timestamp_path(instance, filename):
     return "%s%s" % (datetime.now().timestamp(), splitext(filename)[1])
+
+
+

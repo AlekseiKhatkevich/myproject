@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField
+from extra_views import  InlineFormSetFactory
 
 
 class BoatForm(forms.ModelForm):
@@ -21,6 +22,17 @@ class BoatImageForm(forms.ModelForm):
 
 """формсет связанный с вторичной моделью"""
 boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=1, can_delete=True, )
+
+
+#  альтернативный вариант
+class ItemInline(InlineFormSetFactory):
+    model = BoatImage
+    fields = ["boat_photo"]
+    factory_kwargs = {'extra': 2, 'max_num': None,
+                      'can_order': False, 'can_delete': True}
+
+
+"""Форма коректировки пользователя"""
 
 
 class CorrectUserInfoForm(forms.ModelForm):
@@ -99,7 +111,8 @@ class ContactForm(forms.Form):
 class PRForm(PasswordResetForm):
     def clean_email(self):
         email = self.cleaned_data['email']
-        if not ExtraUser.objects.filter(email__iexact=email, is_active=True, is_activated=True).exists():
+        if not ExtraUser.objects.filter(email__iexact=email, is_active=True,
+                                        is_activated=True).exists():
             msg = "There is no user registered with the specified E-Mail address."
             self.add_error('email', msg)
         else:

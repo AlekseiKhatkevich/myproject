@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "captcha",
     "social_django",
     "crispy_forms",
+    "extra_views",
+
     
 
 ]
@@ -66,6 +68,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 "social_django.context_processors.backends",
                 "social_django.context_processors.login_redirect",
+                "articles.middlewares.articles_context_processor", # new для articles
 
             ],
         },

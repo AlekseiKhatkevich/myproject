@@ -22,6 +22,7 @@
             <li>Description-{{ current_boat.boat_description }}</li>
             <li> General design -{{ current_boat.length_mast_keel }}</li>
             <li> Boat pk or id -{{ current_boat.id}}</li>
+            <li> Boat Author-{{ current_boat.author}}</li>
         </ul>
         <h6><a href="{% url "boats:boat_delete" current_boat.pk %}"> Delete this boat&nbsp;</a>
         <a   href="{% url "boats:boat_edit" current_boat.pk %}"> | &nbsp; Edit this boat</a>

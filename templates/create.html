@@ -15,8 +15,10 @@
                 <form method="post" enctype="multipart/form-data" >
                     <legend class="text-center text-muted align-text-top">  Add a new boat data</legend>
                     {%  csrf_token %}
-                    {%   bootstrap_form form1 layout='inline' size="small" label_class="form-label col-md-3"%}
-                    {%   bootstrap_formset form2 layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                    {%   bootstrap_form form layout='inline' size="small" label_class="form-label col-md-3"%}
+                {% for formset in inlines %}
+                    {%   bootstrap_formset formset layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                {% endfor %}
 
                     {{ form2.management_form }}
 

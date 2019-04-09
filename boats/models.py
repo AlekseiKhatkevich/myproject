@@ -108,6 +108,17 @@ class BoatModel(models.Model):
         if errors:
             raise ValidationError(errors)
 
+        # для правильного србатывания django_cleanup
+    def delete(self, *args, **kwargs):
+        for ai in self.boatimage_set.all():
+            ai.delete()
+        models.Model.delete(self, *args, **kwargs)
+
+
+
+
+
+
 
 """Дополнительная модель юзера в админку"""
 
