@@ -16,9 +16,11 @@
                     <legend class="text-center text-muted align-text-top">  Add a new boat data</legend>
                     {%  csrf_token %}
                     {%   bootstrap_form form layout='inline' size="small" label_class="form-label col-md-3"%}
+                <div class=" form-inline">
                 {% for formset in inlines %}
-                    {%   bootstrap_formset formset layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                    {%   bootstrap_formset formset layout='inline' size="small" label_class="form-label col-md-3"%}
                 {% endfor %}
+                </div>
 
                     {{ form2.management_form }}
 

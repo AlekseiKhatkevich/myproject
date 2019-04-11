@@ -16,6 +16,9 @@ social-auth-app-django = "*"
 django-ratelimit = "*"
 django-crispy-forms = "*"
 django-extra-views = "*"
+unidecode = "*"
+django-debug-toolbar = "*"
+django-reversion = "*"
 
 [requires]
 python_version = "3.7"

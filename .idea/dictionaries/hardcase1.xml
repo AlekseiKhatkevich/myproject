@@ -2,6 +2,7 @@
   <dictionary name="hardcase1">
     <words>
       <w>ratelimit</w>
+      <w>unidecode</w>
     </words>
   </dictionary>
 </component>

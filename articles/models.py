@@ -65,6 +65,7 @@ class SubHeading(Heading):
 """ Модель самой статьи"""
 
 
+# функция для генерации ID суперюзера для подстановки в случае самовыпиливания автора
 def superuser():
     try:
         user = ExtraUser.objects.get(is_superuser=True)
@@ -80,7 +81,7 @@ def superuser():
 class Article(models.Model):
     foreignkey_to_subheading = models.ForeignKey(SubHeading,
                                                  on_delete=models.PROTECT, verbose_name="Subheading")
-    title = models.CharField(max_length=50, verbose_name="Article description")
+    title = models.CharField(max_length=50, verbose_name="Article header")
     content = models.TextField(verbose_name='Description of the article', blank=True)
     author = models.ForeignKey(ExtraUser, on_delete=models.SET(superuser))
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published at")

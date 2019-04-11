@@ -109,26 +109,23 @@ class BoatModel(models.Model):
             raise ValidationError(errors)
 
         # для правильного србатывания django_cleanup
-    def delete(self, *args, **kwargs):
+    def delete(self, using=None, keep_parents=False):
         for ai in self.boatimage_set.all():
             ai.delete()
-        models.Model.delete(self, *args, **kwargs)
+        models.Model.delete(self, using=None, keep_parents=False)
 
 
-
-
-
-
-
-"""Дополнительная модель юзера в админку"""
+"""Расширенная модель юзера """
 
 
 class ExtraUser(AbstractUser):
     is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?",
                                        help_text="Specifies whether user has been activated or not")
+    email = models.EmailField(unique=True, blank=False, verbose_name="user's email",
+                              help_text='please type in your email address')  # new
 
-    class Meta(AbstractUser.Meta):
-        pass
+    class Meta(AbstractUser.Meta): # 103
+        unique_together = ("first_name", "last_name", )
 
 
 

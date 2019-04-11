@@ -1,17 +1,18 @@
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField
-from extra_views import  InlineFormSetFactory
+from extra_views import InlineFormSetFactory
 
 
 class BoatForm(forms.ModelForm):
     class Meta:
         model = BoatModel
-        fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price", "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description")
+        fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price",
+                  "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description")
 
 
 class BoatImageForm(forms.ModelForm):
@@ -83,13 +84,6 @@ class NewUserForm(forms.ModelForm):
         fields = ("username", 'email', "password1", "password2", "first_name", "last_name")
 
 
-"""search form"""
-
-
-class SearchForm(forms.Form):
-    keyword = forms.CharField(required=False, max_length=20, label="")
-
-
 """ форма обратной связи"""
 
 
@@ -111,9 +105,11 @@ class ContactForm(forms.Form):
 class PRForm(PasswordResetForm):
     def clean_email(self):
         email = self.cleaned_data['email']
-        if not ExtraUser.objects.filter(email__iexact=email, is_active=True,
-                                        is_activated=True).exists():
+        if not ExtraUser.objects.filter(email__iexact=email).exists():
             msg = "There is no user registered with the specified E-Mail address."
+            self.add_error('email', msg)
+        elif ExtraUser.objects.filter(email__iexact=email, is_active=False).exists():
+            msg = "This account had been deactivated or wasn't activated at all ."
             self.add_error('email', msg)
         else:
             current_user = ExtraUser.objects.get(email__iexact=email, is_active=True, is_activated=True)
@@ -144,3 +140,23 @@ class PwdChgForm(PasswordChangeForm):
         self.user.is_active = False
         user_registrated.send(PwdChgForm, instance=self.user)
         PasswordChangeForm.save(self, commit=True)
+
+
+""" Кастомная форма для лог-ина. Предупреждает неактивированного юзера, что акаун не активированн"""
+
+
+class AuthCustomForm(AuthenticationForm):
+
+    def get_invalid_login_error(self):
+        user = ExtraUser.objects.get(username=self.cleaned_data.get('username'))
+        if not user.is_active and user:
+            raise forms.ValidationError(
+                "Account '%(value)s' has been deactivated or wasn't activated at all",
+                code='inactive',
+                params={'value': user})
+        else:
+            return forms.ValidationError(
+                self.error_messages['invalid_login'],
+                code='invalid_login',
+                params={'username': self.username_field.verbose_name, },
+            )

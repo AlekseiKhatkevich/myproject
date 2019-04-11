@@ -37,12 +37,15 @@ INSTALLED_APPS = [
     "social_django",
     "crispy_forms",
     "extra_views",
+    "debug_toolbar",
+    "reversion"
 
     
 
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware', # new
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -197,9 +200,14 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = "8Nw5zHZmFk8hwEFWwRDP"
 SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
 SOCIAL_AUTH_VK_APP_USER_MODE = 2
 
-#   всплывающие сообщения
+#   всплывающие сообщения django messaging framework
 if DEBUG: MESSAGE_LEVEL = 0
 else: MESSAGE_LEVEL = 20
 
 # crispy forms
-CRISPY_TEMPLATE_PACK = 'uni_form'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# настройки для дебагера
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+if DEBUG:
+    INTERNAL_IPS = "127.0.0.1"

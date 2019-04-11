@@ -207,6 +207,7 @@ class CreateBoatView(LoginRequiredMixin, CreateWithInlinesView):
 class AdminLoginView(SuccessMessageMixin, LoginView):
     template_name = "admin/login.html"
     success_message = "You have logged in, %(username)s"
+    form_class = AuthCustomForm
 
 
 """ контроллер LOGOUT"""
@@ -313,9 +314,19 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
         return DeleteView.dispatch(self, request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        logout(request)
-        messages.add_message(request, messages.SUCCESS, "Your account is deleted", fail_silently=True)
-        return DeleteView.post(self, request, *args, **kwargs)
+        if "deactivate" in self.request.POST:  # деактивация аккаунта вместо удаления
+            user = self.request.user
+            user.is_active = user.is_activated = False
+            user.save()
+            messages.success(request, 'Your profile is '
+                                      'successfully disabled.', fail_silently=True)
+            logout(self.request)
+            return HttpResponseRedirect(reverse_lazy("boats:index"))
+        else:
+            logout(request)
+            messages.add_message(request, messages.SUCCESS,
+                                 "Your account is deleted", fail_silently=True)
+            return DeleteView.post(self, request, *args, **kwargs)
 
     def get_object(self, queryset=None):
         if not queryset:

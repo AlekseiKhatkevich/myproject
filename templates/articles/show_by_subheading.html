@@ -1,0 +1,44 @@
+<!--templates/articles/show_by_subheadings.html   -->
+{% extends "base.html" %}
+{%  load bootstrap4 %}
+
+{% block title %}
+    Articles are shown in their sub-headings
+{% endblock title %}
+
+{%  block searchform %}
+{% endblock searchform %}
+
+
+{% block content %}
+    <h2 class="mb-2">{{ current_heading }}</h2>
+    <div class="container-fluid mb-2">
+        <div class="row">
+            <div class="col">&nbsp;</div>
+            <form class="col-md-auto form-inline">
+                {% bootstrap_form form show_label=False %}
+                {%  bootstrap_button content="Search" button_type="submit" %}
+
+            </form>
+        </div>
+    </div>
+
+    {% if list_of_articles %}
+        <ul class="list-unstyled">
+            {% for article  in list_of_articles %}
+                <li class="media my-5 p-3 border">
+                    {%  url "articles:detail"  current_heading_pk=current_heading.pk  pk=article.pk as url %}
+                    <a href="{{ url }}{{ all }}"></a>
+                <div class="media-body">
+                    <h3><a href="{{ url }}{{ all }}">
+                        {{ article.title }}</a></h3>
+                </div>
+
+                </li>
+            {% endfor %}
+        </ul>
+        {% bootstrap_pagination page url=keyword %}
+    {% endif %}
+
+{% endblock %}
+

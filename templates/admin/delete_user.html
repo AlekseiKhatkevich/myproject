@@ -20,13 +20,20 @@
                         <h5> Are you sure that you want to delete your account?</h5>
                             {% buttons %}
                                 <button type="submit" class="form-button btn btn-danger">
-                                    Confirm
+                                    Delete
                                 </button>
+
+                                <input title="deactivate"  type="submit"
+                                       name="deactivate" value="Deactivate"
+                                       class="form-button btn btn-warning">
+
                                  <a href="{% url "boats:user_profile"   %}">
                                      <button type="button" class="form-button btn btn-info">
                                     Back</button></a>
 
                             {% endbuttons %}
+                        <p> You could either completely delete or just deactivate your account.
+                            Choice is on you.</p>
                         </div>
                     </div>
                 </form>
