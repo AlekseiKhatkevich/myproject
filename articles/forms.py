@@ -1,7 +1,8 @@
 from .models import *
 from django import forms
+from django.forms.widgets import Select
 
-"""Форма поля выбора ап-группы,обязательное к заполнению"""
+"""Форма поля выбора ап-группы (для админки),обязательное к заполнению"""
 
 
 class SubHeadingForm(forms.ModelForm):
@@ -20,3 +21,14 @@ class SearchForm(forms.Form):
     keyword = forms.CharField(required=False, max_length=20, label="")
 
 
+""" Форма добавления статьи"""
+
+
+class ArticleForm(forms.ModelForm):
+    #foreignkey_to_subheading = forms.ModelChoiceField(empty_label=None, queryset=SubHeading.objects.all(), label="Heading and subheading category",
+                                   # help_text="Please choose subheading")
+
+    class Meta:
+        model = Article
+        exclude = ("created_at", )
+        widgets = {"author": forms.HiddenInput, }

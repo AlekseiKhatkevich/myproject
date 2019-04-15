@@ -1,28 +1,66 @@
 <!--templates/admin/userprofile.html   -->
 {% extends 'base.html' %}
 {%  load bootstrap4 %}
+{% load static %}
 {% block title %}
     User profile
 {% endblock title %}
 {% block content %}
-    <div class="container-fluid md-12 bg-light">
-        <div class="row">
-            <div class="col-md-12">
-                <p>User profile&nbsp;<strong>&diams;{{ user.username }}&diams;</strong></p>
-            </div>
-            <div class="col-md-12">
-                {% if user.first_name and user.last_name %}
-                    <p> Welcome, <strong>{{ user.first_name }} &nbsp;{{ user.last_name }}</strong></p>
-                {% else %}
-                    <p> Welcome, <strong>{{ user.username }}</strong></p>
-                    </div>
-                    </div >
-                {% endif %}
-    <p><a href="{% url "boats:profile_change" %}">Correct your profile here</a></p>
-    <p><a href="{% url "boats:password_change" %}">Change your password here</a></p>
-    <p><a href="{% url "boats:profile_delete" %}">Delete your profile here</a></p>
+    <div class="container-fluid mx-10 my-2   ">
+    <div class="row">
+    <div class="col-md-12 text-center">
+        <h5>User profile&nbsp;<strong>&diams;{{ user.username }}&diams;</strong></h5>
+        {% if user.first_name and user.last_name %}
+            <h5> Welcome, <strong>{{ user.first_name }} &nbsp;{{ user.last_name }}</strong></h5>
+        {% else %}
+            <p> Welcome, <strong>{{ user.username }}</strong></p>
+        {% endif %}
+    </div>
 
-        <p>Here is what you have added:&rarr;<p>
+
+    <div class="col-md-12 text-center mt-1 ">
+    <div class="btn-group border border-success rounded" role="group" aria-label="Account and stuff">
+
+        <a href="{% url "boats:profile_change" %}"><button type="button" class="btn btn-secondary
+        rounded-0">Change your profile</button></a>
+
+        <a href="{% url "boats:password_change" %}"><button type="button" class="btn btn-secondary
+        rounded-0 border border-success">Change your password</button></a>
+
+        <a href="{% url "boats:profile_delete" %}"><button type="button" class="btn btn-secondary
+        rounded-0">Delete your profile</button></a>
+    </div>
+
+
+
+    <h3 class="text text-muted mt-2 font-weight-bold"> Here is the list of your recent entries :</h3>
+
+
+
+    <div class="row my-5 mx-2">
+
+        <div class="col-2 text-left  ">
+        <h5>Your boats entries:</h5>
+        <ul>
+            {% for boat in  boats_by_user %}
+                <li style="list-style-type: none"> <strong><a class="text-info" href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong></li>
+            {% endfor %}
+        </ul>
+        </div>
+
+<div class="col">
+<img height=385 width=550 src="{% static "boats/sailboat-in-the-sea-on-a-background-of-mountains-vector-22869339.jpg" %}" alt="boat image">
+</div>
+
+        <div class="col-2  text-left  float-right">
+        <h5>Your articles:</h5>
+        <ul>
+            {% for article in articles_by_user %}
+                <li  style="list-style-type: none"><strong><a class="text-info" href="{%  url "articles:detail"  current_heading_pk=article.foreignkey_to_subheading.pk  pk=article.pk   %}{{ all }}">{{ article.title }}</a></strong></li>
+            {% endfor %}
+        </ul>
+        </div>
     </div>
 
 {% endblock content %}
+</div>

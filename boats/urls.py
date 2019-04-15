@@ -18,8 +18,8 @@ urlpatterns = [
     path("boats/edit/<int:pk>/", viewname_edit, name="boat_edit"),
     path("boats/detail/<int:pk>/", boat_detail_view, name="boat_detail"),
     path("boats/delete/<int:pk>/", BoatDeleteView.as_view(), name="boat_delete"),
-    path("boats/create/", CreateBoatView.as_view(), name="boat_create"),
-    path("boats/", boat_view, name="boats"),
+    path("boats/create/", viewname, name="boat_create"),
+    path("boats/", BoatListView.as_view(), name="boats"),
     path("feedback/", feedback_view, name="feedback"),
     path("", IndexPageView.as_view(), name="index"),
 ]

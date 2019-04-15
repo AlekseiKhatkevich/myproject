@@ -6,13 +6,44 @@ from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField
 from extra_views import InlineFormSetFactory
+from django.core.validators import MinValueValidator
+import datetime
+
+
+def year_choices():
+    return [(r, r) for r in range(1950, datetime.date.today().year + 1)]
+
+
+""" форма лодки"""
 
 
 class BoatForm(forms.ModelForm):
+
+    boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line length",)
+    boat_price = forms.IntegerField(help_text="Please input boat price",
+        validators=[validators.MinValueValidator(5000, message="Are you sure? It is almost free!",)])
+    first_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
+                                    help_text="Please enter first manufacturing year of the model")
+    last_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
+                                    help_text="Please enter last manufacturing year of the model")
+
     class Meta:
         model = BoatModel
         fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price",
-                  "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description")
+                  "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description",
+                  "first_year", "last_year")
+
+    def clean(self):
+        cleaned_data = forms.ModelForm.clean(self)
+        first_year = int(cleaned_data.get("first_year"))
+        last_year = int(cleaned_data.get("last_year"))
+
+        if first_year > last_year and first_year and last_year:
+            msg = 'Last year has to be superior then first year'
+            self.add_error("last_year", msg)
+
+
+"""форма доп. изображений лодки"""
 
 
 class BoatImageForm(forms.ModelForm):
@@ -22,16 +53,17 @@ class BoatImageForm(forms.ModelForm):
 
 
 """формсет связанный с вторичной моделью"""
-boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=1, can_delete=True, )
+boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=4, can_delete=True, max_num=10)
 
 
+"""
 #  альтернативный вариант
 class ItemInline(InlineFormSetFactory):
     model = BoatImage
     fields = ["boat_photo"]
-    factory_kwargs = {'extra': 2, 'max_num': None,
+    factory_kwargs = {'extra': 4, 'max_num': None,
                       'can_order': False, 'can_delete': True}
-
+"""
 
 """Форма коректировки пользователя"""
 
@@ -54,6 +86,7 @@ class NewUserForm(forms.ModelForm):
                                 help_text=password_validation.password_validators_help_text_html(), )
     password2 = forms.CharField(label="Confirm your password", widget=forms.PasswordInput(render_value=True),
                                 help_text="Please input password again", )
+    captcha = CaptchaField()
 
     def clean_password1(self):
         password1 = self.cleaned_data["password1"]

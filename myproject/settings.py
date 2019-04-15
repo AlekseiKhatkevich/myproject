@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     "crispy_forms",
     "extra_views",
     "debug_toolbar",
-    "reversion"
+    "reversion",
+    
+
 
     
 
@@ -86,8 +88,14 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        #'ENGINE': 'django.db.backends.sqlite3',
+        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": "localhost",
+        "USER": "postgres",
+        "PASSWORD": "1q2w3e",
+        "NAME": "postgres_work_1"
     }
 }
 
@@ -114,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = 'Europe/Moscow'
 

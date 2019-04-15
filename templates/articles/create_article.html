@@ -1,0 +1,38 @@
+<!--templates/create_article.html   -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %} Create new Article {% endblock %}
+
+{% block content %}
+
+    <div class="form-container container col-md-6   rounded   " style="margin-top: 10px; background-color: rgba(245,245,245,0.57); border: 2px ridge  rgba(253,253,253,0.57)">
+    <div class="row bg-dark mb-2">
+    <div class="col">
+    <h4 class="text-center text-white no-gutters font-italic " >***New article form***</h4>
+    </div>
+    </div>
+
+    <div class="row  ">
+    <div class="col border-info  ">
+    <form method="post" >
+        {% csrf_token %}
+        {% bootstrap_form form layout="horizontal" field_class="align-middle" size="small"  horizontal_label_class="col-md-3"  horizonta_field_class="col-md-9"   %}
+
+        <div class="row">
+            <div class=" col text-center">
+                {% buttons %}
+
+                    <button type="submit"  name="submit"   class="form-button btn-lg btn-light rounded font-weight-bold text-muted">
+                        Submit
+                    </button>
+                    <button type="reset" class="form-button btn-lg btn-light rounded font-weight-bold text-muted">
+                        Reset
+                    </button>
+                {% endbuttons %}
+            </div>
+        </div>
+    </form>
+
+
+
+{% endblock content %}

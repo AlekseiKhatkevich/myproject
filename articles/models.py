@@ -79,18 +79,19 @@ def superuser():
 
 
 class Article(models.Model):
-    foreignkey_to_subheading = models.ForeignKey(SubHeading,
-                                                 on_delete=models.PROTECT, verbose_name="Subheading")
-    title = models.CharField(max_length=50, verbose_name="Article header")
-    content = models.TextField(verbose_name='Description of the article', blank=True)
+    foreignkey_to_subheading = models.ForeignKey(SubHeading, on_delete=models.PROTECT,                                  verbose_name="Subheading", help_text="Please choose subheading")
+    title = models.CharField(max_length=50, verbose_name="Article header",
+                             help_text="Please add a title")
+    content = models.TextField(verbose_name='Description of the article',
+                               blank=True, help_text="Please briefly describe the article")
     author = models.ForeignKey(ExtraUser, on_delete=models.SET(superuser))
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published at")
-    url_to_article = models.URLField(max_length=100, verbose_name="URL to the article")
+    url_to_article = models.URLField(max_length=100, unique=True, verbose_name="URL to the article",                                                 help_text="Please insert URL of the article")
 
     class Meta:
         verbose_name = "Article"
         verbose_name_plural = "Articles"
         ordering = ["-created_at"]
-
+        unique_together = ("foreignkey_to_subheading", "title")
 
 

@@ -12,33 +12,55 @@
 
 {% block content %}
     <h2 class="mb-2">{{ current_heading }}</h2>
-    <div class="container-fluid mb-2">
+    <div class="container-fluid-md mb-0">
         <div class="row">
-            <div class="col">&nbsp;</div>
-            <form class="col-md-auto form-inline">
-                {% bootstrap_form form show_label=False %}
-                {%  bootstrap_button content="Search" button_type="submit" %}
-
+            <div class="col ">&nbsp;</div>
+            <form class="col-md-auto form-inline mr-3">
+                {% bootstrap_form form show_label=False form_group_class="border border-success rounded"%}
+                {%  bootstrap_button content="Search" button_type="submit" button_class="form-button btn secondary border-success" extra_classes='data-toggle="tooltip" data-placement="top" title="get back to the Articles main page"' %}
             </form>
         </div>
     </div>
 
-    {% if list_of_articles %}
-        <ul class="list-unstyled">
-            {% for article  in list_of_articles %}
-                <li class="media my-5 p-3 border">
-                    {%  url "articles:detail"  current_heading_pk=current_heading.pk  pk=article.pk as url %}
-                    <a href="{{ url }}{{ all }}"></a>
-                <div class="media-body">
-                    <h3><a href="{{ url }}{{ all }}">
-                        {{ article.title }}</a></h3>
-                </div>
 
-                </li>
-            {% endfor %}
-        </ul>
-        {% bootstrap_pagination page url=keyword %}
-    {% endif %}
+    <div class="row mt-2">
+    <div class="col">
+        {% if list_of_articles %}
+            <ul class="list-unstyled">
+                {% for article  in list_of_articles %}
+                    <li class="media my-0 p-3  ">
+                        {%  url "articles:detail"  current_heading_pk=current_heading.pk  pk=article.pk as url %}
+                        <a href="{{ url }}{{ all }}"></a>
+                        <div class="media-body">
+                            <h3><a href="{{ url }}{{ all }}">
+                                {{ article.title }}</a></h3>
+                        </div>
+
+                    </li>
+                {% endfor %}
+            </ul>
+            {% bootstrap_pagination page url=keyword %}
+        {% endif %}
+    </div>
+    <div class="col text-right">
+
+    {% buttons %}
+        <a href="{% url "articles:articles_main" %}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the Articles main page" style="margin-right: 16px"> Back to the Articles</button></a>
+    {% endbuttons %}
+    <div class="row">
+        <div class="col text-right">
+
+
+                {% buttons %}
+                    <a href="{% url "articles:add_article"  pk=current_heading.pk  %}"><button type="button" class="form-button btn secondary border-success mt-0" data-toggle="tooltip" data-placement="top" title="Create new article" style="margin-right: 16px"> Create new article</button></a>
+                {% endbuttons %}
+
+            <div>
+
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
+
 

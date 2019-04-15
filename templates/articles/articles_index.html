@@ -9,11 +9,11 @@
         {{ heading.foreignkey.name }}
         </span>
     {% endifchanged %}
-    <a class="nav-link" href="{% url "articles:show_by_heading" pk=heading.pk %}">
+    <a class="nav-link" href="{% url "articles:show_by_heading" pk=heading.pk   %}">
     {{ heading.name }}</a>
-    {% endfor %}
+{% endfor %}
 
-
+<a href="{% url "articles:add_article" pk=0 %}">Add article</a>
 
 
 {% endblock content%}

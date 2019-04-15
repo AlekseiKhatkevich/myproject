@@ -8,35 +8,68 @@
     {{ current_boat.boat_name }}
 {% endblock title %}
 {% block content %}
-    <div class="container-fluid ">
-        <h3 > Boat details</h3>
-        <ul type="square">
-            <li>Boat name -{{ current_boat.boat_name }}</li>
-            <li>Boat waterline length-{{ current_boat.boat_length }} feats </li>
-            <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
-            <li>Country of origin-{{ current_boat.boat_country_of_origin }}</li>
-            <li>Boat keel type -{{ current_boat.boat_keel_type }}</li>
-            <li>Publishing date-{{ current_boat.boat_publish_date|date:"SHORT_DATE_FORMAT"  }}</li>
-            <li>Price-{{ current_boat.boat_price }} &euro;</li>
-            <li> Link to the Sailboatdata-<a href="{{ current_boat.boat_sailboatdata_link }}">{{ current_boat.boat_name }}</a></li>
-            <li>Description-{{ current_boat.boat_description }}</li>
-            <li> General design -{{ current_boat.length_mast_keel }}</li>
-            <li> Boat pk or id -{{ current_boat.id}}</li>
-            <li> Boat Author-{{ current_boat.author}}</li>
-        </ul>
-        <h6><a href="{% url "boats:boat_delete" current_boat.pk %}"> Delete this boat&nbsp;</a>
-        <a   href="{% url "boats:boat_edit" current_boat.pk %}"> | &nbsp; Edit this boat</a>
-        </h6>
+    <div class="container-fluid">
+        <div class="row mt-3">
+            <div class = "col-md-3 text-left">
 
-{% if current_boat.boat_primary_photo %}
-            <img class="mr-3" src="{% thumbnail current_boat.boat_primary_photo "default" %}">
-      {%  endif %}
+                <ul type="square" class="border-right">
+                    <h4 > Boat details</h4>
+                    <li>Boat name -{{ current_boat.boat_name }}</li>
+                    <li>Boat waterline length-{{ current_boat.boat_length }} feats </li>
+                    <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
+                    <li>Country of origin-{{ current_boat.boat_country_of_origin }}</li>
+                    <li>Boat keel type -{{ current_boat.boat_keel_type }}</li>
+                    <li>Publishing date-
+                        {{ current_boat.boat_publish_date|date:"SHORT_DATE_FORMAT"  }}</li>
+                    <li>Price-{{ current_boat.boat_price }} &euro;</li>
+                    <li>Manufacturing history of the model - {{ current_boat.first_year }} to {{ current_boat.last_year }}</li>
+                    <li> <a href="{{ current_boat.boat_sailboatdata_link }}">Link to SailboatData</a></li>
+                    <li> Entry Author-{{ current_boat.author}}</li>
+
+                </ul>
+
+            </div>
+            <div class="col-md-8 border-right ">
+                <p>Description-{{ current_boat.boat_description }}</p>
+            </div>
+            <div class="col-md-1  text-right">
+
+
+                <style>
+                    .btn-group-vertical a, .btn-group-vertical button {
+                        width: 100%;
+                    }
+                </style>
+
+
+                    <div class="btn-group-vertical btn-outline-dark rounded" role="group" aria-label="page management">
+                        <a href="{% url "boats:boats"   %}"><button type="button" class="btn btn-secondary rounded-0">Back</button></a>
+                        <a href="{% url "boats:boat_edit" current_boat.pk %}"> <button type="button" class="btn btn-secondary rounded-0 ">Edit</button></a>
+                        <a href="{% url "boats:boat_delete" current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0">Delete</button></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    {% if current_boat.boat_primary_photo %}
+        <img class="mr-3" src="{% thumbnail current_boat.boat_primary_photo "default" %}">
+    {%  endif %}
 
     {% for instance in images %}
-    <img class="mr-3" src="{% thumbnail instance.boat_photo "default" %}">
+        <img class="mr-3" src="{% thumbnail instance.boat_photo "default" %}">
     {% endfor %}
 
-    </div>
 
 
 

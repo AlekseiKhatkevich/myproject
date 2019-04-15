@@ -1,13 +1,16 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic.base import TemplateView
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from .models import *
 from .forms import *
 import unidecode
+from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 
 """контроллер гл. стр. артиклес"""
 
@@ -44,7 +47,25 @@ def show_by_heading_view(request, pk): #597
 """ контроллер просмотра конкретной статьи"""
 
 
-class ContentListView(ListView):
+class ContentListView(DetailView):
     template_name = "articles/content.html"
     model = Article
 
+
+class AddArticleView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+    model = Article
+    template_name = "articles/create_article.html"
+    form_class = ArticleForm
+    success_message = "Article %(title)s has been successfully saved"
+
+    def get_initial(self):
+        self.initial = CreateView.get_initial(self)
+        self.initial["author"] = self.request.user
+        if self.kwargs["pk"] and self.kwargs["pk"] != 0:
+            self.initial["foreignkey_to_subheading"] =\
+                get_object_or_404(SubHeading, pk=self.kwargs["pk"])
+        return self.initial.copy()
+
+    def get_success_url(self):
+        return reverse('articles:detail',
+                       args=(self.object.foreignkey_to_subheading.pk, self.object.pk, ))

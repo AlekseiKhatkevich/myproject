@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import ListView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
@@ -10,6 +11,7 @@ from django.contrib.auth import logout
 from django.contrib import messages, auth
 from django.core.signing import BadSignature
 from .models import *
+from articles.models import Article
 from .forms import *
 from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -18,6 +20,8 @@ from django.db.transaction import atomic
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import CreateWithInlinesView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 
 """Контроллер редактирования данных о лодке"""
@@ -59,6 +63,7 @@ def viewname_edit(request, pk):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
+"""
 # контроллер не используется
 class BoatUpdateView(LoginRequiredMixin, UpdateView):
     model = BoatModel
@@ -75,12 +80,11 @@ class BoatUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('boats:boat_detail', args=(self.object.pk, ))
-
+"""
 
 """ контроллер удаления лодки"""
 
 
-#  todo  кнопки руский шрифт в форме
 @ method_decorator(login_required, name="dispatch")
 class BoatDeleteView(DeleteView):
     model = BoatModel
@@ -89,7 +93,7 @@ class BoatDeleteView(DeleteView):
 
     def post(self, request, *args, **kwargs):
         messages.add_message(request, messages.SUCCESS,
-                             "Boat has deleted from the database", fail_silently=True)
+                             "Boat has deleted from the database", fail_silently=True, extra_tags="alert alert-info")
         return DeleteView.post(self, request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
@@ -102,6 +106,7 @@ class BoatDeleteView(DeleteView):
         return context
 
 
+# тест бутстрап
 class TestView(TemplateView):
     template_name = "newtemplate.html"
 
@@ -115,18 +120,30 @@ class IndexPageView(TemplateView):
 
 """ список всех лодок"""
 
-
+"""
 def boat_view(request):
     boats = BoatModel.objects.all()
     images = BoatImage.objects.all()
     context = {"boats": boats, "images": images}
     return render(request, "boats.html", context)
+"""
+
+
+class BoatListView(ListView):
+    model = BoatModel
+    template_name = "boats.html"
+    paginate_by = 5
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = ListView.get_context_data(self, object_list=None, **kwargs)
+        context["boats"] = BoatModel.objects.all()
+        context["images"] = BoatImage.objects.all()
+        return context
 
 
 """ просмотр  детальной информации о лодке"""
 
 
-#
 def boat_detail_view(request, pk):
     current_boat = BoatModel.objects.get(pk=pk)  # primary
     images = current_boat.boatimage_set.all()
@@ -140,7 +157,6 @@ def boat_detail_view(request, pk):
 @atomic
 @login_required
 def viewname(request):
-
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1")
         if form1.is_valid():
@@ -148,34 +164,28 @@ def viewname(request):
             prim.author = request.user
             form2 = boat_image_inline_formset(request.POST, request.FILES,
                                               prefix="form2", instance=prim)
-            if "add_photo" in request.POST:
-                cp = request.POST.copy()
-                cp['form2-TOTAL_FORMS'] = int(cp['form2-TOTAL_FORMS']) + 1
-                form1 = BoatForm(request.POST, request.FILES, prefix="form1")
-                form2 = boat_image_inline_formset(cp, request.FILES,
-                                                  prefix="form2", instance=prim)
-                context = {"form1": form1, "form2": form2}
-                return render(request, "create.html", context)
-            elif 'submit' in request.POST:
-                if form2.is_valid():
-                    form1.save()
-                    form2.save()
-                    messages.add_message(request, messages.SUCCESS, "You added a new boat")
-                    return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
-                                                     args=(prim.pk, )))
         else:
-            form1 = BoatForm(prefix="form1")
-            form2 = boat_image_inline_formset(prefix="form2", )
+            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2")
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
-
+        if form2.is_valid():
+            form1.save()
+            form2.save()
+            messages.add_message(request, messages.SUCCESS, "You added a new boat")
+            return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
+                                                     args=(prim.pk, )))
+        else:
+            form2 = boat_image_inline_formset(request.POST, request.FILES,
+                                              prefix="form2", instance=prim)
+            context = {"form1": form1, "form2": form2}
+            return render(request, "create.html", context)
     else:
         form1 = BoatForm(prefix="form1")
-        form2 = boat_image_inline_formset(prefix="form2", )
+        form2 = boat_image_inline_formset(prefix="form2")
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
 
-
+"""
 # альтернативный вариант
 @ method_decorator(atomic, name="forms_valid")
 class CreateBoatView(LoginRequiredMixin, CreateWithInlinesView):
@@ -193,14 +203,11 @@ class CreateBoatView(LoginRequiredMixin, CreateWithInlinesView):
         form.save(commit=True)
         for formset in inlines:
             formset.save()
+            messages.add_message(self.request, messages.SUCCESS,
+                                 "Boat has been added", fail_silently=True)
         return HttpResponseRedirect(self.get_success_url())
 
-    def post(self, request, *args, **kwargs):
-        messages.add_message(request, messages.SUCCESS,
-                             "Boat has been added", fail_silently=True)
-        return CreateWithInlinesView.post(self, request, *args, **kwargs)
-
-
+"""
 """ контроллер LOGIN"""
 
 
@@ -227,6 +234,12 @@ class AdminLogoutView(LoginRequiredMixin, LogoutView):
 
 class UserProfileView(LoginRequiredMixin,  TemplateView):
     template_name = "admin/userprofile.html"
+
+    def get_context_data(self, **kwargs):
+        context = TemplateView.get_context_data(self, **kwargs)
+        context["boats_by_user"] = BoatModel.objects.filter(author=self.request.user)[:20]
+        context["articles_by_user"] = Article.objects.filter(author=self.request.user)[:20]
+        return context
 
 
 """ корректировка данных пользователя"""

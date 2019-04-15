@@ -3,6 +3,7 @@
 {% load bootstrap4 %}
 {%  bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
+
 {% block title %} Adding new boat{% endblock title %}
 {% block content %}
     <div class="form-container container col-md-6 bg-light" style="margin-top: 10px">
@@ -13,33 +14,46 @@
             <div class="col-md-12">
 
                 <form method="post" enctype="multipart/form-data" >
-                    <legend class="text-center text-muted align-text-top">  Add a new boat data</legend>
+                    <legend class="text-center text-muted align-text-top">
+                        Add a new boat data</legend>
                     {%  csrf_token %}
-                    {%   bootstrap_form form layout='inline' size="small" label_class="form-label col-md-3"%}
-                <div class=" form-inline">
-                {% for formset in inlines %}
-                    {%   bootstrap_formset formset layout='inline' size="small" label_class="form-label col-md-3"%}
-                {% endfor %}
-                </div>
+                    {%   bootstrap_form form1 layout='inline' size="small" label_class="form-label col-md-3"%}
 
-                    {{ form2.management_form }}
+
+                {{ form2.management_form }}
+                {%  for form in form2 %}
+
+<div class="row  ">
+<div class="col border border-white my-1 ml-1">
+                    {{ form.boat_photo }}
+
+                    {% if form2.can_delete %}{{ form.DELETE }} delete{% endif %}
+
+
+</div>
+</div>
+
+                {% endfor %}
+
+
+{% comment %}
+                {% bootstrap_formset form2  form_group_class="btn btn-outline-secondary" layout='inline'    %}
+{% endcomment %}
 
                     <div class="row">
                         <div class="col-12 text-center">
                             {% buttons %}
 
-                                <input title="add a new photo"  type="submit"
-                                       name="add_photo" value="Add a new photo"
-                                       class="form-button btn btn-light">
-
-
-                                <button type="submit"  name="submit" value='submit' class="form-button btn btn-light">
+                                <button type="submit"  name="submit" value='INPUT TYPE=file' class="form-button btn btn-light">
                                     Submit
                                 </button>
                                 <button type="reset" class="form-button btn btn-light">
                                     Reset
                                 </button>
                             {% endbuttons %}
+
+
+
                         </div>
                     </div>
                 </form>
@@ -49,3 +63,4 @@
 
 
 {% endblock content %}
+

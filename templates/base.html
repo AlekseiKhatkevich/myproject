@@ -3,7 +3,7 @@
 {%  load static %}
 
 <!doctype html>
-<html lang="en">
+<html lang="en_us">
 <head>
 
     <!-- Required meta tags -->
@@ -72,10 +72,18 @@
 </div>
 
 
-
+<div>
 {% block content %}
 {% endblock content %}
+</div>
 
+
+
+ 
+
+
+
+{% comment %}
 
 <style>
     #footer {
@@ -93,11 +101,9 @@
   <div class="footer-copyright text-center ">
     <p class=" font-weight-light text-muted ">How do you like this awesome photo?</p>
   </div>
-
-
 </footer>
 
-
+{% endcomment %}
 
 
 

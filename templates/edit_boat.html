@@ -14,7 +14,7 @@
                 <form method="post" enctype="multipart/form-data">
                     {%  csrf_token %}
                     {%   bootstrap_form form1 layout='horizontal' size="small" label_class="form-label col-md-3"%}
-                    {%   bootstrap_formset form2 layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                    {% bootstrap_formset form2  form_group_class="btn btn-outline-secondary" layout='inline'    %}
 
                     <div class="row">
                         <div class="col-12 text-center">

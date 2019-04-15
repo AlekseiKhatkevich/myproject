@@ -1,2 +1,35 @@
-<!--   -->
-<!DOCTYPE html>
+<!-- templates/articles/content.html  -->
+{% extends "base.html" %}
+{%  load bootstrap4 %}
+{%  block title %}
+
+    {{ object.title }} -{{ object.foreignkey_to_subheading.name }}
+
+
+{% endblock title %}
+
+{% block content %}
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col">
+                <ul>
+                    <li>Category -{{ object.foreignkey_to_subheading.name }}</li>
+                    <li>Title - {{ object.title }}</li>
+                    <li>Author - {{ object.author }}</li>
+                    <li>Created at - {{object.created_at|date:"SHORT_DATE_FORMAT"   }}</li>
+                    <li>Content - {{object.content  }}</li>
+                    <li> <a href="{{ object.url_to_article }}">
+                        Read the article on a website</a></li>
+                </ul>
+            </div>
+            {% buttons %}
+             </button>
+
+                    <a href="{% url "articles:show_by_heading"  pk=object.foreignkey_to_subheading_id%}{{ all }}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the heading view" style="margin-right: 100px"> Back to the heading</button></a>
+            {% endbuttons %}
+
+        </div>
+    </div>
+
+
+{% endblock content%}

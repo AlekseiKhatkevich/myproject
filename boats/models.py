@@ -4,6 +4,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from .utilities import get_timestamp_path
+from django.contrib.postgres.fields import DateRangeField
 from .utilities import *
 
 """Сигнал user_registrated
@@ -58,7 +59,7 @@ class BoatModel(models.Model):
                                  help_text="Please input boat model")
 
     boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
-                                    help_text="Please input boat water-line length", )
+                                    help_text="Please input boat water-line length",)
 
     boat_description = models.TextField(blank=True, verbose_name="Boat description",
                                         help_text="Please describe the boat", )
@@ -67,7 +68,7 @@ class BoatModel(models.Model):
                                       verbose_name="Boat rigging type",
                                       help_text="Please input boat rigging type")
 
-    boat_price = models.PositiveSmallIntegerField(verbose_name="price of the boat",
+    boat_price = models.PositiveIntegerField(verbose_name="price of the boat",
                                                   help_text="Please input boat price", )
 
     boat_country_of_origin = models.CharField(max_length=20, verbose_name="Boat country of origin",
@@ -83,9 +84,12 @@ class BoatModel(models.Model):
 
     boat_publish_date = models.DateTimeField(auto_now_add=True)
 
-    boat_primary_photo = models.ImageField(upload_to=get_timestamp_path, blank=False, #"photos/"
+    boat_primary_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, #"photos/"
                                            verbose_name='Boat primary photo',
                                            help_text="Please attach a primary photo of the boat")
+    first_year = models.PositiveSmallIntegerField(blank=True, null=True,
+                                                  verbose_name="first manufacturing year")
+    last_year = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="Last manufacturing year")
 
     def __str__(self):
         return self.boat_name
@@ -99,6 +103,13 @@ class BoatModel(models.Model):
         if self.boat_length and self.boat_keel_type and self.boat_mast_type:
             return "length - %d feet, keel type - %s, rigging - %s" % (self.boat_length, self.boat_keel_type,  self.boat_mast_type)
 
+    def delete(self, using=None, keep_parents=False):# для правильного србатывания django_cleanup
+        for ai in self.boatimage_set.all():
+            ai.delete()
+        models.Model.delete(self, using=None, keep_parents=False)
+
+
+"""
     def clean(self): #  Валидация модели
         errors = {}
         if self.boat_length and self.boat_length < 10:
@@ -107,12 +118,7 @@ class BoatModel(models.Model):
             errors["boat_price"] = ValidationError("PRICE:Are you sure? It's almost free! ")
         if errors:
             raise ValidationError(errors)
-
-        # для правильного србатывания django_cleanup
-    def delete(self, using=None, keep_parents=False):
-        for ai in self.boatimage_set.all():
-            ai.delete()
-        models.Model.delete(self, using=None, keep_parents=False)
+"""
 
 
 """Расширенная модель юзера """

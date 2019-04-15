@@ -7,7 +7,7 @@
     <h5><a class="text-muted  "  href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
     </div>
 
-    {% for boat in boats %}
+    {% for boat in object_list %}
 
         <div class="container ">
 
@@ -20,12 +20,10 @@
                 <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
                 <li>boat primary photo - <img class="mr-3" src="{% thumbnail boat.boat_primary_photo "default" %}"></li>
 
-
-
                 </ul>
         <p></p>
         </div>
         </div>
-
-    {%  endfor %}
+{%  endfor %}
+{% bootstrap_pagination page_obj    %}
 {% endblock content%}
