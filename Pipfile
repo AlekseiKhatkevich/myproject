@@ -20,6 +20,7 @@ unidecode = "*"
 django-debug-toolbar = "*"
 django-reversion = "*"
 psycopg2 = "*"
+django-dynamic-model-validation = "*"
 
 [requires]
 python_version = "3.7"

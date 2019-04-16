@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from boats.utilities import get_timestamp_path
 from boats.models import ExtraUser
-from django.core.exceptions import MultipleObjectsReturned,ObjectDoesNotExist,EmptyResultSet
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, EmptyResultSet
+from boats.models import BoatModel
+from dynamic_validator import ModelFieldRequiredMixin
 
 """ модель группы"""
 
@@ -75,7 +77,7 @@ def superuser():
     except ObjectDoesNotExist or EmptyResultSet:
         return 1
     else:
-        return user.id  # pk??
+        return user.id
 
 
 class Article(models.Model):
@@ -88,10 +90,37 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published at")
     url_to_article = models.URLField(max_length=100, unique=True, verbose_name="URL to the article",                                                 help_text="Please insert URL of the article")
 
+    def __str__(self):
+        return self.title
+
     class Meta:
         verbose_name = "Article"
         verbose_name_plural = "Articles"
         ordering = ["-created_at"]
         unique_together = ("foreignkey_to_subheading", "title")
+
+
+""" Модель комментов """
+
+
+class Comment(ModelFieldRequiredMixin, models.Model):
+    foreignkey_to_article = models.ForeignKey(Article, blank=True, null=True,
+                                              on_delete=models.CASCADE, verbose_name="Article",                                                       help_text='Please choose the article to comment on')
+    foreignkey_to_boat = models.ForeignKey(BoatModel, blank=True, null=True, on_delete=models.CASCADE,                          verbose_name="Boat", help_text="Please choose the boat to comment on")
+    author = models.CharField(max_length=30, verbose_name="Author", help_text="Please type in your name ")
+    content = models.TextField(verbose_name="Comment text", help_text="Please type in comment here")
+    is_active = models.BooleanField(default=True, db_index=True,
+                                    verbose_name="Published", help_text="publish?")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Publish date")
+
+    REQUIRED_TOGGLE_FIELDS = [["foreignkey_to_article", "foreignkey_to_boat"], ]
+
+    def __str__(self):
+        return "%s - %s" % ((self.foreignkey_to_article.title if self.foreignkey_to_article else self.foreignkey_to_boat.boat_name), self.content[: 25])
+
+    class Meta:
+        verbose_name = "Comment"
+        verbose_name_plural = "Comment"
+        ordering = ["-created_at", ]
 
 

@@ -23,7 +23,6 @@ from extra_views import CreateWithInlinesView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
-
 """Контроллер редактирования данных о лодке"""
 
 
@@ -55,6 +54,7 @@ def viewname_edit(request, pk):
         if request.user == obj1.author:
             form1 = BoatForm(prefix="form1", instance=obj1)
             form2 = boat_image_inline_formset(prefix="form2", instance=obj1)
+
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
         else:
@@ -102,13 +102,14 @@ class BoatDeleteView(DeleteView):
 
     def get_context_data(self, **kwargs):
         context = DeleteView.get_context_data(self, **kwargs)
-        context['user'] = ExtraUser.objects.filter(pk=self.user_id)
+        if self.user_id:
+            context['user'] = ExtraUser.objects.get(pk=self.user_id)
         return context
 
 
 # тест бутстрап
 class TestView(TemplateView):
-    template_name = "newtemplate.html"
+    template_name = ""
 
 
 """ Индекс"""
@@ -133,12 +134,6 @@ class BoatListView(ListView):
     model = BoatModel
     template_name = "boats.html"
     paginate_by = 5
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = ListView.get_context_data(self, object_list=None, **kwargs)
-        context["boats"] = BoatModel.objects.all()
-        context["images"] = BoatImage.objects.all()
-        return context
 
 
 """ просмотр  детальной информации о лодке"""
@@ -237,8 +232,10 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
 
     def get_context_data(self, **kwargs):
         context = TemplateView.get_context_data(self, **kwargs)
-        context["boats_by_user"] = BoatModel.objects.filter(author=self.request.user)[:20]
-        context["articles_by_user"] = Article.objects.filter(author=self.request.user)[:20]
+        context["boats_by_user"] = \
+            BoatModel.objects.order_by("boat_publish_date").filter(author=self.request.user)[: 20]
+        context["articles_by_user"] = \
+            Article.objects.order_by("created_at").filter(author=self.request.user)[: 20]
         return context
 
 

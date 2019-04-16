@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "extra_views",
     "debug_toolbar",
     "reversion",
+    "dynamic_validator",
+
     
 
 
@@ -217,5 +219,4 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # настройки для дебагера
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
-if DEBUG:
-    INTERNAL_IPS = "127.0.0.1"
+if DEBUG: INTERNAL_IPS = "127.0.0.1"

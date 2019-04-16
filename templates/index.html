@@ -1,6 +1,7 @@
 <!-- templates/index.html -->
 {%  extends "base.html" %}
 {%  load bootstrap4 %}
+{% bootstrap_jquery "full" %}
 {%  load static %}
 
 {% block content %}
@@ -12,29 +13,33 @@
             background-attachment: fixed;
         }
     </style>
-    <body id="bg" style="background-image: url('{% static "boats/yacht-sunset.jpg"%}')";>
-
-
-
-    <a href="{%  url "boats:test" %}">Bootstrap test page</a>
+    <body id="bg" style="background-image: url('{% static "boats/imgonline-com-ua-Resize-0iLiZkzwokfsv78.jpg"%}')";>
 
 
 
 
 
 
-    <div class="container  " style="position: fixed; bottom: 0; left: 0;z-index: 500; margin-bottom: 27px;  background-color: rgba(41,41,41,0.30)  " >
-        <div class="row ">
-            <div class="col ">
-                <div class=" w-25 h-25" >
-                    <h5 class="card-header d-inline-flex  w-25 h-25" style="background-color: rgba(41,41,41,0.0) "> </h5>
-                    <div class="card-body ">
-                        <p class="card-text  font-weight-bolder " style="font-size: 17px">if you want to communicate something to the site owner - click the button bellow and fill in the form.</p>
-                        <a href="{%  url "boats:feedback" %}" class="btn btn-primary  font-weight-bold text-dark border-warning " style=" background-color: rgba(169,139,68,0.61)">Feedback </a>
+
+
+        <div class="row" >
+<div class="col" style="position: fixed; bottom: 0; left: 0;z-index: 500; margin-bottom: 27px;   ">
+
+    <script>
+$(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});
+ </script>
+
+                        <a href="{%  url "boats:feedback" %}" class="btn btn-primary btn-lg font-weight-bold text-dark  rounded " style=" background-color: rgba(169,139,68,0.75); border: rgba(247,79,107,0.64) 4px solid"   data-toggle="tooltip" data-placement="top" title="Send message to me , if you like"  >Feedback</a>
+
+</div>
+
                     </div>
-                </div>
-            </div>
 
-        </div>
-    </div>
+
+
+
+
 {% endblock content %}
+

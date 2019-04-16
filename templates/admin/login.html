@@ -1,15 +1,16 @@
 <!-- templates/admin/login.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
-{% bootstrap_javascript "full" %}
+
+{%  load static %}
 {% block title %}
     Login
 {% endblock title %}
 {% block content %}
-    <div class="form-container container-fluid bg-light ">
+    <div class="form-container  ">
         <div class="row">
             <div class="col-md-5">
-                <div class="p-3 mb-2 bg-light text-muted text-center">
+                <div class="p-3 mb-2   text-muted text-center">
                     <h5> User authentication </h5>
                 </div>
                 {% if user.is_authenticated %}
@@ -18,7 +19,6 @@
                     </div>
                 {% else %}
                     <div class="col-md-12">
-
                     <form method="post" >
                         {%  csrf_token %}
                         {%   bootstrap_form form layout='horizontal' size="small" label_class="form-label col-md-3"%}
@@ -37,13 +37,30 @@
                         </div>
                     </form>
                 {% endif %}
-                <p> <a href="{% url "boats:add_new_user" %}">Register new account</a> </p>
-            <p> <a href="{% url "social:begin" "vk-oauth2" %}">LogIn   via VK</a> </p>
-            <p> <a href="{% url "boats:password_reset" %}">Reset your password</a> </p>
                 </div>
-
         </div>
     </div>
 
 
+    <div class="row   ">
+        <div class="col-md-4 my-auto ml-3 mr-5">
+
+            <div class="card">
+  <div class="card-body">
+
+    <h4 class="card-subtitle mb-2 text-muted">Account options</h4>
+    <p class="card-text">
+      You can register an account, login via social networks or reset your password
+    </p>
+     <a href="{% url "boats:add_new_user" %}">Register new account&nbsp;</a>
+     <a href="{% url "social:begin" "vk-oauth2" %}">LogIn via VK&nbsp;</a>
+      <a href="{% url "boats:password_reset" %}">Reset your password</a>
+  </div>
+
+    </div>
+    </div>
+    <div class="col-md-4 my-auto align-self-center ml-5">
+        <img height=165  width=190   src="{% static "boats/diagram-31693_960_720.png"%}" alt="boat image">
+    </div>
+    </div>
 {% endblock content %}

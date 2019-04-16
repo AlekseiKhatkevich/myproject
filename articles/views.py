@@ -3,14 +3,16 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .models import *
 from .forms import *
 import unidecode
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
 
 """контроллер гл. стр. артиклес"""
 
@@ -51,12 +53,21 @@ class ContentListView(DetailView):
     template_name = "articles/content.html"
     model = Article
 
+    def get_context_data(self, **kwargs):
+        context = DetailView.get_context_data(self, **kwargs)
+        if self.request.user.is_active and self.request.user.is_activated:
+            context['user'] = ExtraUser.objects.get(pk=self.request.user.pk)
+        return context
+
+
+"""контроллер добавления новой статьи"""
+
 
 class AddArticleView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     model = Article
     template_name = "articles/create_article.html"
     form_class = ArticleForm
-    success_message = "Article %(title)s has been successfully saved"
+    success_message = "Article '%(title)s' has been successfully saved"
 
     def get_initial(self):
         self.initial = CreateView.get_initial(self)
@@ -69,3 +80,50 @@ class AddArticleView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse('articles:detail',
                        args=(self.object.foreignkey_to_subheading.pk, self.object.pk, ))
+
+
+""" контроллер редактирования статьи"""
+
+
+class ArticleEditView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = Article
+    template_name = "articles/article_edit.html"
+    form_class = ArticleForm
+    success_message = "Article %(title)s has been edited and saved successfully "
+
+    def get_success_url(self):
+        return reverse('articles:detail',
+                       args=(self.object.foreignkey_to_subheading.pk, self.object.pk, ))
+
+    def get(self, request, *args, **kwargs):
+        if self.get_object().author == self.request.user:
+            return UpdateView.get(self, request, *args, **kwargs)
+        else:
+            messages.add_message(request, messages.WARNING, "You can only edit your own entries!")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+""" контроллер удаления  статьи"""
+
+
+class ArticleDeleteView(LoginRequiredMixin, DeleteView):
+    model = Article
+    template_name = "articles/article_delete.html"
+
+    def get_success_url(self):
+        return reverse('articles:show_by_heading', args=(self.object.foreignkey_to_subheading.pk, ))
+
+    def get(self, request, *args, **kwargs):
+        if self.get_object().author == self.request.user:
+            return DeleteView.get(self, request, *args, **kwargs)
+        else:
+            messages.add_message(request, messages.WARNING,
+                                 "You can only delete your own entries!", fail_silently=True, )
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    def post(self, request, *args, **kwargs):
+        messages.add_message(request, messages.SUCCESS,
+                             "Article has deleted from the database",
+                             fail_silently=True, extra_tags="alert alert-info")
+        return DeleteView.post(self, request, *args, **kwargs)
+

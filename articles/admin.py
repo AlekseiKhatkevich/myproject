@@ -8,14 +8,15 @@ class SubHeadingInline(admin.TabularInline):
     model = SubHeading
 
 
+"""ап-категория """
+
+
 class UpperHeadingAdmin(admin.ModelAdmin):
     exclude = ("foreignkey", )
     inlines = (SubHeadingInline, )
 
-"""
-class SubHeadingAdmin(admin.ModelAdmin):
-    form = SubHeadingForm
-"""
+
+"""статьи"""
 
 
 @admin.register(Article)
@@ -26,6 +27,18 @@ class ArticlesAdmin(VersionAdmin):
               "title", "content", "url_to_article")
 
 
+"""комменты"""
+
+
+@admin.register(Comment) # manage.py createinitialrevisions
+class CommentAdmin(VersionAdmin):
+    list_display = ("__str__", "foreignkey_to_article", "foreignkey_to_boat", "author", "is_active", "created_at")
+    list_display_links = ("__str__", )
+    search_fields = ("author", )
+    readonly_fields = ("created_at", )
+    ordering = ("foreignkey_to_article", "foreignkey_to_boat", "-created_at", )
+
+
 admin.site.register(UpperHeading, UpperHeadingAdmin)
-admin.site.register(SubHeading)  # + SubHeadingAdmin
+admin.site.register(SubHeading)
 

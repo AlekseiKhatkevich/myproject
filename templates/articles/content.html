@@ -22,14 +22,47 @@
                         Read the article on a website</a></li>
                 </ul>
             </div>
-            {% buttons %}
-             </button>
 
-                    <a href="{% url "articles:show_by_heading"  pk=object.foreignkey_to_subheading_id%}{{ all }}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the heading view" style="margin-right: 100px"> Back to the heading</button></a>
+            {% buttons %}
+                <style>
+                    .btn-group-vertical a, .btn-group-vertical button {
+                        width: 100%;
+                    }
+                </style>
+
+                    <div class="btn-group-vertical text-right  rounded mr-3" role="group" aria-label="page management">
+                        <a href="{% url "articles:show_by_heading"  pk=object.foreignkey_to_subheading_id%}{{ all }}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the heading view" > Back to the heading</button></a>
+
+                        {% if object.author == user %}
+                        <a href="{% url "articles:article_edit" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success mt-2
+" data-toggle="tooltip" data-placement="top" title="Edit this article" > Edit the article</button></a>
+
+                            <a href="{% url "articles:article_delete" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success mt-2
+" data-toggle="tooltip" data-placement="top" title="Delete this article" > Delete the article</button></a>
+
+
+                        </div >
+                        {% else %}
+                            </div>
+
+                            <div class="card mr-2 mt-2">
+  <div class="card-header">
+   <strong class="text-muted">Edit the article</strong>
+  </div>
+  <div class="card-body">
+    <h6 class="card-title">You aren't allowed to edit this article</h6>
+
+    <p class="card-text">Only the author of the article <br> is allowed to edit or delete it </p>
+  </div>
+</div>
+        {% endif %}
+
+
+
             {% endbuttons %}
 
-        </div>
-    </div>
 
+
+    </div>
 
 {% endblock content%}

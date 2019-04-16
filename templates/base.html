@@ -1,6 +1,7 @@
 {# load css and JavaScript #}
 {% load bootstrap4 %}
 {%  load static %}
+{% bootstrap_jquery "full" %}
 
 <!doctype html>
 <html lang="en_us">
@@ -23,10 +24,23 @@
 <body >
 
 <div >
+
     <nav class="navbar navbar-expand-lg navbar navbar-dark "
          style="background-color: rgba(41,41,41,0.8) ">
         <img height=50 width=50 src="{% static "boats/5.png" %}" alt="boat image">
-        <em><a class="navbar-brand text-muted "  href="#"> Ocean worth boats</a></em>
+
+
+  <a class="ml-5 mb-1" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+      <em class="navbar-brand text-muted " data-toggle="collapse"> Ocean worth boats</em>
+  </a>
+
+
+<div class="collapse border-warning" id="collapseExample">
+  <div class="card card-body">
+    This site is about ocean worth sailboats, made ages ago when people use to be concerned about quality of their product and their work. These boats cost less then   modern luxury ones, but one would prefer to find himself(herself) on this or similar boat  when it hits the fan.
+  </div>
+</div>
+
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -79,9 +93,11 @@
 
 
 
- 
-
-
+  {% if is_paginated %}
+    <div class="pagination pagination-centered justify-content-center" >
+{% bootstrap_pagination page_obj %}
+        </div>
+    {% endif %}
 
 {% comment %}
 
@@ -126,5 +142,13 @@ https://stackoverflow.com/questions/51682084/how-to-hide-django-message-after-it
 setTimeout(function(){
    message_ele.style.display = "none";
 }, 6000);
+
+<!--  # -->
+  var message_ele2 = document.getElementById("collapseExample");
+
+setTimeout(function(){
+   message_ele2.style.display = "none";
+}, 20000);
+
 </script>
 

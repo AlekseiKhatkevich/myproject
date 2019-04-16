@@ -46,10 +46,10 @@
 
     {% buttons %}
         <a href="{% url "articles:articles_main" %}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the Articles main page" style="margin-right: 16px"> Back to the Articles</button></a>
+
     {% endbuttons %}
     <div class="row">
         <div class="col text-right">
-
 
                 {% buttons %}
                     <a href="{% url "articles:add_article"  pk=current_heading.pk  %}"><button type="button" class="form-button btn secondary border-success mt-0" data-toggle="tooltip" data-placement="top" title="Create new article" style="margin-right: 16px"> Create new article</button></a>

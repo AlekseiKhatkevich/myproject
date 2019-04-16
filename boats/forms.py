@@ -53,7 +53,8 @@ class BoatImageForm(forms.ModelForm):
 
 
 """формсет связанный с вторичной моделью"""
-boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=4, can_delete=True, max_num=10)
+boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=3, can_delete=True, max_num=10)
+
 
 
 """

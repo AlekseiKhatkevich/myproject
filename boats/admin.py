@@ -10,7 +10,7 @@ class BoatimageInline(admin.TabularInline):
 
 @admin.register(BoatModel)
 class BoatsAdmin(VersionAdmin):
-    list_display = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type", "boat_primary_photo", "author")  #  new
+    list_display = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type", "boat_primary_photo", "author")
     list_display_links = ("boat_name",)
     search_fields = ("boat_name",)
     inlines = (BoatimageInline, )

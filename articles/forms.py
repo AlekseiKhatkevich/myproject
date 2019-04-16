@@ -25,8 +25,6 @@ class SearchForm(forms.Form):
 
 
 class ArticleForm(forms.ModelForm):
-    #foreignkey_to_subheading = forms.ModelChoiceField(empty_label=None, queryset=SubHeading.objects.all(), label="Heading and subheading category",
-                                   # help_text="Please choose subheading")
 
     class Meta:
         model = Article

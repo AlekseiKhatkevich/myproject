@@ -97,7 +97,7 @@ class BoatModel(models.Model):
     class Meta:
         verbose_name = "Boats primary data"
         verbose_name_plural = "Boats primary data"
-        ordering = ["boat_name"]
+        ordering = ["-boat_publish_date"]
 
     def length_mast_keel(self):  # метод добовляет кастомный атрибут в шаблон {{ current_boat.length_mast_keel }}
         if self.boat_length and self.boat_keel_type and self.boat_mast_type:
