@@ -1,0 +1,54 @@
+<!-- templates/comment/comment_form.html  -->
+{%  extends "base.html" %}
+{% load bootstrap4 %}
+{% bootstrap_jquery "full" %}
+{% block title %}
+Comment
+{% endblock title%}
+
+{% block content %}
+
+<div class="container col-5 mt-4 border border-secondary rounded">
+    <div class="row">
+    <div class="col justify-content-center">
+    <h5 class = "text-center">Comments on the entry</h5>
+    <form method="post" >
+    {%  csrf_token %}
+{% bootstrap_form form layout="inline"%}
+
+<div class="row  ">
+<div class="col justify-content-center text-center">
+
+
+
+<script>
+   $(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});
+
+
+   $(document).ready(function() {
+    $('.has-popover').popover({'trigger':'hover'});
+});
+</script>
+
+
+      {% buttons %}
+                    <button type="submit"  name="submit"   class="form-button btn btn-light rounded font-weight-bold text-muted shadow "  data-toggle="tooltip"
+        data-placement="top" title="Submit your comment">
+                        Submit
+                    </button>
+                    <button type="reset" class="form-button btn btn-light rounded font-weight-bold text-muted shadow " data-toggle="tooltip"
+        data-placement="top" title="Reset if you like so">
+                        Reset
+                    </button>
+                {% endbuttons %}
+</div>
+    </div>
+
+{% endblock content %}
+</form>
+</div>
+</div>
+</div>
+

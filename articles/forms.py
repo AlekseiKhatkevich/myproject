@@ -30,3 +30,34 @@ class ArticleForm(forms.ModelForm):
         model = Article
         exclude = ("created_at", )
         widgets = {"author": forms.HiddenInput, }
+
+
+"""Форма комментов статьи  и лодки"""
+
+
+class ArticleCommentForm(forms.ModelForm):
+    captcha = CaptchaField(label=" Captcha", help_text="Please type in captcha", error_messages={"invalid": "wrong captcha"})
+
+    def __init__(self, key, *args, **kwargs):
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        """
+        if key == "article":
+            self.fields["foreignkey_to_boat"].widget = forms.HiddenInput()
+        else:
+            self.fields["foreignkey_to_article"].widget = forms.HiddenInput()
+            """
+        for field in self.fields:
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update(
+                    {'class': 'has-popover', 'data-content': help_text, 'data-placement': 'right',
+                     'data-container': 'body'})
+
+    class Meta:
+        model = Comment
+        exclude = ("is_active", )
+        widgets = {"foreignkey_to_boat": forms.HiddenInput, "foreignkey_to_article": forms.HiddenInput}
+
+
+

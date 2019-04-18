@@ -4,7 +4,7 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, Passwo
 from django.core.exceptions import ValidationError
 from .models import *
 from django.forms import inlineformset_factory
-from captcha.fields import CaptchaField
+from captcha.fields import CaptchaField, CaptchaTextInput
 from extra_views import InlineFormSetFactory
 from django.core.validators import MinValueValidator
 import datetime
@@ -123,14 +123,20 @@ class NewUserForm(forms.ModelForm):
 
 class ContactForm(forms.Form):
     name = forms.CharField(max_length=20, help_text="Enter your name",
-                           widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
+                           widget=forms.TextInput(attrs={'size': 40, "class": "form-control border "
+                                                                              "border-secondary "}))
     subject = forms.CharField(max_length=999, help_text="Enter  a subject of the message",
-                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
+                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control border "
+                                                                                 "border-secondary"}))
     sender = forms.EmailField(help_text="Enter your email address",
-                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control"}))
-    message = forms.CharField(widget=forms.Textarea(attrs={"class": "form-control", }))
+                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control border "
+                                                                                 "border-secondary"}))
+    message = forms.CharField(help_text="please type in your message",
+                              widget=forms.Textarea(attrs={"class": "form-control border "
+                                                                    "border-secondary"}))
     copy = forms.BooleanField(required=False, label="Send copy to your email")
-    captcha = CaptchaField()
+    captcha = CaptchaField(help_text="Please type in correct captcha", widget=CaptchaTextInput(attrs={
+        "class": "form-control border border-secondary"}))
 
 
 """кастомная форма сброса пароля(первая часть)"""

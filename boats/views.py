@@ -11,7 +11,7 @@ from django.contrib.auth import logout
 from django.contrib import messages, auth
 from django.core.signing import BadSignature
 from .models import *
-from articles.models import Article
+from articles.models import Article, Comment
 from .forms import *
 from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -20,7 +20,7 @@ from django.db.transaction import atomic
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import CreateWithInlinesView
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
 
 
 """Контроллер редактирования данных о лодке"""
@@ -121,19 +121,11 @@ class IndexPageView(TemplateView):
 
 """ список всех лодок"""
 
-"""
-def boat_view(request):
-    boats = BoatModel.objects.all()
-    images = BoatImage.objects.all()
-    context = {"boats": boats, "images": images}
-    return render(request, "boats.html", context)
-"""
-
 
 class BoatListView(ListView):
     model = BoatModel
     template_name = "boats.html"
-    paginate_by = 5
+    paginate_by = 10
 
 
 """ просмотр  детальной информации о лодке"""
@@ -233,16 +225,24 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
     def get_context_data(self, **kwargs):
         context = TemplateView.get_context_data(self, **kwargs)
         context["boats_by_user"] = \
-            BoatModel.objects.order_by("boat_publish_date").filter(author=self.request.user)[: 20]
+            BoatModel.objects.order_by("boat_publish_date").filter(author=self.request.user)[: 10]
         context["articles_by_user"] = \
-            Article.objects.order_by("created_at").filter(author=self.request.user)[: 20]
+            Article.objects.order_by("created_at").filter(author=self.request.user)[: 10]
+        filter1 = Comment.objects.filter(foreignkey_to_article__author=self.request.user,
+                                         is_active=True)
+        filter2 = Comment.objects.filter(foreignkey_to_boat__author=self.request.user,
+                                         is_active=True)
+        context["comments_by_user"] = filter1.union(filter2).order_by("-created_at")[: 5]
+        """ context["comments_by_user"] = Comment.objects.filter(Q(
+            foreignkey_to_article__author=self.request.user) | Q(
+            foreignkey_to_boat__author=self.request.user), is_active=True)[:5]"""
         return context
 
 
 """ корректировка данных пользователя"""
 
 
-class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):  #  566, 205
+class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = ExtraUser
     template_name = "admin/correct_user_info.html"
     form_class = CorrectUserInfoForm

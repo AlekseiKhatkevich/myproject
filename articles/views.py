@@ -127,3 +127,45 @@ class ArticleDeleteView(LoginRequiredMixin, DeleteView):
                              fail_silently=True, extra_tags="alert alert-info")
         return DeleteView.post(self, request, *args, **kwargs)
 
+
+"""контроллер комментов"""
+
+
+class DoubleCommentView(SuccessMessageMixin, CreateView):
+    model = Comment
+    template_name = 'comment/comment_form.html'
+    success_message = "Dear %(author)s, thank you for your valuable comment"
+    form_class = ArticleCommentForm
+
+    """
+    def get_form(self, form_class=None):
+        if self.kwargs["key"] == "article":
+            form_class = ArticleCommentForm
+        else:
+            form_class = BoatCommentForm
+        return form_class(**self.get_form_kwargs()) 
+        """
+
+    def get_initial(self):
+        self.initial = CreateView.get_initial(self)
+        if self.request.user.is_authenticated:
+            self.initial["author"] = self.request.user.username
+        if self.kwargs["key"] == "article":
+            self.initial["foreignkey_to_article"] = get_object_or_404(Article, pk=self.kwargs["pk"])
+        else:
+            self.initial["foreignkey_to_boat"] = get_object_or_404(BoatModel, pk=self.kwargs["pk"])
+        return self.initial.copy()
+
+    def get_success_url(self):
+        if self.kwargs["key"] == "article":
+            return reverse('articles:detail', args=(get_object_or_404(Article, pk=self.kwargs[
+                "pk"]).foreignkey_to_subheading.pk, self.object.foreignkey_to_article.pk))
+        else:
+            return reverse("boats:boat_detail",
+                           args=(BoatModel.objects.get(pk=self.kwargs["pk"]).pk, ))
+
+    def get_form_kwargs(self):
+        kwargs = CreateView.get_form_kwargs(self)
+        kwargs["key"] = self.kwargs.get('key')
+        return kwargs
+

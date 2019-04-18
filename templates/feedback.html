@@ -4,15 +4,15 @@
 {% block title %} Feedback {% endblock title %}
 
 {%  block content %}
-    <div class="form-container container col-md-6 bg-light">
+    <div class="form-container container col-md-6 mt-1 mb-2">
     <div class="row  ">
-        <div class="col-md-auto text-center">
+        <div class="col-md-auto text-center justify-content-center ">
 
     </div>
         <div class="row ">
-            <div class="col-md-auto " >
-            <h5 class="text-center text-muted"> Enter and submit your message</h5>
-                <form  method="post" class="form">
+            <div class="col-md-auto bg-light mt-2  rounded border border-secondary" >
+            <h5 class="text-center text-muted mb2 mt-2"> Enter and submit your message</h5>
+                <form  method="post" class="form mr-5">
                     {% csrf_token %}
                     {% bootstrap_form form  layout="horizontal"  label_class="form-label col-md-3" %}
                     {% bootstrap_form_errors form layout="horizontal"  label_class="form-label col-md-3" %}

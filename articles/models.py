@@ -5,6 +5,7 @@ from boats.models import ExtraUser
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, EmptyResultSet
 from boats.models import BoatModel
 from dynamic_validator import ModelFieldRequiredMixin
+from captcha.fields import CaptchaField
 
 """ модель группы"""
 
@@ -120,7 +121,7 @@ class Comment(ModelFieldRequiredMixin, models.Model):
 
     class Meta:
         verbose_name = "Comment"
-        verbose_name_plural = "Comment"
+        verbose_name_plural = "Comments"
         ordering = ["-created_at", ]
 
 

@@ -3,28 +3,39 @@
 {% load bootstrap4 %}
 {% load thumbnail %}
 {% block content %}
-    <div class="container " style="margin-top: 15px">
-    <h5><a class="text-muted  "  href="{% url "boats:boat_create" %}">Add a new sailboat:</a></h5>
+
+    <div class="container-fluid  " style="margin-top: 15px">
+    <div class="row">
+        <div class="col text-right mr-5 mb-0">
+
+            {% buttons %}
+                    <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="top" title="Create new boat"  > Create new boat</button></a>
+                {% endbuttons %}
     </div>
+</div>
+
+
+<div class="row">
 
     {% for boat in object_list %}
 
-        <div class="container ">
 
+<div class = "{% cycle "col-md-6 pl-4" "col-md-6 pl-0" %}">
             <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><br>
-            <div class="row">
-            <ul class = "col-md-auto" >
+                <ul>
                 <li> boat length -{{ boat.boat_length }}</li>
                 <li>boat rigging - {{ boat.boat_mast_type }}</li>
                 <li> boat keel type -{{ boat.boat_keel_type }}</li>
                 <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
-                <li>boat primary photo - <img class="mr-3" src="{% thumbnail boat.boat_primary_photo "default" %}"></li>
-
                 </ul>
-        <p></p>
+
         </div>
-        </div>
-{%  endfor %}
+
+{% endfor %}
+ </div>
+        </div> <!--container-->
+
+
 
 
 

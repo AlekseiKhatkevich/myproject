@@ -1,6 +1,7 @@
 <!--templates/admin/userprofile.html   -->
 {% extends 'base.html' %}
 {%  load bootstrap4 %}
+{% bootstrap_jquery "full" %}
 {% load static %}
 {% block title %}
     User profile
@@ -19,48 +20,83 @@
 
 
     <div class="col-md-12 text-center mt-1 ">
-    <div class="btn-group border border-success rounded" role="group" aria-label="Account and stuff">
+        <div class="btn-group border border-success rounded" role="group" aria-label="Account and stuff">
 
-        <a href="{% url "boats:profile_change" %}"><button type="button" class="btn btn-secondary
+            <a href="{% url "boats:profile_change" %}"><button type="button" class="btn btn-secondary
         rounded-0">Change your profile</button></a>
 
-        <a href="{% url "boats:password_change" %}"><button type="button" class="btn btn-secondary
+            <a href="{% url "boats:password_change" %}"><button type="button" class="btn btn-secondary
         rounded-0 border border-success">Change your password</button></a>
 
-        <a href="{% url "boats:profile_delete" %}"><button type="button" class="btn btn-secondary
+            <a href="{% url "boats:profile_delete" %}"><button type="button" class="btn btn-secondary
         rounded-0">Delete your profile</button></a>
+        </div>
+
+
+
+        <h3 class="text text-muted mt-2 font-weight-bold"> Here is the list of your recent entries :</h3>
+
+
+
+        <div class="row my-5 mx-2">
+
+            <div class="col-2 text-left  ">
+                <h5>Your boats entries:</h5>
+                <ul>
+                    {% for boat in  boats_by_user %}
+                        <li style="list-style-type: none"> <strong><a class="text-info" href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="col">
+                <img height=385 width=550 src="{% static "boats/sailboat-in-the-sea-on-a-background-of-mountains-vector-22869339.jpg" %}" alt="boat image">
+            </div>
+
+            <div class="col-2  text-left  float-right">
+                <h5>Your articles:</h5>
+                <ul>
+                    {% for article in articles_by_user %}
+                        <li  style="list-style-type: none"><strong><a class="text-info" href="{%  url "articles:detail"  current_heading_pk=article.foreignkey_to_subheading.pk  pk=article.pk   %}{{ all }}">{{ article.title }}</a></strong></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 
 
+    {% if comments_by_user  %}
 
-    <h3 class="text text-muted mt-2 font-weight-bold"> Here is the list of your recent entries :</h3>
+        <div id="accordion" role="tablist">
 
+            {%  for comment in comments_by_user %}
 
+                <div class="card">
+                    <div class="card-header" role="tab" id="{% cycle "headingOne"  "headingtwo"  "headingthree" "headingfour" "headingfive" %}">
+                        <h5 class="mb-0">
+                            <a data-toggle="collapse" href="{% cycle "#collapseOne" "#collapseTwo" "#collapseTree" "#collapsefour" "#collapsefive" %}" aria-expanded="False" aria-controls="{% cycle "collapseOne" "collapseTwo" "collapseTree" "collapsefour" "collapsefive" %}">
+                                Comment on {% firstof  comment.foreignkey_to_article.title|slice:"0:15"   comment.foreignkey_to_boat.boat_name|slice:"0:15"   %}
+                            </a>
+                        </h5>
+                    </div>
 
-    <div class="row my-5 mx-2">
+                    <div id="{% cycle "collapseOne" "collapseTwo" "collapseTree" "collapsefour" "collapsefive" %}" class="collapse hide" role="tabpanel" aria-labelledby="{% cycle "headingOne"  "headingtwo"  "headingthree" "headingfour" "headingfive" %}">
+                        <div class="card-body">
+                            <Ul>
+                                <li>Your Entry - {%  firstof comment.foreignkey_to_article.title  comment.foreignkey_to_boat.boat_name %}</li>
+                                <li> Author - {{ comment.author }}</li>
+                                <li> Comment - {{ comment.content }}</li>
+                                <li> Publish date - {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }}</li>
+                            </Ul>
 
-        <div class="col-2 text-left  ">
-        <h5>Your boats entries:</h5>
-        <ul>
-            {% for boat in  boats_by_user %}
-                <li style="list-style-type: none"> <strong><a class="text-info" href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong></li>
-            {% endfor %}
-        </ul>
+                        </div>
+                    </div>
+                </div>
+            {%  endfor %}
         </div>
-
-<div class="col">
-<img height=385 width=550 src="{% static "boats/sailboat-in-the-sea-on-a-background-of-mountains-vector-22869339.jpg" %}" alt="boat image">
-</div>
-
-        <div class="col-2  text-left  float-right">
-        <h5>Your articles:</h5>
-        <ul>
-            {% for article in articles_by_user %}
-                <li  style="list-style-type: none"><strong><a class="text-info" href="{%  url "articles:detail"  current_heading_pk=article.foreignkey_to_subheading.pk  pk=article.pk   %}{{ all }}">{{ article.title }}</a></strong></li>
-            {% endfor %}
-        </ul>
-        </div>
-    </div>
+    {% endif %}
 
 {% endblock content %}
-</div>
+
+
+
