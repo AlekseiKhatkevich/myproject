@@ -1,0 +1,27 @@
+<!-- templates/articles/add_heading.html  -->
+{%  extends "base.html" %}
+{%  load bootstrap4 %}
+{% block title %}
+    Add heading and subheading
+{% endblock %}
+
+{% block content %}
+<form method="post" >
+        {% csrf_token %}
+{%  if form1 %}
+    {% bootstrap_form form1 %}
+{% endif %}
+    {% bootstrap_form form2 %}
+
+
+    {% buttons %}
+
+        <button type="submit"  name="submit"   class="form-button btn-lg btn-light rounded font-weight-bold text-muted">
+            Submit
+        </button>
+        <button type="reset" class="form-button btn-lg btn-light rounded font-weight-bold text-muted">
+            Reset
+        </button>
+    {% endbuttons %}
+</form>
+{% endblock content %}

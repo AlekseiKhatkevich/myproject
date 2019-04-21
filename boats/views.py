@@ -93,7 +93,8 @@ class BoatDeleteView(DeleteView):
 
     def post(self, request, *args, **kwargs):
         messages.add_message(request, messages.SUCCESS,
-                             "Boat has deleted from the database", fail_silently=True, extra_tags="alert alert-info")
+                             "Boat has deleted from the database", fail_silently=True,
+                             extra_tags="alert alert-info")
         return DeleteView.post(self, request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
@@ -134,7 +135,8 @@ class BoatListView(ListView):
 def boat_detail_view(request, pk):
     current_boat = BoatModel.objects.get(pk=pk)  # primary
     images = current_boat.boatimage_set.all()
-    context = {"images": images, "current_boat": current_boat}
+    comments = current_boat.comment_set.all()
+    context = {"images": images, "current_boat": current_boat, "comments": comments}
     return render(request, "boat_detail.html", context)
 
 
@@ -235,7 +237,8 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
         context["comments_by_user"] = filter1.union(filter2).order_by("-created_at")[: 5]
         """ context["comments_by_user"] = Comment.objects.filter(Q(
             foreignkey_to_article__author=self.request.user) | Q(
-            foreignkey_to_boat__author=self.request.user), is_active=True)[:5]"""
+            foreignkey_to_boat__author=self.request.user), is_active=True)
+            .order_by("-created_at")[:5]"""
         return context
 
 

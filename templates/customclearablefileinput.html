@@ -1,0 +1,33 @@
+{% load bootstrap4 %}
+{% load static %}
+{% load thumbnail %}
+{% bootstrap_jquery  "full" %}
+
+<script>
+    $(document).on('change', '.custom-file-input', function (event) {
+        $(this).next('.custom-file-label').html(event.target.files[0].name);
+    })
+</script>
+
+{% if widget.is_initial %}
+    <a href="{{ widget.value.url }}"><img class="ml-0" src="{% thumbnail widget.value "small"  %}"></a>
+
+    {% if not widget.required %}
+    {% endif %}
+    <br>
+
+{% endif %}
+
+<div class="input-group mb-3">
+    <div class="input-group-prepend">
+        <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
+    </div>
+    <div class="custom-file">
+        <input type="{{ widget.type }}" name="{{ widget.name }}" class="custom-file-input" id="inputGroupFile02" id="inputGroupFile02" aria-describedby="inputGroupFileAddon01" {% include "django/forms/widgets/attrs.html" %}>
+        <label class="custom-file-label " for="inputGroupFile02">{{ widget.value|default_if_none:"Choose the file" }}</label>
+    </div>
+</div>
+
+
+
+

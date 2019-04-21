@@ -40,13 +40,15 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "reversion",
     "dynamic_validator",
-
-    
-
-
-    
+    "django.forms",  # new for a custom widgets
 
 ]
+
+
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms # new
+
+
+
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware', # new
@@ -175,20 +177,32 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 THUMBNAIL_ALIASES = {
     "": {
         "default": {
-            "size": (96, 96),
-            "crop": "scale",
+            "size": (0, 180),
+            "crop": "smart",
+            "autocrop": True,
+            "bw": False,
+            "quality": 100,
+            "subsampling": 1, },
+        "small": {
+            "size": (115, 0),
+            "crop": "smart",
+            "autocrop": True,
+            "bw": False,
+            "quality": 100,
+            "subsampling": 1,
+
         },
     },
 }
 THUMBNAIL_BASEDIR = "thumbnails"
-
+THUMBNAIL_MEDIA_URL = MEDIA_URL
 # аутентификация через соц. сети
 
 AUTHENTICATION_BACKENDS = (
     "social_core.backends.vk.VKOAuth2",
     "django.contrib.auth.backends.ModelBackend"
 )
-SOCIAL_AUTH_URL_NAMESPACE = 'social' #  new
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
@@ -220,3 +234,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # настройки для дебагера
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
 if DEBUG: INTERNAL_IPS = "127.0.0.1"
+
+

@@ -2,10 +2,24 @@ from django.contrib import admin
 from .models import *
 from reversion.admin import VersionAdmin
 from django.contrib.auth.admin import UserAdmin
+from django.utils.safestring import mark_safe
+
+""" Инлайн вторичной модели изображений для админа лодок"""
 
 
 class BoatimageInline(admin.TabularInline):
     model = BoatImage
+    readonly_fields = ["boat_image", ]
+
+    @staticmethod
+    def boat_image(obj):  # выводит миниатюры в админке http://books.agiliq.com/projects/django-admin-cookbook/en/latest/imagefield.html
+        return mark_safe('<img src="{url}" width="{width}" height={height} />'.format(
+            url=obj.boat_photo.url,
+            width=obj.boat_photo.width,
+            height=obj.boat_photo.height, ))
+
+
+""" админ  основной модели лодок"""
 
 
 @admin.register(BoatModel)
@@ -14,6 +28,9 @@ class BoatsAdmin(VersionAdmin):
     list_display_links = ("boat_name",)
     search_fields = ("boat_name",)
     inlines = (BoatimageInline, )
+
+
+""" админ дополнительной (расширенной) модели пользователя"""
 
 
 @admin.register(ExtraUser)
@@ -29,9 +46,3 @@ class ExtraUserAdmin(VersionAdmin): # VersionAdmin reversion app восстан�
               )
     readonly_fields = ("last_login",)
 
-
-
-
-
-#admin.site.register(BoatModel, BoatsAdmin)
-#admin.site.register(ExtraUser, ExtraUserAdmin)

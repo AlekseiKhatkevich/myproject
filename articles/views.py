@@ -13,6 +13,9 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
+from django.db.transaction import atomic
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 
 """контроллер гл. стр. артиклес"""
 
@@ -169,3 +172,35 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
         kwargs["key"] = self.kwargs.get('key')
         return kwargs
 
+
+""" Контроллер допаления ап-категории и субкатегории"""
+
+
+@atomic
+@login_required
+def headingcreateview(request, pk):
+    form1 = UpperHeadingForm(request.POST or None, prefix="form1", pk=pk)
+    form2 = SubHeadingForm(request.POST or None, prefix="form2", pk=pk)
+    context = {"form1": form1, "form2": form2}
+    if request.method == "POST":
+        if form1.is_valid() and form2.is_valid():
+            upperheading = form1.save()
+            subheading = form2.save(commit=False)
+            subheading.foreignkey = upperheading
+            subheading.save()
+            messages.add_message(request, messages.SUCCESS,
+                                 "You have successfully added an upper-heading", fail_silently=True)
+            return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
+        elif form2.is_valid() and pk != 0:
+            subheading = form2.save(commit=False)
+            subheading.foreignkey = get_object_or_404(UpperHeading, pk=pk)
+            subheading.save()
+            messages.add_message(request, messages.SUCCESS,
+                                 "You have successfully added a sub-heading", fail_silently=True)
+            return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
+        else:
+            messages.add_message(request, messages.WARNING,
+                                 "Forms are not valid. Please check the data", fail_silently=True)
+            return render(request, "articles/add_heading.html", context)
+    else:
+        return render(request, "articles/add_heading.html", context)

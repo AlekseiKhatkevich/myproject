@@ -2,11 +2,13 @@
 {% extends "base.html" %}
 {% load bootstrap4 %}
 {% load crispy_forms_tags %}
+{% bootstrap_javascript jquery='full' %}
+
 
 {% block title %} Correction boats data{% endblock title %}
 
 {% block content %}
-    <div class="form-container container col-md-6 bg-light">
+    <div class="form-container container col-md-6 bg-light mt-2">
         <div class="row">
             <div class="col-md-12">
                 <h1 class="form__section-title">{{ title }}</h1>
@@ -22,10 +24,10 @@
                     <div class="row">
                         <div class="col-12 text-center">
                             {% buttons %}
-                                <button type="submit" class="form-button btn btn-light">
+                                <button type="submit" class="form-button btn btn-secondary btn-lg  ">
                                     Edit
                                 </button>
-                                <button type="reset" class="form-button btn btn-light">
+                                <button type="reset" class="form-button btn btn-secondary btn-lg ">
                                     Reset
                                 </button>
                             {% endbuttons %}

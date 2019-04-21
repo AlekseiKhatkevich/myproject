@@ -8,17 +8,17 @@ from captcha.fields import CaptchaField, CaptchaTextInput
 from extra_views import InlineFormSetFactory
 from django.core.validators import MinValueValidator
 import datetime
+from. widgets import *
+
+
+""" форма лодки"""
 
 
 def year_choices():
     return [(r, r) for r in range(1950, datetime.date.today().year + 1)]
 
 
-""" форма лодки"""
-
-
 class BoatForm(forms.ModelForm):
-
     boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line length",)
     boat_price = forms.IntegerField(help_text="Please input boat price",
         validators=[validators.MinValueValidator(5000, message="Are you sure? It is almost free!",)])
@@ -53,7 +53,11 @@ class BoatImageForm(forms.ModelForm):
 
 
 """формсет связанный с вторичной моделью"""
-boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),  extra=3, can_delete=True, max_num=10)
+
+
+boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),
+extra=3, can_delete=True, max_num=10, widgets={"boat_photo": CustomClearableFileInput()}, labels={"boat_photo": None})
+
 
 
 
@@ -100,7 +104,7 @@ class NewUserForm(forms.ModelForm):
         password1 = self.cleaned_data["password1"]
         password2 = self.cleaned_data["password2"]
         if password1 and password2 and password1 != password2:
-            errors = {"password2": ValidationError("Passwords aren't coincide!", code="password_mismatch")}
+            errors = {"password2": ValidationError("Passwords aren't coincide!",                                                                                                    code="password_mismatch")}
             raise ValidationError(errors)
 
     def save(self, commit=True):
@@ -149,7 +153,7 @@ class PRForm(PasswordResetForm):
             msg = "There is no user registered with the specified E-Mail address."
             self.add_error('email', msg)
         elif ExtraUser.objects.filter(email__iexact=email, is_active=False).exists():
-            msg = "This account had been deactivated or wasn't activated at all ."
+            msg = "This account had been deactivated or wasn't activated at all."
             self.add_error('email', msg)
         else:
             current_user = ExtraUser.objects.get(email__iexact=email, is_active=True, is_activated=True)

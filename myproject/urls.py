@@ -22,8 +22,13 @@ if DEBUG:
     urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
     if "debug_toolbar" in INSTALLED_APPS:
         import debug_toolbar
-        urlpatterns.append(path('__debug__/', include(debug_toolbar.urls)))# new
+        urlpatterns.append(path('__debug__/', include(debug_toolbar.urls)))
 
 # обработчик 403 ошибки(Access denied)
 handler403 = curry(permission_denied, exception=Exception('Permission Denied'), template_name='errors/403.html')
 #handler404 = curry(page_not_found, exception=Exception('Page not Found'), template_name='errors/404.html')
+
+# названия для админки
+admin.site.site_header = "Boat's project  Admin"
+admin.site.site_title = "BOATS Admin Portal"
+admin.site.index_title = "BOATS administration page"

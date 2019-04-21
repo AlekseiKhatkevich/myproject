@@ -4,6 +4,7 @@
 {%  bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 
+
 {% block title %} Adding new boat{% endblock title %}
 {% block content %}
     <div class="form-container container col-md-6 bg-light" style="margin-top: 10px">
@@ -20,23 +21,26 @@
                     {%   bootstrap_form form1 layout='inline' size="small" label_class="form-label col-md-3"%}
 
 
-                {{ form2.management_form }}
-                {%  for form in form2 %}
+                    {{ form2.management_form }}
+                    {%  for form in form2 %}
 
-<div class="row  ">
-<div class="col border border-white my-1 ml-1">
-                    {{ form.boat_photo }}
+                        <div class="row  ">
+                            <div class="col border border-white my-1 ml-1">
 
-                    {% if form2.can_delete %}{{ form.DELETE }} delete{% endif %}
-
-
-</div>
-</div>
-
-                {% endfor %}
+                                    {{ form.boat_photo }}
+                                {% if form2.can_delete %}
+                                 {{ form.DELETE }} delete
+                                {% endif %}
 
 
-{% comment %}
+
+                            </div>
+                        </div>
+<hr>
+                    {% endfor %}
+
+
+                    {% comment %}
                 {% bootstrap_formset form2  form_group_class="btn btn-outline-secondary" layout='inline'    %}
 {% endcomment %}
 
@@ -44,10 +48,10 @@
                         <div class="col-12 text-center">
                             {% buttons %}
 
-                                <button type="submit"  name="submit" value='INPUT TYPE=file' class="form-button btn btn-light">
+                                <button type="submit"  name="submit" value='INPUT TYPE=file' class="form-button btn btn-secondary btn-lg">
                                     Submit
                                 </button>
-                                <button type="reset" class="form-button btn btn-light">
+                                <button type="reset" class="form-button btn btn-secondary btn-lg">
                                     Reset
                                 </button>
                             {% endbuttons %}

@@ -4,7 +4,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from .utilities import get_timestamp_path
-from django.contrib.postgres.fields import DateRangeField
+from easy_thumbnails.fields import  ThumbnailerImageField
 from .utilities import *
 
 """Сигнал user_registrated
@@ -23,8 +23,7 @@ user_registrated.connect(user_registrated_dispatcher)
 
 
 class BoatImage(models.Model):
-    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, verbose_name='Boat photo',
-                                   help_text="Please attach any photo of the boat")
+    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, verbose_name='Boat photo', )
 
     boat = models.ForeignKey("BoatModel",  on_delete=models.CASCADE, verbose_name="Boat ForeignKey",
                              null=True)
