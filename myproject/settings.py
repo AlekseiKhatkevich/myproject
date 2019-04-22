@@ -30,10 +30,10 @@ INSTALLED_APPS = [
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
     #3rd party
+    "captcha",
     "bootstrap4",
     "django_cleanup",
     "easy_thumbnails",
-    "captcha",
     "social_django",
     "crispy_forms",
     "extra_views",

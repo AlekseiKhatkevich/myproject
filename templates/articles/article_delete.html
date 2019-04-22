@@ -25,7 +25,7 @@
                                     Delete
                                 </button>
 
-                                 <a href="{% url "articles:show_by_heading" object.pk  %}">
+                                 <a href="{% url "articles:detail" object.foreignkey_to_subheading.pk    object.pk  %}">
                                      <button type="button" class="form-button btn btn-info">
                                     Back</button></a>
 

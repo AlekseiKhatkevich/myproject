@@ -44,9 +44,9 @@
 
 
                 <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="page management"  >
-                    <a href="{% url "boats:boats"   %}"><button type="button" class="btn btn-secondary rounded-0 ">Back</button></a>
-                    <a href="{% url "boats:boat_edit" current_boat.pk %}"> <button type="button" class="btn btn-secondary rounded-0 ">Edit</button></a>
-                    <a href="{% url "boats:boat_delete" current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 ">Delete</button></a>
+                    <a href="{% url "boats:boats"   %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom">Back</button></a>
+                    <a href="{% url "boats:boat_edit" current_boat.pk %}"> <button type="button" class="btn btn-secondary rounded-0 border-bottom ">Edit</button></a>
+                    <a href="{% url "boats:boat_delete" current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom">Delete</button></a>
                     <a href="{%  url "articles:comment" key="boats" pk=current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 ">Comment</button></a>
                 </div>
             </div>

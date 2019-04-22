@@ -12,7 +12,9 @@ Article Edit
     <div class="form-container container col-md-6   rounded   " style="margin-top: 10px; background-color: rgba(245,245,245,0.57); border: 2px ridge  rgba(253,253,253,0.57)">
     <div class="row bg-dark mb-2">
     <div class="col">
-    <h4 class="text-center text-white no-gutters font-italic " >***New article form***</h4>
+    <h4 class="text-center text-white no-gutters font-italic " >
+    {% if  not object.foreignkey_to_subheading %}    ***New article form*** {% else%}  Article edit form {% endif %}
+    </h4>
     </div>
     </div>
 

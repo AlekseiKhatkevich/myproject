@@ -6,6 +6,8 @@ from django.contrib.auth.models import AbstractUser
 from .utilities import get_timestamp_path
 from easy_thumbnails.fields import  ThumbnailerImageField
 from .utilities import *
+from django.core.exceptions import ObjectDoesNotExist
+
 
 """Сигнал user_registrated
 #573  431  437
@@ -44,6 +46,7 @@ class BoatModel(models.Model):
     CAT_KETCH = "CK"
 
     CHOICES = (
+        (None, "Please choose  the rigging type"),
         (SLOOP, "Sloop"),
         (KETCH, "Ketch"),
         (YAWL, "Yawl"),
@@ -63,7 +66,7 @@ class BoatModel(models.Model):
     boat_description = models.TextField(blank=True, verbose_name="Boat description",
                                         help_text="Please describe the boat", )
 
-    boat_mast_type = models.CharField(max_length=10, choices=CHOICES, default=SLOOP,
+    boat_mast_type = models.CharField(max_length=10, choices=CHOICES,
                                       verbose_name="Boat rigging type",
                                       help_text="Please input boat rigging type")
 
@@ -102,22 +105,36 @@ class BoatModel(models.Model):
         if self.boat_length and self.boat_keel_type and self.boat_mast_type:
             return "length - %d feet, keel type - %s, rigging - %s" % (self.boat_length, self.boat_keel_type,  self.boat_mast_type)
 
-    def delete(self, using=None, keep_parents=False):# для правильного србатывания django_cleanup
-        for ai in self.boatimage_set.all():
+    def delete(self, using=None, keep_parents=False):
+        for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
             ai.delete()
+
+        try:  # удаление категории статей  связанных с лодкой при ее удалении
+            from articles.models import SubHeading, UpperHeading
+            boat_related_subheading = SubHeading.objects.get(name__exact=self.boat_name,
+                                   foreignkey_id=UpperHeading.objects.get
+                                   (name__exact="Articles on boats").pk)
+            if not boat_related_subheading.article_set.exists():
+                # если категория пустая(без статей) - то удаляем ее
+                boat_related_subheading.delete()
+        except ObjectDoesNotExist:
+            pass
         models.Model.delete(self, using=None, keep_parents=False)
 
+    #  создание связанной категории статей при создании лодки
 
-"""
-    def clean(self): #  Валидация модели
-        errors = {}
-        if self.boat_length and self.boat_length < 10:
-            errors["boat_length"] = ValidationError("waterline length seems to short")
-        if self.boat_price and self.boat_price < 5000:
-            errors["boat_price"] = ValidationError("PRICE:Are you sure? It's almost free! ")
-        if errors:
-            raise ValidationError(errors)
-"""
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        """
+        from articles.models import SubHeading, UpperHeading
+        upper_heading = UpperHeading.objects.get(name__exact="Articles on boats")
+        SubHeading.objects.update_or_create(name=self.boat_name, order=0,
+                                            foreignkey_id=upper_heading.pk)
+                                            """
+        from articles.models import SubHeading, UpperHeading
+        SubHeading.objects.update_or_create(foreignkey_to_boat_id=self.id)
+        self.subheading_set.update_or_create(name=self.boat_name, order=0, )
+        models.Model.save(self, force_insert=False, force_update=False, using=None,
+                          update_fields=None)
 
 
 """Расширенная модель юзера """
@@ -129,7 +146,7 @@ class ExtraUser(AbstractUser):
     email = models.EmailField(unique=True, blank=False, verbose_name="user's email",
                               help_text='please type in your email address')  # new
 
-    class Meta(AbstractUser.Meta): # 103
+    class Meta(AbstractUser.Meta):
         unique_together = ("first_name", "last_name", )
 
 

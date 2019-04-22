@@ -70,11 +70,19 @@ class UpperHeadingForm(forms.ModelForm):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.pk != 0:
             self.fields["name"].widget = forms.HiddenInput()
+        for field in self.fields:   # нужен javascript
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update(
+                    {'class': 'has-popover', 'data-content': help_text, 'data-placement': 'right',
+                     'data-container': 'body'})
 
     class Meta:
         model = UpperHeading
         fields = ("name", )
         labels = {"name": "New upper heading", }
+        help_texts = {"name": "Please type in name of the new upper heading"}
 
 
 """форма суб категории для добавления"""
@@ -85,10 +93,19 @@ class SubHeadingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.pk = kwargs.pop("pk", None)
         forms.ModelForm.__init__(self, *args, **kwargs)
+        for field in self.fields:   # нужен javascript
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update(
+                    {'class': 'has-popover', 'data-content': help_text, 'data-placement': 'right',
+                     'data-container': 'body'})
 
     class Meta:
         model = SubHeading
         exclude = ("foreignkey",)
         labels = {"name": "Sub heading name"}
+        help_texts = {"name": "Please type in name of the new sub-heading",
+                      "order": "Order of the sub-headings in the headings category"}
 
 

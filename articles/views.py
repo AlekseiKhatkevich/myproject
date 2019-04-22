@@ -38,7 +38,7 @@ def show_by_heading_view(request, pk): #597
     else:
         keyword = ""
     form = SearchForm(initial={"keyword": keyword})
-    paginator = Paginator(list_of_articles, 7)
+    paginator = Paginator(list_of_articles, 10)
     if "page" in request.GET:
         page_num = request.GET["page"]
     else:
@@ -58,8 +58,9 @@ class ContentListView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = DetailView.get_context_data(self, **kwargs)
-        if self.request.user.is_active and self.request.user.is_activated:
+        if self.request.user.is_authenticated:
             context['user'] = ExtraUser.objects.get(pk=self.request.user.pk)
+        context["comments"] = Comment.objects.filter(foreignkey_to_article_id=self.kwargs["pk"])
         return context
 
 

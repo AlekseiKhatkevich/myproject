@@ -1,9 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from boats.utilities import get_timestamp_path
-from boats.models import ExtraUser
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, EmptyResultSet
-from boats.models import BoatModel
+from boats.models import BoatModel, ExtraUser
 from dynamic_validator import ModelFieldRequiredMixin
 from captcha.fields import CaptchaField
 
@@ -15,6 +14,7 @@ class Heading(models.Model):
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Order')
     foreignkey = models.ForeignKey("UpperHeading", on_delete=models.PROTECT, null=True, blank=True,
                                       verbose_name="Upper heading", )
+    foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.DO_NOTHING, null=True, blank=True, verbose_name="correspondent boat for the category", )
 
 
 """ менеджер ап-группы"""
@@ -83,6 +83,8 @@ def superuser():
 
 class Article(models.Model):
     foreignkey_to_subheading = models.ForeignKey(SubHeading, on_delete=models.PROTECT,                                  verbose_name="Subheading", help_text="Please choose subheading")
+    foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.DO_NOTHING,                                  verbose_name="Parent boat for article", help_text="Please choose the boat",
+                                           blank=True, null=True)
     title = models.CharField(max_length=50, verbose_name="Article header",
                              help_text="Please add a title")
     content = models.TextField(verbose_name='Description of the article',

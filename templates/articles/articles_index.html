@@ -1,31 +1,49 @@
 <!-- templates/articles/articles_index.html  -->
 {%  extends "base.html" %}
 {% load bootstrap4 %}
+
+{% block title %}
+Articles main page
+{% endblock %}
 {% block content %}
-    {% bootstrap_jquery "full" %}
+
+    <style>
+        .btn-group-vertical a, .btn-group-vertical button {
+            width: 100%; margin-right: 20px;
+        }
+    </style>
+
     <div class="container-fluid mt-3 ">
 
         {%  for heading in subheadings %}
             <div class="row align-middle mb-2 align-self-start item">
-                <div class = "col  my-auto align-self-start item ">
+                <div class = "col   ">
+
                     {%  ifchanged  heading.foreignkey.pk %}
                         <span class="nav-link root font-weight-bold align-middle">
-        <span class="bg-info ml-0  rounded">{{ heading.foreignkey.name }}</span>
+        <span class="bg-info ml-0  rounded" style=" font-size: 20px">{{ heading.foreignkey.name }}</span>
         <a class="font-italic font-weight-light badge badge-dark ml-2" href="{%  url "articles:add_heading" pk=heading.foreignkey.pk %}">Add   Subheading</a>
-        </span>
-                    {% endifchanged %}
-                    <a class="ml-3"  href="{% url "articles:show_by_heading" pk=heading.pk   %}">
-                        {{ heading.name }}</a>
+        </span>{% endifchanged %}
+
+                    <a class="ml-3"  style=" font-size: 18px" href="{% url "articles:show_by_heading" pk=heading.pk   %}">{{ heading.name|truncatechars:20 }} </a>
+
+                    {% if not heading.article_set.all%}
+                        <span class="badge badge-light text-muted"> EMPTY </span>
+                    {% endif %}
+
                 </div>
 
                 {% if forloop.counter == 1 %}
-                    <div class="col my-auto text-right mr-5 align-self-start item">
-                        <a href="{% url "articles:add_article" pk=0 %}">Add article</a> <br>
-                        <a href="{%  url "articles:add_heading" pk=0 %}">Add Heading and   Subheading</a>
+                    <div class="col   text-right mr-5  item">
+                        <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="Button coalition">
+                            <a href="{% url "articles:add_article" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom  ">Add an Article</button></a>
+                            <a href="{%  url "articles:add_heading" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0">Add new Heading</button></a>
+                        </div>
                     </div>
                 {% endif %}
 
             </div>
+
 
         {% endfor %}
 
@@ -36,4 +54,5 @@
 
 
 {% endblock content%}
+
 

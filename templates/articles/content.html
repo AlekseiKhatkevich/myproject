@@ -1,69 +1,117 @@
 <!-- templates/articles/content.html  -->
 {% extends "base.html" %}
 {%  load bootstrap4 %}
+{%  bootstrap_jquery "full" %}
 {%  block title %}
-
     {{ object.title }} -{{ object.foreignkey_to_subheading.name }}
-
-
 {% endblock title %}
 
 {% block content %}
     <div class="container-fluid mt-3">
-        <div class="row">
-            <div class="col">
-                <ul>
-                    <li>Category -{{ object.foreignkey_to_subheading.name }}</li>
-                    <li>Title - {{ object.title }}</li>
-                    <li>Author - {{ object.author }}</li>
-                    <li>Created at - {{object.created_at|date:"SHORT_DATE_FORMAT"   }}</li>
-                    <li>Content - {{object.content  }}</li>
-                    <li> <a href="{{ object.url_to_article }}">
-                        Read the article on a website</a></li>
-                </ul>
+        <div class="row mb-0  ">
+            <div class="col-10">
+                <h4 class="text-center alert alert-primary shadow-sm "> Upper-heading: {{ object.foreignkey_to_subheading.foreignkey }} ; Sub-heading: {{ object.foreignkey_to_subheading.name }}</h4>
+                <h4 class="text-left font-italic   offset-1"> Article title:  {{ object.title }}</h4>
+                <h4 class="text-left font-italic   offset-1"> Article content:  {{ object.content }}</h4>
             </div>
 
-            {% buttons %}
-                <style>
-                    .btn-group-vertical a, .btn-group-vertical button {
-                        width: 100%;
-                    }
-                </style>
+
+            <div class="col-2 text-right justify-content-end">
+                {% buttons %}
+                    <style>
+                        .btn-group-vertical a, .btn-group-vertical button {
+                            width: 100%;
+                        }
+                    </style>
 
                     <div class="btn-group-vertical text-right  rounded mr-3" role="group" aria-label="page management">
                         <a href="{% url "articles:show_by_heading"  pk=object.foreignkey_to_subheading_id%}{{ all }}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the heading view" > Back to the heading</button></a>
 
+
+                        <a href="{% url "articles:comment" key="article" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success  mt-2" data-toggle="tooltip" data-placement="top" title="Comment this article" > Comment</button></a>
+
+
+
                         {% if object.author == user %}
-                        <a href="{% url "articles:article_edit" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success mt-2
+                            <a href="{% url "articles:article_edit" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success mt-2
 " data-toggle="tooltip" data-placement="top" title="Edit this article" > Edit the article</button></a>
 
                             <a href="{% url "articles:article_delete" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success mt-2
 " data-toggle="tooltip" data-placement="top" title="Delete this article" > Delete the article</button></a>
+                            </div>
 
-
-                        </div >
                         {% else %}
                             </div>
 
                             <div class="card mr-2 mt-2">
-  <div class="card-header">
-   <strong class="text-muted">Edit the article</strong>
-  </div>
-  <div class="card-body">
-    <h6 class="card-title">You aren't allowed to edit this article</h6>
+                                <div class="card-header">
+                                    <strong class="text-muted">Edit the article</strong>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">You aren't allowed to edit this article</h6>
 
-    <p class="card-text">Only the author of the article <br> is allowed to edit or delete it </p>
-  </div>
-</div>
-        {% endif %}
+                                    <p class="card-text">Only the author of the article <br> is allowed to edit or delete it </p>
+                                </div>
+                            </div>
+                        {% endif %}
+                {% endbuttons %}
+        </div>
 
 
 
-            {% endbuttons %}
+        <div class="row mt-2">
+            <div class="col-auto offset-2 ">
 
+                <table class="table  " style="font-size: 18px">
+                    <tbody>
+                    <tr class="table-active ">
+                        <th scope="row"></th>
+                        <td>Author</td>
+                        <td>{{ object.author }}</td>
+                    </tr>
+                    <tr class="table-active   ">
+                        <th scope="row"></th>
+                        <td>Created at</td>
+                        <td>{{object.created_at|date:"SHORT_DATE_FORMAT"   }}</td>
+                    </tr>
+
+                    <tr class=" table-active">
+                        <th scope="row"></th>
+                        <td>Read the article on a website</td>
+                        <td><a href="{{ object.url_to_article }}">Url to the article on a web site</a></td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
 
     </div>
-<a href="{% url "articles:comment" key="article" pk=object.pk %}">Comment</a>
+
+
+
+
+    <div class="row">
+        <div class="col">
+
+{% for comment in comments %}
+
+
+      <Ul style="list-style: none" class="mt-3 mr-3">
+            <li> <strong>{{ comment.author }} </strong> <i> {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }} </i></li>
+            <li> {{ comment.content }} </li>
+        </Ul>
+        <hr>
+
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+
+
 {% endblock content%}
 
