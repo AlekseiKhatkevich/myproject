@@ -2,6 +2,7 @@ from .models import *
 from django import forms
 from django.forms.widgets import Select
 from django.shortcuts import  get_object_or_404
+from django.core.validators import ProhibitNullCharactersValidator
 
 """Форма поля выбора ап-группы (для админки),обязательное к заполнению"""
 
@@ -26,6 +27,22 @@ class SearchForm(forms.Form):
 
 
 class ArticleForm(forms.ModelForm):
+
+    def clean_foreignkey_to_boat(self):
+        # в случае, если мы сохраняем статью  в категории "Articles on boats" то проверяется была ли выбрана связанная со статьей лодка.
+        foreignkey_to_boat = self.cleaned_data["foreignkey_to_boat"]
+        foreignkey_to_subheading = int(self.cleaned_data["foreignkey_to_subheading"].pk)
+        current_subheading = get_object_or_404(SubHeading, pk=foreignkey_to_subheading)
+        if current_subheading.foreignkey.name == "Articles on boats" and not foreignkey_to_boat:
+            msg1 = 'You must choose the boat if you want to save this article inside upper heading' \
+                  ' "Articles on boats"'
+            self.add_error("foreignkey_to_boat", msg1)
+        # проверяем совпадают ли имена подкатегории и название лодки, если мы пытаемся сохранитьстатью в категории "Articles on boats"
+        if current_subheading.foreignkey.name == "Articles on boats" and foreignkey_to_boat and\
+                foreignkey_to_boat.boat_name != current_subheading.name:
+            msg2 = 'Name of the boat should coincide to the sub-heading name '
+            self.add_error("foreignkey_to_boat", msg2)
+        return foreignkey_to_boat
 
     class Meta:
         model = Article
@@ -103,7 +120,7 @@ class SubHeadingForm(forms.ModelForm):
 
     class Meta:
         model = SubHeading
-        exclude = ("foreignkey",)
+        exclude = ("foreignkey", "one_to_one_to_boat")
         labels = {"name": "Sub heading name"}
         help_texts = {"name": "Please type in name of the new sub-heading",
                       "order": "Order of the sub-headings in the headings category"}

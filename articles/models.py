@@ -14,7 +14,9 @@ class Heading(models.Model):
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Order')
     foreignkey = models.ForeignKey("UpperHeading", on_delete=models.PROTECT, null=True, blank=True,
                                       verbose_name="Upper heading", )
-    foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.DO_NOTHING, null=True, blank=True, verbose_name="correspondent boat for the category", )
+    one_to_one_to_boat = models.OneToOneField(BoatModel, on_delete=models.SET_NULL, null=True,
+                                              blank=True, verbose_name="correspondent boat for the"
+                                                                       " category", )
 
 
 """ менеджер ап-группы"""
@@ -83,7 +85,7 @@ def superuser():
 
 class Article(models.Model):
     foreignkey_to_subheading = models.ForeignKey(SubHeading, on_delete=models.PROTECT,                                  verbose_name="Subheading", help_text="Please choose subheading")
-    foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.DO_NOTHING,                                  verbose_name="Parent boat for article", help_text="Please choose the boat",
+    foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.SET_NULL,                                  verbose_name="Parent boat for article", help_text="Please choose the boat",
                                            blank=True, null=True)
     title = models.CharField(max_length=50, verbose_name="Article header",
                              help_text="Please add a title")

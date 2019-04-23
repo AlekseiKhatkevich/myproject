@@ -4,7 +4,6 @@ from django.db.models import Q
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
 from .models import *
 from .forms import *
 import unidecode
@@ -12,10 +11,11 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.db.transaction import atomic
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+
 
 """контроллер гл. стр. артиклес"""
 
@@ -79,6 +79,12 @@ class AddArticleView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
         if self.kwargs["pk"] and self.kwargs["pk"] != 0:
             self.initial["foreignkey_to_subheading"] =\
                 get_object_or_404(SubHeading, pk=self.kwargs["pk"])
+        try:  # устанавливаем нач. знач поля foreignkey_to_boat если заходим с категории Articles on
+            # boats
+            current_subheading = get_object_or_404(SubHeading, pk=self.kwargs["pk"])
+            self.initial["foreignkey_to_boat"] = current_subheading.one_to_one_to_boat
+        except Http404:
+            pass
         return self.initial.copy()
 
     def get_success_url(self):

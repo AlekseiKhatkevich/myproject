@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from .utilities import get_timestamp_path
 from easy_thumbnails.fields import  ThumbnailerImageField
 from .utilities import *
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
 
 
 """Сигнал user_registrated
@@ -106,35 +106,40 @@ class BoatModel(models.Model):
             return "length - %d feet, keel type - %s, rigging - %s" % (self.boat_length, self.boat_keel_type,  self.boat_mast_type)
 
     def delete(self, using=None, keep_parents=False):
+        from articles.models import SubHeading, UpperHeading
         for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
             ai.delete()
+            # очистка пустых подкатегорий  в категории "Articles on boats" без статей и без связи с
+            # лодкой
+            # - условия срабатывания системы очистки:
+            # 1 находится в папке Articles on boats
+            # 2 нет связи с лодкой
+            # 3 нет связанных статей
+        try:
+            subheadings_query_set = SubHeading.objects.filter(foreignkey_id=UpperHeading.objects.get(
+                            name__exact="Articles on boats").pk, one_to_one_to_boat_id__isnull=True)
+            for subheading in subheadings_query_set:
+                if not subheading.article_set.exists():
+                    subheading.delete()
+        except EmptyResultSet:
+            pass
 
-        try:  # удаление категории статей  связанных с лодкой при ее удалении
-            from articles.models import SubHeading, UpperHeading
-            boat_related_subheading = SubHeading.objects.get(name__exact=self.boat_name,
-                                   foreignkey_id=UpperHeading.objects.get
-                                   (name__exact="Articles on boats").pk)
-            if not boat_related_subheading.article_set.exists():
-                # если категория пустая(без статей) - то удаляем ее
-                boat_related_subheading.delete()
-        except ObjectDoesNotExist:
+        try:  # удаление sub категорий   связанных с лодкой при ее удалении
+            if not SubHeading.objects.get(one_to_one_to_boat=self).article_set.exists():
+                self.heading.delete()  # удаляем, если не содержит статей
+        except SubHeading.DoesNotExist or ObjectDoesNotExist:
             pass
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        """
         from articles.models import SubHeading, UpperHeading
-        upper_heading = UpperHeading.objects.get(name__exact="Articles on boats")
-        SubHeading.objects.update_or_create(name=self.boat_name, order=0,
-                                            foreignkey_id=upper_heading.pk)
-                                            """
-        from articles.models import SubHeading, UpperHeading
-        SubHeading.objects.update_or_create(foreignkey_to_boat_id=self.id)
-        self.subheading_set.update_or_create(name=self.boat_name, order=0, )
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
+        SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,
+                                foreignkey_id=UpperHeading.objects.get
+                                (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
 
 
 """Расширенная модель юзера """
@@ -144,7 +149,7 @@ class ExtraUser(AbstractUser):
     is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?",
                                        help_text="Specifies whether user has been activated or not")
     email = models.EmailField(unique=True, blank=False, verbose_name="user's email",
-                              help_text='please type in your email address')  # new
+                              help_text='Please type in your email address')
 
     class Meta(AbstractUser.Meta):
         unique_together = ("first_name", "last_name", )
