@@ -49,6 +49,28 @@
                     <a href="{% url "boats:boat_delete" current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom">Delete</button></a>
                     <a href="{%  url "articles:comment" key="boats" pk=current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 ">Comment</button></a>
                 </div>
+
+
+
+
+            <div class = row>
+            <div class="col">
+            {% if articles %}
+                <h6 class="mt-4"> Articles on {{ current_boat.boat_name }}</h6>
+                {%  for article in articles %}
+                    <ul type="square" class="border-right mt-2 text-right " style="list-style: none" >
+                        <li><a href="{% url "articles:detail" current_heading_pk=article.foreignkey_to_subheading_id  pk=article.pk %}{{ all }}">{{ article.title }}</a></li>
+                    </ul>
+                {% endfor %}
+            {% else %} <h6 class="mt-4"> {{ current_boat.boat_name }} doesnt have any article. </h6>
+            {% endif %}
+
+            <a href="{%  url "articles:add_article" current_boat.heading.pk    %}"><button type="button" class="btn btn-secondary rounded-0 border border-success btn-lg">Add an article</button></a>
+
+            </div>
+            </div>
+
+
             </div>
         </div>
     </div>

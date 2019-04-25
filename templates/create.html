@@ -18,7 +18,28 @@
                     <legend class="text-center text-muted align-text-top">
                         Add a new boat data</legend>
                     {%  csrf_token %}
-                    {%   bootstrap_form form1 layout='inline' size="small" label_class="form-label col-md-3"%}
+                    {%   bootstrap_form form1 layout='inline' size="small" label_class="form-label col-md-3" exclude="first_year,last_year" %}
+
+
+
+<div class="row">
+
+    <p class="text-muted ml-4">Please enter first and last years of the model manufacturing:</p>
+</div>
+                    <div class="row">
+                        <div class="col ml-2 mb-3 ">
+                <span class="">{{ form1.first_year.label }} - {{ form1.first_year}}</span>
+
+             <span>   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ form1.last_year.label}} {{ "-"|center:20 }} {{ form1.last_year  }}</span>
+
+                            </div>
+</div>
+
+
+
+
+
+
 
 
                     {{ form2.management_form }}

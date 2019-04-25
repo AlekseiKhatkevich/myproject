@@ -9,6 +9,7 @@ from extra_views import InlineFormSetFactory
 from django.core.validators import MinValueValidator
 import datetime
 from. widgets import *
+import requests
 
 
 """ форма лодки"""
@@ -41,6 +42,22 @@ class BoatForm(forms.ModelForm):
         if first_year > last_year and first_year and last_year:
             msg = 'Last year has to be superior then first year'
             self.add_error("last_year", msg)
+
+        # проверяет живой ли урл и , что урл веден на 'sailboatdata.com'
+    def clean_boat_sailboatdata_link(self):
+        msg3 = "This URL does not work!"
+        msg4 = "Please provide url exactly to 'sailboatdata.com' "
+        msg5 = "Connection error"
+        url = self.cleaned_data["boat_sailboatdata_link"]
+        try:
+            request = requests.head(url)
+            if request.status_code // 100 != 2:
+                self.add_error("boat_sailboatdata_link", msg3)
+            elif "sailboatdata.com" not in url:
+                self.add_error("boat_sailboatdata_link", msg4)
+        except requests.exceptions.ConnectionError:
+            self.add_error("boat_sailboatdata_link", msg5)
+        return url
 
 
 """форма доп. изображений лодки"""

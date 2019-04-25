@@ -109,7 +109,7 @@ class BoatModel(models.Model):
         from articles.models import SubHeading, UpperHeading
         for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
             ai.delete()
-            # очистка пустых подкатегорий  в категории "Articles on boats" без статей и без связи с
+            # очистка всех пустых подкатегорий  в категории "Articles on boats" без статей и без связи с
             # лодкой
             # - условия срабатывания системы очистки:
             # 1 находится в папке Articles on boats
@@ -123,7 +123,6 @@ class BoatModel(models.Model):
                     subheading.delete()
         except EmptyResultSet:
             pass
-
         try:  # удаление sub категорий   связанных с лодкой при ее удалении
             if not SubHeading.objects.get(one_to_one_to_boat=self).article_set.exists():
                 self.heading.delete()  # удаляем, если не содержит статей

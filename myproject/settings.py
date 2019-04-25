@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     # custom
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
+    "testapp.apps.TestappConfig",
     #3rd party
     "captcha",
     "bootstrap4",
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     "reversion",
     "dynamic_validator",
     "django.forms",  # new for a custom widgets
+
 
 ]
 
@@ -144,7 +146,7 @@ SHORT_DATE_FORMAT = "j.m.Y"
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"), ] #new
+    os.path.join(BASE_DIR, "static"), ]
 #  Настройка подсистемы обработки выгруженных файлов
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

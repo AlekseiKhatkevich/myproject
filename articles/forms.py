@@ -1,8 +1,7 @@
 from .models import *
 from django import forms
-from django.forms.widgets import Select
-from django.shortcuts import  get_object_or_404
-from django.core.validators import ProhibitNullCharactersValidator
+from django.shortcuts import get_object_or_404
+import requests
 
 """Форма поля выбора ап-группы (для админки),обязательное к заполнению"""
 
@@ -43,6 +42,19 @@ class ArticleForm(forms.ModelForm):
             msg2 = 'Name of the boat should coincide to the sub-heading name '
             self.add_error("foreignkey_to_boat", msg2)
         return foreignkey_to_boat
+
+    # проверяет живой ли урл
+    def clean_url_to_article(self):
+        msg3 = "This URL does not work!"
+        msg4 = "Connection error"
+        url = self.cleaned_data["url_to_article"]
+        try:
+            request = requests.head(url)
+            if request.status_code // 100 != 2:
+                self.add_error("url_to_article", msg3)
+        except requests.exceptions.ConnectionError:
+            self.add_error("url_to_article", msg4)
+        return url
 
     class Meta:
         model = Article

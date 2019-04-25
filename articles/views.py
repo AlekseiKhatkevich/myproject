@@ -15,7 +15,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.db.transaction import atomic
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-
+from boats.decorators import login_required_message, MessageLoginRequiredMixin
 
 """контроллер гл. стр. артиклес"""
 
@@ -67,11 +67,12 @@ class ContentListView(DetailView):
 """контроллер добавления новой статьи"""
 
 
-class AddArticleView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
+class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView):
     model = Article
     template_name = "articles/create_article.html"
     form_class = ArticleForm
     success_message = "Article '%(title)s' has been successfully saved"
+    redirect_message = "You must be authenticated in order to create new article"
 
     def get_initial(self):
         self.initial = CreateView.get_initial(self)
@@ -95,11 +96,12 @@ class AddArticleView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
 """ контроллер редактирования статьи"""
 
 
-class ArticleEditView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+class ArticleEditView(SuccessMessageMixin, MessageLoginRequiredMixin, UpdateView):
     model = Article
     template_name = "articles/article_edit.html"
     form_class = ArticleForm
     success_message = "Article %(title)s has been edited and saved successfully "
+    redirect_message = "You must be authenticated in order to edit this article"
 
     def get_success_url(self):
         return reverse('articles:detail',
@@ -109,16 +111,18 @@ class ArticleEditView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
         if self.get_object().author == self.request.user:
             return UpdateView.get(self, request, *args, **kwargs)
         else:
-            messages.add_message(request, messages.WARNING, "You can only edit your own entries!")
+            messages.add_message(request, messages.WARNING, "You can only edit your own entries!",
+                                 fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 """ контроллер удаления  статьи"""
 
 
-class ArticleDeleteView(LoginRequiredMixin, DeleteView):
+class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
     model = Article
     template_name = "articles/article_delete.html"
+    redirect_message = "You must be authenticated in order to delete this article"
 
     def get_success_url(self):
         return reverse('articles:show_by_heading', args=(self.object.foreignkey_to_subheading.pk, ))
@@ -184,6 +188,7 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
 
 
 @atomic
+@login_required_message(message="You must be logged in in order to create new heading")
 @login_required
 def headingcreateview(request, pk):
     form1 = UpperHeadingForm(request.POST or None, prefix="form1", pk=pk)

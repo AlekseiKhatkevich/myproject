@@ -21,12 +21,14 @@ from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import CreateWithInlinesView
 from django.db.models import Q
+from .decorators import login_required_message, MessageLoginRequiredMixin
 
 
 """Контроллер редактирования данных о лодке"""
 
 
 @atomic
+@login_required_message(message="You must be logged in in order to edit this boat entry")
 @login_required
 def viewname_edit(request, pk):
     obj1 = BoatModel.objects.get(pk=pk)
@@ -63,29 +65,10 @@ def viewname_edit(request, pk):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-"""
-# контроллер не используется
-class BoatUpdateView(LoginRequiredMixin, UpdateView):
-    model = BoatModel
-    template_name = "edit_boat.html"
-    form_class = BoatForm
-    success_message = "Boat has been added and  saved successfully"
-
-    def get(self, request, *args, **kwargs):
-        if self.get_object().author == self.request.user:
-            return UpdateView.get(self, request, *args,  **kwargs)
-        else:
-            messages.add_message(request, messages.WARNING, "You can only change your own entries!")
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-    def get_success_url(self):
-        return reverse('boats:boat_detail', args=(self.object.pk, ))
-"""
-
-""" контроллер удаления лодки"""
+""" Контроллер удаления лодки"""
 
 
-@ method_decorator(login_required, name="dispatch")
+@method_decorator([login_required_message(message="You must be logged in in order to delete this boat entry"), login_required], name="dispatch")
 class BoatDeleteView(DeleteView):
     model = BoatModel
     success_url = reverse_lazy("boats:boats")
@@ -93,7 +76,7 @@ class BoatDeleteView(DeleteView):
 
     def post(self, request, *args, **kwargs):
         messages.add_message(request, messages.SUCCESS,
-                             "Boat has deleted from the database", fail_silently=True,
+                             "Boat  has deleted from the database", fail_silently=True,
                              extra_tags="alert alert-info")
         return DeleteView.post(self, request, *args, **kwargs)
 
@@ -106,11 +89,6 @@ class BoatDeleteView(DeleteView):
         if self.user_id:
             context['user'] = ExtraUser.objects.get(pk=self.user_id)
         return context
-
-
-# тест бутстрап
-class TestView(TemplateView):
-    template_name = ""
 
 
 """ Индекс"""
@@ -133,10 +111,12 @@ class BoatListView(ListView):
 
 
 def boat_detail_view(request, pk):
-    current_boat = BoatModel.objects.get(pk=pk)  # primary
+    current_boat = BoatModel.objects.get(pk=pk)
     images = current_boat.boatimage_set.all()
     comments = current_boat.comment_set.all()
-    context = {"images": images, "current_boat": current_boat, "comments": comments}
+    articles = current_boat.article_set.all()
+    context = {"images": images, "current_boat": current_boat, "comments": comments, "articles":
+        articles}
     return render(request, "boat_detail.html", context)
 
 
@@ -144,6 +124,7 @@ def boat_detail_view(request, pk):
 
 
 @atomic
+@login_required_message(message="You must be logged in in order to create new boat entry")
 @login_required
 def viewname(request):
     if request.method == 'POST':
@@ -369,7 +350,7 @@ def feedback_view(request):
                 return HttpResponse("Invalid header found")
             else:
                 messages.add_message(request, messages.SUCCESS,
-                                     "You have successfully sent your  message to the administration ",
+                                     "You have successfully sent your  message to the administration",
                                      fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:index"))
         else:
