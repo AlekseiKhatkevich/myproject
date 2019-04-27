@@ -177,7 +177,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 THUMBNAIL_ALIASES = {
     "": {
         "default": {
-            "size": (180, 180),  # 0, 180
+            "size": (180, 180),  #  0, 180
             "crop": "smart",
             "autocrop": True,
             "bw": False,
