@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm, AuthenticationForm
 from django.core.exceptions import ValidationError
+from django_countries.widgets import CountrySelectWidget
 from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField, CaptchaTextInput
@@ -10,7 +11,7 @@ from django.core.validators import MinValueValidator
 import datetime
 from. widgets import *
 import requests
-
+from django.core.exceptions import ObjectDoesNotExist
 
 """ форма лодки"""
 
@@ -33,6 +34,7 @@ class BoatForm(forms.ModelForm):
         fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price",
                   "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description",
                   "first_year", "last_year")
+        widgets = {"boat_country_of_origin": CountrySelectWidget(layout='{widget}<img  class="country-select-flag" id="{flag_id}" style="margin: 6px 4px 0; width: 45px; height: 26px;  " src="{country.flag}">')}
 
     def clean(self):
         cleaned_data = forms.ModelForm.clean(self)
@@ -76,8 +78,6 @@ boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=
 extra=3, can_delete=True, max_num=10, widgets={"boat_photo": CustomClearableFileInput()}, labels={"boat_photo": None})
 
 
-
-
 """
 #  альтернативный вариант
 class ItemInline(InlineFormSetFactory):
@@ -106,8 +106,8 @@ class NewUserForm(forms.ModelForm):
                              help_text="Please input your email address")
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput(render_value=True),
                                 help_text=password_validation.password_validators_help_text_html(), )
-    password2 = forms.CharField(label="Confirm your password", widget=forms.PasswordInput(render_value=True),
-                                help_text="Please input password again", )
+    password2 = forms.CharField(label="Confirm your password", widget=forms.PasswordInput(
+        render_value=True), help_text="Please input password again", )
     captcha = CaptchaField()
 
     def clean_password1(self):
@@ -143,21 +143,19 @@ class NewUserForm(forms.ModelForm):
 
 
 class ContactForm(forms.Form):
+    attrs_dict = {'size': 40, "class": "form-control  border border-secondary"}
+
     name = forms.CharField(max_length=20, help_text="Enter your name",
-                           widget=forms.TextInput(attrs={'size': 40, "class": "form-control border "
-                                                                              "border-secondary "}))
+                           widget=forms.TextInput(attrs=attrs_dict))
     subject = forms.CharField(max_length=999, help_text="Enter  a subject of the message",
-                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control border "
-                                                                                 "border-secondary"}))
+                              widget=forms.TextInput(attrs=attrs_dict))
     sender = forms.EmailField(help_text="Enter your email address",
-                              widget=forms.TextInput(attrs={'size': 40, "class": "form-control border "
-                                                                                 "border-secondary"}))
+                              widget=forms.TextInput(attrs=attrs_dict))
     message = forms.CharField(help_text="please type in your message",
-                              widget=forms.Textarea(attrs={"class": "form-control border "
-                                                                    "border-secondary"}))
+                              widget=forms.Textarea(attrs=attrs_dict))
     copy = forms.BooleanField(required=False, label="Send copy to your email")
-    captcha = CaptchaField(help_text="Please type in correct captcha", widget=CaptchaTextInput(attrs={
-        "class": "form-control border border-secondary"}))
+    captcha = CaptchaField(help_text="Please type in correct captcha",
+                           widget=CaptchaTextInput(attrs=attrs_dict))
 
 
 """кастомная форма сброса пароля(первая часть)"""
@@ -209,12 +207,13 @@ class PwdChgForm(PasswordChangeForm):
 class AuthCustomForm(AuthenticationForm):
 
     def get_invalid_login_error(self):
-        user = ExtraUser.objects.get(username=self.cleaned_data.get('username'))
-        if not user.is_active and user:
-            raise forms.ValidationError(
-                "Account '%(value)s' has been deactivated or wasn't activated at all",
-                code='inactive',
-                params={'value': user})
+        users = ExtraUser.objects.filter(username=self.cleaned_data.get('username'))
+        for user in users:
+            if not user.is_active and user:
+                raise forms.ValidationError(
+                    "Account '%(value)s' has been deactivated or wasn't activated at all",
+                    code='inactive',
+                    params={'value': user})
         else:
             return forms.ValidationError(
                 self.error_messages['invalid_login'],

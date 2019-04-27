@@ -17,7 +17,9 @@
                     <li>Boat name -{{ current_boat.boat_name }}</li>
                     <li>Boat waterline length-{{ current_boat.boat_length }} feats </li>
                     <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
-                    <li>Country of origin-{{ current_boat.boat_country_of_origin }}</li>
+                    <li >Country of origin-{{ current_boat.boat_country_of_origin.name }}
+                        <img class=" align-self-center " style="margin: 6px 4px 0; width: 35px; height: 20px; align-content: center" src='{{current_boat.boat_country_of_origin.flag}}'/> </li>
+
                     <li>Boat keel type -{{ current_boat.boat_keel_type }}</li>
                     <li>Publishing date-
                         {{ current_boat.boat_publish_date|date:"SHORT_DATE_FORMAT"  }}</li>
@@ -31,19 +33,31 @@
             </div>
             <div class="col-md-7 border-right ">
                 <p>Description-{{ current_boat.boat_description }}</p>
+
+
+
+                <div class="btn-group dropright border   ">
+  <button type="button" class="btn btn-secondary dropdown-toggle border-success rounded" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Get this as PDF
+  </button>
+  <div class="dropdown-menu" x-placement="right-start" style="position: absolute; transform: translate3d(111px, 0px, 0px); top: 0px; left: 0px; will-change: transform;">
+    <a class="dropdown-item" href="{%  url "boats:pdf" pk=current_boat.pk %}">Open as a  PDF</a>
+    <a class="dropdown-item" href="{%  url "boats:pdf_to_file" pk=current_boat.pk %}">Download PDF to your computer</a>
+  </div>
+</div>
+
+
             </div>
             <div class="col-md-2  justify-content-end text-right mr-0  ">
 
-
                 <style>
                     .btn-group-vertical a, .btn-group-vertical button {
-                        width: 100%; margin-right: 20px;
+                        width: 100%; margin-right: 0px;
 
                     }
                 </style>
 
-
-                <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="page management"  >
+                <div class="btn-group-vertical btn-outline-dark rounded border border-success mr-2" role="group" aria-label="page management"  >
                     <a href="{% url "boats:boats"   %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom">Back</button></a>
                     <a href="{% url "boats:boat_edit" current_boat.pk %}"> <button type="button" class="btn btn-secondary rounded-0 border-bottom ">Edit</button></a>
                     <a href="{% url "boats:boat_delete" current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom">Delete</button></a>
@@ -53,22 +67,26 @@
 
 
 
-            <div class = row>
-            <div class="col">
-            {% if articles %}
-                <h6 class="mt-4"> Articles on {{ current_boat.boat_name }}</h6>
-                {%  for article in articles %}
-                    <ul type="square" class="border-right mt-2 text-right " style="list-style: none" >
-                        <li><a href="{% url "articles:detail" current_heading_pk=article.foreignkey_to_subheading_id  pk=article.pk %}{{ all }}">{{ article.title }}</a></li>
-                    </ul>
-                {% endfor %}
-            {% else %} <h6 class="mt-4"> {{ current_boat.boat_name }} doesnt have any article. </h6>
-            {% endif %}
+                <div class = row >
+                    <div class="col mr-2">
 
-            <a href="{%  url "articles:add_article" current_boat.heading.pk    %}"><button type="button" class="btn btn-secondary rounded-0 border border-success btn-lg">Add an article</button></a>
 
-            </div>
-            </div>
+                            {%  for article in articles %}
+                                {% if forloop.first %}<h6 class="mt-4"> Articles on {{ current_boat.boat_name }}</h6>{% endif %}
+                                <ul type="square" class="border-right mt-2 text-right " style="list-style: none" >
+                                    <li><a href="{% url "articles:detail" current_heading_pk=article.foreignkey_to_subheading_id  pk=article.pk %}{{ all }}">{{ article.title }}</a></li>
+                                </ul>
+                                {% empty %}
+                                <h6 class="mt-4"> {{ current_boat.boat_name }} doesnt have any article. </h6>
+                            {% endfor %}
+
+
+
+
+                        <a href="{%  url "articles:add_article" current_boat.heading.pk    %}"><button type="button" class="btn btn-secondary rounded-0 border border-success  ">Add an article</button></a>
+
+                    </div>
+                </div>
 
 
             </div>
@@ -81,13 +99,14 @@
 
 
 
-
+<div class="row mx-3 ">
     {% for instance in images %}
 
-        <a href=" {{ instance.boat_photo.url}}"> <img class="  ml-3" src="{% thumbnail instance.boat_photo "default"  %}"></a>
+        <a  href=" {{ instance.boat_photo.url}}"> <img class="  ml-3 mb-2" src="{% thumbnail instance.boat_photo "default"  %}"></a>
+
 
     {% endfor %}
-
+</div>
 
 
     {%  for comment in comments %}
@@ -98,7 +117,6 @@
         </Ul>
         <hr>
     {%  endfor %}
-
 
 
 

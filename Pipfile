@@ -21,6 +21,11 @@ django-reversion = "*"
 psycopg2 = "*"
 django-dynamic-model-validation = "*"
 django-simple-captcha = "*"
+django-countries = "*"
+xhtml2pdf = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

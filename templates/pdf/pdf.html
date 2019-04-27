@@ -1,0 +1,91 @@
+<!--templates/pdf/pdf.html   -->
+
+ {%  load bootstrap4 %}
+{% load static %}
+{% load staticfiles %}
+{%  load thumbnail %}
+
+<html lang="en">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <title>Boat pdf</title>
+
+     <style type="text/css">
+
+    @font-face   {
+    font-family: Palatino Linotype;
+    src: url({% static "fonts/Palatino.ttf" %});
+}
+body {
+    font-family: Palatino Linotype, Arial, sans-serif;
+    color: #333333;
+}
+
+    </style>
+</head>
+<body>
+
+
+
+<div class="container-fluid">
+    <div class="row mt-3">
+        <div class = "col-md-3 text-left">
+
+            <ul type="square" class="border-right">
+                <h4 > Boat details</h4>
+                <li>Boat name -{{ current_boat.boat_name }}</li>
+                <li>Boat waterline length-{{ current_boat.boat_length }} feats </li>
+                <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
+                <li >Country of origin-{{ current_boat.boat_country_of_origin.name }}
+                    <img class=" align-self-center " style="margin: 6px 4px 0; width: 35px; height: 20px; align-content: center" src='{{current_boat.boat_country_of_origin.flag}}'/> </li>
+
+                <li>Boat keel type -{{ current_boat.boat_keel_type }}</li>
+                <li>Publishing date-
+                    {{ current_boat.boat_publish_date|date:"SHORT_DATE_FORMAT"  }}</li>
+                <li>Price-{{ current_boat.boat_price }} &euro;</li>
+                <li>Manufacturing history of the model - {{ current_boat.first_year }} to {{ current_boat.last_year }}</li>
+                <li> <a href="{{ current_boat.boat_sailboatdata_link }}">Link to SailboatData</a></li>
+                <li> Entry Author-{{ current_boat.author}}</li>
+
+            </ul>
+
+        </div>
+        <div >
+            <p >Description:<br>{{ current_boat.boat_description }}</p>
+        </div>
+
+    </div>
+
+
+<div class="row  ">
+        {% for instance in current_boat.images|slice:"0:3" %}
+                 <img class="ml-3 mb-2"  src="{% thumbnail instance.boat_photo "default"  %}">
+        {% endfor %}
+</div>
+<div class="row">
+{% for instance in current_boat.images|slice:"3:6" %}
+                 <img class="ml-3 mb-2"  src="{% thumbnail instance.boat_photo "default"  %}">
+        {% endfor %}
+<div class="row">
+
+ <div class="row">
+{% for instance in current_boat.images|slice:"6:9" %}
+                 <img class="ml-3 mb-2"  src="{% thumbnail instance.boat_photo "default"  %}">
+        {% endfor %}
+<div class="row">
+
+
+ <div class="row">
+{% for instance in current_boat.images|slice:"9:12" %}
+                 <img class="ml-3 mb-2"  src="{% thumbnail instance.boat_photo "default"  %}">
+        {% endfor %}
+<div class="row">
+
+
+
+</div>
+
+
+</body>
+</html>
+

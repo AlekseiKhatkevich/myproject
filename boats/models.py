@@ -7,7 +7,8 @@ from .utilities import get_timestamp_path
 from easy_thumbnails.fields import  ThumbnailerImageField
 from .utilities import *
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
-
+from django_countries.fields import CountryField
+from easy_thumbnails.files import get_thumbnailer
 
 """Сигнал user_registrated
 #573  431  437
@@ -25,10 +26,15 @@ user_registrated.connect(user_registrated_dispatcher)
 
 
 class BoatImage(models.Model):
-    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, verbose_name='Boat photo', )
-
+    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True,
+                                   verbose_name='Boat photo', )
     boat = models.ForeignKey("BoatModel",  on_delete=models.CASCADE, verbose_name="Boat ForeignKey",
                              null=True)
+
+    def delete(self, using=None, keep_parents=False):  # удаляем thumbnails ассоциированные
+        thumbnailer = get_thumbnailer(self.boat_photo)
+        thumbnailer.delete_thumbnails()
+        models.Model.delete(self, using=None, keep_parents=False)
 
     class Meta:
         verbose_name = "Boat photo"
@@ -57,8 +63,8 @@ class BoatModel(models.Model):
                                null=True, blank=True,
                                verbose_name="Author of the entry")
 
-    boat_name = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Boat model",
-                                 help_text="Please input boat model")
+    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat model",
+                                 help_text="Please input boat model", )
 
     boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
                                     help_text="Please input boat water-line length",)
@@ -73,8 +79,7 @@ class BoatModel(models.Model):
     boat_price = models.PositiveIntegerField(verbose_name="price of the boat",
                                                   help_text="Please input boat price", )
 
-    boat_country_of_origin = models.CharField(max_length=20, verbose_name="Boat country of origin",
-                                              help_text="Please specify boat's country of origin")
+    boat_country_of_origin = CountryField(verbose_name="Boat country of origin", blank_label="Select                            country of origin", help_text="Please specify boat's country of origin")
 
     boat_sailboatdata_link = models.URLField(max_length=100, blank=True,
                                              verbose_name="URL to Sailboatdata",
@@ -104,6 +109,7 @@ class BoatModel(models.Model):
     def length_mast_keel(self):  # метод добовляет кастомный атрибут в шаблон {{ current_boat.length_mast_keel }}
         if self.boat_length and self.boat_keel_type and self.boat_mast_type:
             return "length - %d feet, keel type - %s, rigging - %s" % (self.boat_length, self.boat_keel_type,  self.boat_mast_type)
+    length_mast_keel.short_description = "Boat length + keel type + mast type"
 
     def delete(self, using=None, keep_parents=False):
         from articles.models import SubHeading, UpperHeading
@@ -137,8 +143,9 @@ class BoatModel(models.Model):
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
         SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,
-                                foreignkey_id=UpperHeading.objects.get
-                                (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
+                foreignkey_id=UpperHeading.objects.get
+                (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
+
 
 
 """Расширенная модель юзера """

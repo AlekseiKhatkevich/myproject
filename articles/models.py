@@ -98,6 +98,9 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return "/articles/%s/%s/" % (self.foreignkey_to_subheading.pk, self.pk)
+
     class Meta:
         verbose_name = "Article"
         verbose_name_plural = "Articles"

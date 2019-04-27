@@ -17,11 +17,15 @@ from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
+from django.db.models import Prefetch
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import CreateWithInlinesView
 from django.db.models import Q
 from .decorators import login_required_message, MessageLoginRequiredMixin
+from .render import Render, link_callback
+from django.template.loader import get_template
+import xhtml2pdf.pisa as pisa
 
 
 """Контроллер редактирования данных о лодке"""
@@ -350,8 +354,7 @@ def feedback_view(request):
                 return HttpResponse("Invalid header found")
             else:
                 messages.add_message(request, messages.SUCCESS,
-                                     "You have successfully sent your  message to the administration",
-                                     fail_silently=True)
+                                     "You have successfully sent your  message to the                                                       administration", fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:index"))
         else:
             context = {"form": form, }
@@ -397,3 +400,36 @@ class PassResConfView(SuccessMessageMixin, PasswordResetConfirmView):
     form_class = SPForm
 
 
+"""контроллер рендеринга в PDF  в поток"""
+
+
+class Pdf(TemplateView):
+    def get(self, request, *args, **kwargs):
+        pr = Prefetch("boatimage_set", to_attr="images")
+        current_boat = BoatModel.objects.prefetch_related(pr).get(pk=self.kwargs["pk"])
+        params = {"current_boat": current_boat, "request": request}
+        return Render.render("pdf/pdf.html", params)  # см. .render.py
+
+
+"""контроллер рендеринга в PDF  в файл"""
+
+
+def render_pdf_view(request, pk):
+    template_path = "pdf/pdf.html"
+    pr = Prefetch("boatimage_set", to_attr="images")
+    current_boat = BoatModel.objects.prefetch_related(pr).get(pk=pk)
+    context = {"current_boat": current_boat, "request": request}
+    # Create a Django response object, and specify content_type as pdf
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % (current_boat.boat_name + ".pdf")
+    # find the template and render it.
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    pisaStatus = pisa.CreatePDF(
+       html, dest=response, link_callback=link_callback)
+    # if error then show some funny view
+    if pisaStatus.err:
+       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response

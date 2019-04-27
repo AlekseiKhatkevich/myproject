@@ -42,14 +42,13 @@ INSTALLED_APPS = [
     "reversion",
     "dynamic_validator",
     "django.forms",  # new for a custom widgets
-
+    "django_countries",
+    "xhtml2pdf",
 
 ]
 
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms # new
-
-
 
 
 MIDDLEWARE = [
@@ -143,12 +142,12 @@ SHORT_DATE_FORMAT = "j.m.Y"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, "static") # new
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"), ]
-#  Настройка подсистемы обработки выгруженных файлов
+#STATICFILES_DIRS = [
+    #os.path.join(BASE_DIR, "static"), ]
 
+#  Настройка подсистемы обработки выгруженных файлов
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
@@ -156,7 +155,6 @@ MEDIA_URL = "/media/"
 AUTH_USER_MODEL = "boats.ExtraUser"
 
 # система разграничения доступа
-
 LOGIN_URL = "boats:login"  # works
 LOGIN_REDIRECT_URL = "boats:user_profile"  # works
 LOGOUT_REDIRECT_URL = None  # см. стр 289
@@ -179,7 +177,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 THUMBNAIL_ALIASES = {
     "": {
         "default": {
-            "size": (0, 180),
+            "size": (180, 180),  # 0, 180
             "crop": "smart",
             "autocrop": True,
             "bw": False,
@@ -201,6 +199,7 @@ THUMBNAIL_MEDIA_URL = MEDIA_URL
 # аутентификация через соц. сети
 
 AUTHENTICATION_BACKENDS = (
+    'social_core.backends.facebook.FacebookOAuth2',
     "social_core.backends.vk.VKOAuth2",
     "django.contrib.auth.backends.ModelBackend"
 )
@@ -225,6 +224,16 @@ SOCIAL_AUTH_VK_OAUTH2_KEY = "6925818"
 SOCIAL_AUTH_VK_OAUTH2_SECRET = "8Nw5zHZmFk8hwEFWwRDP"
 SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
 SOCIAL_AUTH_VK_APP_USER_MODE = 2
+
+# facebook
+FACEBOOK_APP_ID = '2404075233157649'
+FACEBOOK_API_SECRET = '2497d23a765f90fed8fab81c13ad2f9a'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+  'locale': 'ru_RU',
+  'fields': 'id, name, email, age_range'
+}
+
 
 #   всплывающие сообщения django messaging framework
 if DEBUG: MESSAGE_LEVEL = 0
