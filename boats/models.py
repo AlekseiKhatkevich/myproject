@@ -9,6 +9,7 @@ from .utilities import *
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
 from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
+import reversion
 
 """Сигнал user_registrated
 #573  431  437
@@ -26,10 +27,12 @@ user_registrated.connect(user_registrated_dispatcher)
 
 
 class BoatImage(models.Model):
+
     boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True,
                                    verbose_name='Boat photo', )
     boat = models.ForeignKey("BoatModel",  on_delete=models.CASCADE, verbose_name="Boat ForeignKey",
                              null=True)
+    memory = models.PositiveSmallIntegerField(blank=True, null=True, default=boat.id)
 
     def delete(self, using=None, keep_parents=False):  # удаляем thumbnails ассоциированные
         thumbnailer = get_thumbnailer(self.boat_photo)
@@ -113,8 +116,8 @@ class BoatModel(models.Model):
 
     def delete(self, using=None, keep_parents=False):
         from articles.models import SubHeading, UpperHeading
-        for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
-            ai.delete()
+        #for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
+            #ai.delete()
             # очистка всех пустых подкатегорий  в категории "Articles on boats" без статей и без связи с
             # лодкой
             # - условия срабатывания системы очистки:
@@ -145,7 +148,6 @@ class BoatModel(models.Model):
         SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,
                 foreignkey_id=UpperHeading.objects.get
                 (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
-
 
 
 """Расширенная модель юзера """

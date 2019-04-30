@@ -110,6 +110,23 @@ class BoatListView(ListView):
     template_name = "boats.html"
     paginate_by = 10
 
+    def get_ordering(self):  # метод возвращает поле по которому идет сортировка
+        self.field = self.request.GET.get('ordering')
+        self.mark = self.request.GET.get("mark")
+        if self.field not in (f.name for f in BoatModel._meta.get_fields()) and self.mark:
+            messages.add_message(self.request, messages.WARNING, message="Please choose sorting pattern",
+                                 fail_silently=True)
+            return None
+        if all([self.field, self.mark]):
+            verbose_name = BoatModel._meta.get_field(self.field).verbose_name
+            message = 'Boats are ordered by:\xa0\"' + verbose_name + "\"\xa0in\xa0" + \
+                      self.mark + "\xa0order"
+            messages.add_message(self.request, messages.SUCCESS, message=message, fail_silently=True)
+            if self.mark == "descending":
+                self.field = "-" + self.field
+            return self.field
+        return None
+
 
 """ просмотр  детальной информации о лодке"""
 

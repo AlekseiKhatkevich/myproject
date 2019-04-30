@@ -5,15 +5,48 @@
 {% block content %}
 
     <div class="container-fluid  " style="margin-top: 15px">
-    <div class="row">
-        <div class="col text-right mr-5 mb-0">
+    <div class="row d-flex flex-row align-self-center">
 
+    <div class="col-2">
+       <form action="{% url "boats:boats" %}" method="get" name="form1">
+<select class="custom-select" name="ordering">
+  <option selected>select ordering pattern</option>
+  <option value="boat_publish_date">--by publish date</option>
+  <option value="author">--by author</option>
+  <option value="boat_length">--by boat length</option>
+    <option value="boat_mast_type">--by boat rigging </option>
+    <option value="boat_price"> --by price</option>
+    <option value="boat_country_of_origin">--by country</option>
+    <option value="boat_keel_type">--by keel type</option>
+    <option value="first_year">--by first year of model manufacturing time range </option>
+    <option value="last_year">--by last year of model manufacturing time range </option>
+</select>
+       </div>
+
+        <div class="col-2">
+   <select class="custom-select" name="mark">
+  <option value="descending">--in descending order</option>
+  <option value="ascending">--in ascending order</option>
+</select>
+</div>
+
+<div class="col">
+    <button type="submit" value="switched" class="form-button btn secondary border-primary mt-0 btn-sm" data-toggle="tooltip" data-placement="top" title="Create new boat" name="check" > Apply ordering </button></a>
+
+
+
+</form>
+</div>
+
+
+
+        <div class="col text-right mr-5 mb-0">
             {% buttons %}
                     <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="top" title="Create new boat"  > Create new boat</button></a>
                 {% endbuttons %}
     </div>
 </div>
-
+<hr>
 
 <div class="row">
 
@@ -21,12 +54,13 @@
 
 
 <div class = "{% cycle "col-md-6 pl-4" "col-md-6 pl-0" %}">
-            <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><br>
+            <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/><br>
                 <ul>
                 <li> boat length -{{ boat.boat_length }}</li>
                 <li>boat rigging - {{ boat.boat_mast_type }}</li>
                 <li> boat keel type -{{ boat.boat_keel_type }}</li>
                 <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
+
                 </ul>
 
         </div>
@@ -34,10 +68,6 @@
 {% endfor %}
  </div>
         </div> <!--container-->
-
-
-
-
 
 
 

@@ -27,7 +27,7 @@ Articles main page
 
                     <a class="ml-3"  style=" font-size: 18px" href="{% url "articles:show_by_heading" pk=heading.pk   %}">{{ heading.name|truncatechars:20 }} </a>
 
-                    {% if not heading.article_set.all%}
+                    {% if not heading.article_set.all.exists %}
                         <span class="badge badge-light text-muted"> EMPTY </span>
                     {% endif %}
 

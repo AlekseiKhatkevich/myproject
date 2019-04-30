@@ -77,7 +77,7 @@
                                     <li><a href="{% url "articles:detail" current_heading_pk=article.foreignkey_to_subheading_id  pk=article.pk %}{{ all }}">{{ article.title }}</a></li>
                                 </ul>
                                 {% empty %}
-                                <h6 class="mt-4"> {{ current_boat.boat_name }} doesnt have any article. </h6>
+                                <h6 class="mt-4"> {{ current_boat.boat_name }} doesn't have any article. </h6>
                             {% endfor %}
 
 

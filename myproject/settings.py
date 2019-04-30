@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.forms",  # new for a custom widgets
     "django_countries",
     "xhtml2pdf",
+    "file_resubmit",
 
 ]
 
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',  # new
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -177,7 +179,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 THUMBNAIL_ALIASES = {
     "": {
         "default": {
-            "size": (180, 180),  #  0, 180
+            "size": (180, 180),  # 0, 180
             "crop": "smart",
             "autocrop": True,
             "bw": False,
@@ -198,6 +200,9 @@ THUMBNAIL_BASEDIR = "thumbnails"
 THUMBNAIL_MEDIA_URL = MEDIA_URL
 # аутентификация через соц. сети
 
+
+
+
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookOAuth2',
     "social_core.backends.vk.VKOAuth2",
@@ -217,7 +222,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-
+SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'  # new
+SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'  # new
 
 # в контактике
 SOCIAL_AUTH_VK_OAUTH2_KEY = "6925818"
@@ -228,11 +234,13 @@ SOCIAL_AUTH_VK_APP_USER_MODE = 2
 # facebook
 FACEBOOK_APP_ID = '2404075233157649'
 FACEBOOK_API_SECRET = '2497d23a765f90fed8fab81c13ad2f9a'
+SOCIAL_AUTH_FACEBOOK_KEY = '2404075233157649'  # new
+SOCIAL_AUTH_FACEBOOK_SECRET = '2497d23a765f90fed8fab81c13ad2f9a' # new
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-  'locale': 'ru_RU',
-  'fields': 'id, name, email, age_range'
-}
+            'fields': 'id,name,email',
+            }
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
 
 
 #   всплывающие сообщения django messaging framework
@@ -245,5 +253,16 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # настройки для дебагера
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
 if DEBUG: INTERNAL_IPS = "127.0.0.1"
+
+# for file resubmit
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    "file_resubmit": {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        "LOCATION": os.path.join(BASE_DIR, 'data/cache/file_resubmit')
+    },
+}
 
 
