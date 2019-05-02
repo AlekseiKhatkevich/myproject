@@ -131,8 +131,9 @@ class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
         if self.get_object().author == self.request.user:
             return DeleteView.get(self, request, *args, **kwargs)
         else:
-            messages.add_message(request, messages.WARNING,
-                                 "You can only delete your own entries!", fail_silently=True, )
+            message = 'Dear %s, you can only delete your own articles. This article has been ' \
+                      'created by %s' % (self.request.user, self.get_object().author)
+            messages.add_message(request, messages.WARNING, message=message, fail_silently=True, )
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     def post(self, request, *args, **kwargs):
@@ -200,15 +201,15 @@ def headingcreateview(request, pk):
             subheading = form2.save(commit=False)
             subheading.foreignkey = upperheading
             subheading.save()
-            messages.add_message(request, messages.SUCCESS,
-                                 "You have successfully added an upper-heading", fail_silently=True)
+            message = "You have successfully added an upper-heading\xa0\"" + upperheading.name + "\""
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
         elif form2.is_valid() and pk != 0:
             subheading = form2.save(commit=False)
             subheading.foreignkey = get_object_or_404(UpperHeading, pk=pk)
             subheading.save()
-            messages.add_message(request, messages.SUCCESS,
-                                 "You have successfully added a sub-heading", fail_silently=True)
+            message = 'You have successfully added a sub-heading  "%s"' % subheading.name
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
         else:
             messages.add_message(request, messages.WARNING,

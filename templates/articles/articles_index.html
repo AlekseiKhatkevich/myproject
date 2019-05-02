@@ -31,6 +31,10 @@ Articles main page
                         <span class="badge badge-light text-muted"> EMPTY </span>
                     {% endif %}
 
+                {% if heading.one_to_one_to_boat %}
+                <span class="badge badge-warning text-muted"> CONNECTED TO BOAT </span>
+                {% endif %}
+
                 </div>
 
                 {% if forloop.counter == 1 %}

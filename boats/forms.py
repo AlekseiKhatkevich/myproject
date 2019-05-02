@@ -1,4 +1,7 @@
 from django import forms
+import requests
+from django.core.exceptions import ObjectDoesNotExist
+from .validators import UniqueNameValidator, UniqueSailboatLinkValidator
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm, AuthenticationForm
 from django.core.exceptions import ValidationError
@@ -10,8 +13,6 @@ from extra_views import InlineFormSetFactory
 from django.core.validators import MinValueValidator
 import datetime
 from. widgets import *
-import requests
-from django.core.exceptions import ObjectDoesNotExist
 
 """ форма лодки"""
 
@@ -21,6 +22,8 @@ def year_choices():
 
 
 class BoatForm(forms.ModelForm):
+    boat_name = forms.CharField(validators=[UniqueNameValidator()], label="Boat model name",
+                                help_text="Please type in boat model  name")
     boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line length",)
     boat_price = forms.IntegerField(help_text="Please input boat price",
         validators=[validators.MinValueValidator(5000, message="Are you sure? It is almost free!",)])
@@ -28,6 +31,9 @@ class BoatForm(forms.ModelForm):
                                     help_text="Please enter first manufacturing year of the model")
     last_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
                                     help_text="Please enter last manufacturing year of the model")
+    boat_sailboatdata_link = forms.URLField(validators=[UniqueSailboatLinkValidator(), ],
+                                            help_text="Please type in URL to Sailboatdata page for this"
+                                                      " boat")
 
     class Meta:
         model = BoatModel
@@ -201,7 +207,7 @@ class PwdChgForm(PasswordChangeForm):
         PasswordChangeForm.save(self, commit=True)
 
 
-""" Кастомная форма для лог-ина. Предупреждает неактивированного юзера, что акаун не активированн"""
+""" Кастомная форма для лог-ина. Предупреждает неактивированного юзера, что акаунт не активированн"""
 
 
 class AuthCustomForm(AuthenticationForm):

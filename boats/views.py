@@ -41,10 +41,10 @@ def viewname_edit(request, pk):
         form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=obj1)
         if form1.is_valid() and form2.is_valid():
             if form1.has_changed() or form2.has_changed():
-                form1.save()
+                boat_obj = form1.save()
                 form2.save()
-                messages.add_message(request, messages.SUCCESS,
-                                 "You successfully edited boat's data", fail_silently=True)
+                message = "You successfully edited %s  data" % boat_obj.boat_name
+                messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
             else:
                 messages.add_message(request, messages.INFO,
@@ -79,8 +79,8 @@ class BoatDeleteView(DeleteView):
     template_name = "delete_boat.html"
 
     def post(self, request, *args, **kwargs):
-        messages.add_message(request, messages.SUCCESS,
-                             "Boat  has deleted from the database", fail_silently=True,
+        message = 'Boat "%s"  has deleted from the database' % self.get_object().boat_name
+        messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True,
                              extra_tags="alert alert-info")
         return DeleteView.post(self, request, *args, **kwargs)
 
@@ -125,19 +125,28 @@ class BoatListView(ListView):
             if self.mark == "descending":
                 self.field = "-" + self.field
             return self.field
-        return None
+        return self.ordering  # return none
+
+
+    def get_context_data(self, **kwargs):
+        context = ListView.get_context_data(self, **kwargs)
+        context["images"] = BoatImage.objects.all().distinct('boat')  # выбирает только 1 уникальный
+        # объект из группы объектов с  одинаковым фк, остальные отсеивает
+        context["request"] = self.request
+        return context
 
 
 """ просмотр  детальной информации о лодке"""
 
 
 def boat_detail_view(request, pk):
-    current_boat = BoatModel.objects.get(pk=pk)
+    current_boat = BoatModel.objects.prefetch_related("boatimage_set", "comment_set",
+                                                      "article_set").get(pk=pk)
     images = current_boat.boatimage_set.all()
     comments = current_boat.comment_set.all()
     articles = current_boat.article_set.all()
-    context = {"images": images, "current_boat": current_boat, "comments": comments, "articles":
-        articles}
+    context = {"images": images, "current_boat": current_boat, "comments": comments,
+               "articles": articles}
     return render(request, "boat_detail.html", context)
 
 
@@ -160,9 +169,10 @@ def viewname(request):
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
         if form2.is_valid():
-            form1.save()
+            boat = form1.save()
             form2.save()
-            messages.add_message(request, messages.SUCCESS, "You added a new boat")
+            message = "You successfully added a boat called:\xa0" + boat.boat_name
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
                                                      args=(prim.pk, )))
         else:
@@ -215,8 +225,9 @@ class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
 
     def get(self, request, *args, **kwargs):
+        message = "You have logged out"
+        messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
         logout(request)
-        messages.add_message(request, messages.SUCCESS, "You have logged out", fail_silently=True)
         return LogoutView.get(self, request, *args, **kwargs)
 
 
@@ -237,10 +248,6 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
         filter2 = Comment.objects.filter(foreignkey_to_boat__author=self.request.user,
                                          is_active=True)
         context["comments_by_user"] = filter1.union(filter2).order_by("-created_at")[: 5]
-        """ context["comments_by_user"] = Comment.objects.filter(Q(
-            foreignkey_to_article__author=self.request.user) | Q(
-            foreignkey_to_boat__author=self.request.user), is_active=True)
-            .order_by("-created_at")[:5]"""
         return context
 
 
@@ -270,7 +277,7 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
 class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
     template_name = "admin/password_change.html"
     success_url = reverse_lazy("boats:user_profile")
-    success_message = "your password has been changed. Please confirm the change " \
+    success_message = "Your password has been changed. Please confirm the change " \
                       "via email you will have received shortly "
     form_class = PwdChgForm
 
@@ -333,14 +340,14 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
             user = self.request.user
             user.is_active = user.is_activated = False
             user.save()
-            messages.success(request, 'Your profile is '
-                                      'successfully disabled.', fail_silently=True)
+            message = 'Your profile "%s" is successfully deactivated.' % self.request.user.username
+            messages.success(request, message=message, fail_silently=True)
             logout(self.request)
             return HttpResponseRedirect(reverse_lazy("boats:index"))
         else:
             logout(request)
-            messages.add_message(request, messages.SUCCESS,
-                                 "Your account is deleted", fail_silently=True)
+            message = 'Your profile  is deleted.'
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return DeleteView.post(self, request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -425,7 +432,7 @@ class Pdf(TemplateView):
         pr = Prefetch("boatimage_set", to_attr="images")
         current_boat = BoatModel.objects.prefetch_related(pr).get(pk=self.kwargs["pk"])
         params = {"current_boat": current_boat, "request": request}
-        return Render.render("pdf/pdf.html", params)  # см. .render.py
+        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)  # см. .render.py
 
 
 """контроллер рендеринга в PDF  в файл"""

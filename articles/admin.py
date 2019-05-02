@@ -30,7 +30,7 @@ class ArticlesAdmin(VersionAdmin):
 """комменты"""
 
 
-@admin.register(Comment) # manage.py createinitialrevisions
+@admin.register(Comment)  # manage.py createinitialrevisions
 class CommentAdmin(VersionAdmin):
     list_display = ("__str__", "foreignkey_to_article", "foreignkey_to_boat", "author", "is_active", "created_at")
     list_display_links = ("__str__", )

@@ -1,5 +1,6 @@
 
 import os
+from reversion.middleware import RevisionMiddleware
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,7 +42,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "reversion",
     "dynamic_validator",
-    "django.forms",  # new for a custom widgets
+    "django.forms",  #   for a custom widgets
     "django_countries",
     "xhtml2pdf",
     "file_resubmit",
@@ -49,20 +50,23 @@ INSTALLED_APPS = [
 ]
 
 
-FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms # new
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms
 
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware', # new
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',  # new
+    'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'reversion.middleware.RevisionMiddleware',  # for django reversion # new
 ]
+
+RevisionMiddleware.atomic = True  # new  Для reversion middleware https://django-reversion.readthedocs.io/en/stable/middleware.html
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -80,7 +84,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 "social_django.context_processors.backends",
                 "social_django.context_processors.login_redirect",
-                "articles.middlewares.articles_context_processor", # new для articles
+                "articles.middlewares.articles_context_processor",  # для articles
 
             ],
         },
@@ -144,7 +148,7 @@ SHORT_DATE_FORMAT = "j.m.Y"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, "static") # new
+STATIC_ROOT = os.path.join(BASE_DIR, "static")  # new
 STATIC_URL = '/static/'
 #STATICFILES_DIRS = [
     #os.path.join(BASE_DIR, "static"), ]
@@ -191,16 +195,20 @@ THUMBNAIL_ALIASES = {
             "autocrop": True,
             "bw": False,
             "quality": 100,
-            "subsampling": 1,
+            "subsampling": 1, },
+        "medium": {
+            "size": (135, 135),
+            "crop": "smart",
+            "autocrop": True,
+            "bw": False,
+            "quality": 100,
+            "subsampling": 1, },
 
-        },
     },
 }
 THUMBNAIL_BASEDIR = "thumbnails"
 THUMBNAIL_MEDIA_URL = MEDIA_URL
 # аутентификация через соц. сети
-
-
 
 
 AUTHENTICATION_BACKENDS = (

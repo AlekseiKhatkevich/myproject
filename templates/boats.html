@@ -1,8 +1,19 @@
 <!--templates/boats.html   -->
 {% extends 'base.html' %}
 {% load bootstrap4 %}
+{% load static %}
+{% bootstrap_jquery "full" %}
 {% load thumbnail %}
+
+
+{% block title %} List of the boats{% endblock title %}
 {% block content %}
+
+ <script>
+$(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
 
     <div class="container-fluid  " style="margin-top: 15px">
     <div class="row d-flex flex-row align-self-center">
@@ -31,7 +42,7 @@
 </div>
 
 <div class="col">
-    <button type="submit" value="switched" class="form-button btn secondary border-primary mt-0 btn-sm" data-toggle="tooltip" data-placement="top" title="Create new boat" name="check" > Apply ordering </button></a>
+    <button type="submit" value="" class="form-button btn secondary border-primary mt-0 btn-sm" data-toggle="tooltip" data-placement="right" title="Apply ordering" name="" > Apply ordering </button></a>
 
 
 
@@ -42,7 +53,7 @@
 
         <div class="col text-right mr-5 mb-0">
             {% buttons %}
-                    <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="top" title="Create new boat"  > Create new boat</button></a>
+                    <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="left" title="Create new boat"  > Create new boat</button></a>
                 {% endbuttons %}
     </div>
 </div>
@@ -53,23 +64,42 @@
     {% for boat in object_list %}
 
 
-<div class = "{% cycle "col-md-6 pl-4" "col-md-6 pl-0" %}">
-            <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/><br>
+<div class = "{% cycle "col-md-3 pl-4" "col-md-3 pl-0" %}">
+            <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/>
+    <br>
                 <ul>
                 <li> boat length -{{ boat.boat_length }}</li>
                 <li>boat rigging - {{ boat.boat_mast_type }}</li>
                 <li> boat keel type -{{ boat.boat_keel_type }}</li>
                 <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
-
                 </ul>
+ </div>
 
-        </div>
+
+<div class="col-md-3 text-left">
+     {% for instance in boat.boatimage_set.all|slice:"0:1" %}
+<a  href=" {{ instance.boat_photo.url}}"> <img class=" img-fluid ml-3 mb-2" src="{% thumbnail instance.boat_photo  "medium"  %}"></a>
+
+         {% empty %}
+
+ <img class=" img-fluid ml-3 mb-2"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip"
+        data-placement="right" title="Current boat doesn't have any photo">
+
+{% endfor %}
+</div>
+
+
+
 
 {% endfor %}
  </div>
         </div> <!--container-->
 
-
+ {% if is_paginated %}
+    <div class="pagination pagination-centered justify-content-center mt-2" >
+{% bootstrap_pagination page_obj url=request.get_full_path   %}
+        </div>
+    {% endif %}
 
 
 {% endblock content%}

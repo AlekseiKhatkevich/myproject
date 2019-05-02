@@ -9,7 +9,12 @@ from .utilities import *
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
 from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
-import reversion
+from django.db.models.fields import Field
+from .lookups import NotEqual
+
+# рагистрация кастомного lookup
+Field.register_lookup(NotEqual)
+
 
 """Сигнал user_registrated
 #573  431  437
@@ -30,14 +35,31 @@ class BoatImage(models.Model):
 
     boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True,
                                    verbose_name='Boat photo', )
-    boat = models.ForeignKey("BoatModel",  on_delete=models.CASCADE, verbose_name="Boat ForeignKey",
+    boat = models.ForeignKey("BoatModel",  on_delete=models.SET_NULL, verbose_name="Boat ForeignKey",
                              null=True)
-    memory = models.PositiveSmallIntegerField(blank=True, null=True, default=boat.id)
+    memory = models.PositiveSmallIntegerField(blank=True, null=True)
+
+    #  запоминаем значение ФК на случай  срабатывания on_delete = SET_NULL (для последующего
+    #  восстановления)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if self.boat and not self.memory:  # сохраняем
+            self.memory = self.boat_id
+        elif not self.boat and self.memory:  # восстанавливаем
+            self.boat_id = self.memory
+        elif self.boat and self.memory and self.boat_id != self.memory:  # корректируем на крайняк
+            self.memory = self.boat_id
+        models.Model.save(self, force_insert=False, force_update=False, using=None,
+                          update_fields=None)
 
     def delete(self, using=None, keep_parents=False):  # удаляем thumbnails ассоциированные
         thumbnailer = get_thumbnailer(self.boat_photo)
         thumbnailer.delete_thumbnails()
         models.Model.delete(self, using=None, keep_parents=False)
+
+    def __str__(self):
+        return "Boat photo - %s, boat name - %s, boat id - %s  " % \
+               (self.boat_photo.name, self.boat.boat_name, self.boat_id)
 
     class Meta:
         verbose_name = "Boat photo"
@@ -67,7 +89,7 @@ class BoatModel(models.Model):
                                verbose_name="Author of the entry")
 
     boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat model",
-                                 help_text="Please input boat model", )
+                                 help_text="Please input boat model")
 
     boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
                                     help_text="Please input boat water-line length",)
@@ -101,13 +123,13 @@ class BoatModel(models.Model):
                                                   verbose_name="first manufacturing year")
     last_year = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="Last manufacturing year")
 
-    def __str__(self):
-        return self.boat_name
-
     class Meta:
         verbose_name = "Boats primary data"
         verbose_name_plural = "Boats primary data"
-        ordering = ["-boat_publish_date"]
+        #ordering = ["-boat_publish_date"]
+
+    def __str__(self):
+        return self.boat_name
 
     def length_mast_keel(self):  # метод добовляет кастомный атрибут в шаблон {{ current_boat.length_mast_keel }}
         if self.boat_length and self.boat_keel_type and self.boat_mast_type:
@@ -116,14 +138,18 @@ class BoatModel(models.Model):
 
     def delete(self, using=None, keep_parents=False):
         from articles.models import SubHeading, UpperHeading
-        #for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
-            #ai.delete()
+        """
+       for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
+            ai.delete()
+        """
+        """
             # очистка всех пустых подкатегорий  в категории "Articles on boats" без статей и без связи с
             # лодкой
             # - условия срабатывания системы очистки:
             # 1 находится в папке Articles on boats
             # 2 нет связи с лодкой
-            # 3 нет связанных статей
+            # 3 нет связанных статей 
+        """
         try:
             subheadings_query_set = SubHeading.objects.filter(foreignkey_id=UpperHeading.objects.get(
                             name__exact="Articles on boats").pk, one_to_one_to_boat_id__isnull=True)
@@ -145,7 +171,36 @@ class BoatModel(models.Model):
         from articles.models import SubHeading, UpperHeading
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-        SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,
+
+        # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой лодки и
+        # без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной лодки.
+        try:
+            subheading = SubHeading.objects.prefetch_related("article_set").get(
+                name__iexact=self.boat_name, one_to_one_to_boat_id__isnull=True,
+                foreignkey_id=UpperHeading.objects.get(name__exact="Articles on boats").pk)
+            # есть ли у текущей лодки есть подзаголовок? Т.е мы не создаем лодку а изменяем имя текущей
+            # лодки и ее имя совпадает с категорией (смотри описание возле try)
+            if SubHeading.objects.filter(one_to_one_to_boat_id=self.id).exists():
+                # получаем   подзаголовок текущей лодки
+                current_subheading = SubHeading.objects.prefetch_related("article_set").get(
+                    one_to_one_to_boat_id=self.id)
+                # каждуй статью в этом подзаголовке связываем с подзаголовком в TRY:
+                for article in current_subheading.article_set.all():
+                    article.foreignkey_to_subheading = subheading
+                    article.save(update_fields=['foreignkey_to_subheading', ])
+                current_subheading.delete()  # удаляем тукущий подзаголовок
+
+                # связываем подзаголовок с лодкой. С этого места и ниже идет код для создаваемой с нуля
+                # лодки. Выше был для лодки в случае изменения ее имени ( уже сущ. лодки)
+            subheading.one_to_one_to_boat = self
+            subheading.save(update_fields=['one_to_one_to_boat', ])
+            # связываем все статьи с текущей или новой лодкой
+            for article in subheading.article_set.all():
+                self.article_set.add(article)
+                article.save(update_fields=['foreignkey_to_boat', ])
+        except SubHeading.DoesNotExist:  # если нет, то создаем или обновляем категорию согласно имени
+            # лодки
+            SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,
                 foreignkey_id=UpperHeading.objects.get
                 (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
 

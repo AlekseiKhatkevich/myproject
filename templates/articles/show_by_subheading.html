@@ -35,7 +35,13 @@
                         <a href="{{ url }}{{ all }}"></a>
                         <div class=" ">
                            <h5> <a href="{{ url }}{{ all }}">
-                                {{ article.title }}</a></h5>
+                                {{ article.title }}</a>
+
+                           {% if article.foreignkey_to_boat %}
+                                <span class="badge badge-warning text-muted ml-2"> CONNECTED TO BOAT </span>
+                               {% endif %}
+
+                           </h5>
                         </div>
 
                     </li>

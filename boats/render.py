@@ -39,15 +39,16 @@ def link_callback(uri, rel):
 class Render:  # https://codeburst.io/django-render-html-to-pdf-41a2b9c41d16
 
     @staticmethod
-    def render(template_path: str, params: dict):
+    def render(template_path: str, params: dict, filename: str):
         template = get_template(template_path)
         html = template.render(params)
         response = BytesIO()  # python.pdf str 442
         pdf = pisa.CreatePDF(BytesIO(html.encode("UTF-8")), response, encoding="UTF-8",
                              link_callback=link_callback)
         if not pdf.err:
-            return HttpResponse(response.getvalue(), content_type='application/pdf')
+            resp = HttpResponse(response.getvalue(), content_type='application/pdf')
+            resp['Content-Disposition'] = 'filename="%s"' % (filename + ".pdf")
+            return resp
         else:
             return HttpResponse("Error Rendering PDF", status=400)
-
 

@@ -75,6 +75,14 @@
                         <td>{{object.created_at|date:"SHORT_DATE_FORMAT"   }}</td>
                     </tr>
 
+                    {% if object.foreignkey_to_boat %}
+                           <tr class="table-active   ">
+                        <th scope="row"></th>
+                        <td>Connected with the boat</td>
+                        <td>{{object.foreignkey_to_boat.boat_name  }}</td>
+                    </tr>
+                    {% endif %}
+
                     <tr class=" table-active">
                         <th scope="row"></th>
                         <td>Read the article on a website</td>
