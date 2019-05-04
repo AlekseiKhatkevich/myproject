@@ -21,15 +21,13 @@
     </title>
 
 
-
-
-
-
 </head>
 
 <body >
 
-<div class="row" >
+
+
+<div class="row " >
 
     <nav class="navbar navbar-expand-lg navbar navbar-dark  navbar-fixed-top"
          style="background-color: rgba(41,41,41,0.8); width: 100%;  ">
@@ -98,16 +96,16 @@
 </div>
 
 
-{% comment %}
+
   {% if is_paginated %}
     <div class="pagination pagination-centered justify-content-center mt-2" >
-{% bootstrap_pagination page_obj %}
+{% bootstrap_pagination page_obj url=request.get_full_path  %}
         </div>
     {% endif %}
-{% endcomment %}
+
+
 
 {% comment %}
-
 <style>
     #footer {
   position: fixed;
@@ -158,4 +156,5 @@ setTimeout(function(){
 }, 20000);
 
 </script>
+
 

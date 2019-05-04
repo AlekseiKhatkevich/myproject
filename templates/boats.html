@@ -9,97 +9,133 @@
 {% block title %} List of the boats{% endblock title %}
 {% block content %}
 
- <script>
-$(function(){
-  $('[data-toggle="tooltip"]').tooltip();
-});
-</script>
+
+
+    <script>
+        $(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+
 
     <div class="container-fluid  " style="margin-top: 15px">
-    <div class="row d-flex flex-row align-self-center">
+        <div class="row d-flex flex-row align-baseline">
 
-    <div class="col-2">
-       <form action="{% url "boats:boats" %}" method="get" name="form1">
-<select class="custom-select" name="ordering">
-  <option selected>select ordering pattern</option>
-  <option value="boat_publish_date">--by publish date</option>
-  <option value="author">--by author</option>
-  <option value="boat_length">--by boat length</option>
-    <option value="boat_mast_type">--by boat rigging </option>
-    <option value="boat_price"> --by price</option>
-    <option value="boat_country_of_origin">--by country</option>
-    <option value="boat_keel_type">--by keel type</option>
-    <option value="first_year">--by first year of model manufacturing time range </option>
-    <option value="last_year">--by last year of model manufacturing time range </option>
-</select>
-       </div>
+            <div class="col-2">
+                <form action="{{ request.get_full_path  }}" method="get" name="form1" id="1">
 
-        <div class="col-2">
-   <select class="custom-select" name="mark">
-  <option value="descending">--in descending order</option>
-  <option value="ascending">--in ascending order</option>
-</select>
-</div>
 
-<div class="col">
-    <button type="submit" value="" class="form-button btn secondary border-primary mt-0 btn-sm" data-toggle="tooltip" data-placement="right" title="Apply ordering" name="" > Apply ordering </button></a>
+                    <select class="custom-select" name="ordering">
+                        <option selected value="{{ request.GET.ordering}}">{% firstof   verbose_name 'Select ordering pattern' %} </option>
+                        <option value="boat_publish_date">--by publish date</option>
+                        <option value="author">--by author</option>
+                        <option value="boat_length">--by boat length</option>
+                        <option value="boat_mast_type">--by boat rigging </option>
+                        <option value="boat_price"> --by price</option>
+                        <option value="boat_country_of_origin">--by country</option>
+                        <option value="boat_keel_type">--by keel type</option>
+                        <option value="first_year">--by first year of model manufacturing time range </option>
+                        <option value="last_year">--by last year of model manufacturing time range </option>
+                    </select>
+            </div>
 
 
 
-</form>
-</div>
+
+            <div class="col-3 ">
+                <div class="input-group ">
+                    <select class="custom-select" name="mark" aria-label="Recipient's username" aria-describedby="button-addon2">
+                         <option selected value="{{ request.GET.mark}}">
+                             {% if  request.GET.mark %}
+                             in {{ request.GET.mark}} order
+                                 {% else %}
+                                 Choose sort order
+                             {% endif %}
+                         </option>
+                        <option value="descending">--in descending order</option>
+                        <option value="ascending">--in ascending order</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button type="submit" value="on" class=" btn secondary border-primary mt-0 btn-sm " data-toggle="tooltip" data-placement="right" title="Apply ordering" name="button" role="button"  id="button-addon2" > Apply ordering </button>
+                    </div>
+                </div>
+            </div>
 
 
+            </form>
 
-        <div class="col text-right mr-5 mb-0">
-            {% buttons %}
+
+            <div class="col-3 text-left">
+                <form   action="{{ request.get_full_path  }}" method="get" name="form2" id="2">
+
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="{% firstof   request.GET.q "Search" %}" aria-label="Recipient's username" aria-describedby="button-addon2" name="q">
+
+                        <div class="input-group-append">
+                            <button class="btn secondary border-primary" type="submit" id="button-addon2" data-toggle="tooltip" data-placement="left" title="Search">Search</button>
+
+                            <a href="{%  url "boats:boats" %}?ordering={{ request.COOKIES.ordering }}&mark={{ request.COOKIES.mark }}">
+                                <button class="btn secondary border-primary" type="button" id="button-addon2" data-toggle="tooltip" data-placement="right" title="Reset search">Reset</button></a>
+
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+
+            <div class="col text-right mr-5 mb-0">
+                {% buttons %}
                     <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="left" title="Create new boat"  > Create new boat</button></a>
                 {% endbuttons %}
-    </div>
-</div>
-<hr>
+            </div>
+        </div>
+        <hr>
 
-<div class="row">
+        <div class="row">
 
-    {% for boat in object_list %}
-
-
-<div class = "{% cycle "col-md-3 pl-4" "col-md-3 pl-0" %}">
-            <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/>
-    <br>
-                <ul>
-                <li> boat length -{{ boat.boat_length }}</li>
-                <li>boat rigging - {{ boat.boat_mast_type }}</li>
-                <li> boat keel type -{{ boat.boat_keel_type }}</li>
-                <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
-                </ul>
- </div>
+            {% for boat in object_list %}
 
 
-<div class="col-md-3 text-left">
-     {% for instance in boat.boatimage_set.all|slice:"0:1" %}
-<a  href=" {{ instance.boat_photo.url}}"> <img class=" img-fluid ml-3 mb-2" src="{% thumbnail instance.boat_photo  "medium"  %}"></a>
-
-         {% empty %}
-
- <img class=" img-fluid ml-3 mb-2"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip"
-        data-placement="right" title="Current boat doesn't have any photo">
-
-{% endfor %}
-</div>
-
+                <div class = "{% cycle "col-md-3 pl-4" "col-md-3 pl-0" %}">
+                    <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/>
+                    <br>
+                    <ul>
+                        <li> boat length -{{ boat.boat_length }}</li>
+                        <li>boat rigging - {{ boat.boat_mast_type }}</li>
+                        <li> boat keel type -{{ boat.boat_keel_type }}</li>
+                        <li>publishing date -{{ boat.boat_publish_date|date:"SHORT_DATE_FORMAT"}}</li>
+                    </ul>
+                </div>
 
 
+                <div class="col-md-3 text-left float-left ">
+                    {% for photo in boat.boatimage_set.all|slice:"0:1" %}
+                        <a  href=" {% url "boats:boat_detail" boat.pk %}"> <img class=" img-fluid ml-3 mb-2 border border-secondary rounded " src="{% thumbnail photo.boat_photo  "medium"  %}"></a>
 
-{% endfor %}
- </div>
-        </div> <!--container-->
+                        {% empty %}
 
- {% if is_paginated %}
+                        <a  href=" {% url "boats:boat_detail" boat.pk %}"> <img class=" img-fluid ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip"
+                                                                                data-placement="right" title="Current boat doesn't have any photo">
+
+                    {% endfor %}
+                </div>
+
+
+
+
+            {% endfor %}
+        </div>
+    </div> <!--container-->
+
+
+    {% comment %}
+    {% if is_paginated %}
+
     <div class="pagination pagination-centered justify-content-center mt-2" >
-{% bootstrap_pagination page_obj url=request.get_full_path   %}
+{% bootstrap_pagination page_obj url=request.get_full_path  %}
         </div>
     {% endif %}
-
+{% endcomment %}
 
 {% endblock content%}

@@ -20,12 +20,13 @@ from django.db.transaction import atomic
 from django.db.models import Prefetch
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
-from extra_views import CreateWithInlinesView
+from extra_views import SearchableListMixin
 from django.db.models import Q
 from .decorators import login_required_message, MessageLoginRequiredMixin
 from .render import Render, link_callback
 from django.template.loader import get_template
 import xhtml2pdf.pisa as pisa
+
 
 
 """Контроллер редактирования данных о лодке"""
@@ -105,35 +106,51 @@ class IndexPageView(TemplateView):
 """ список всех лодок"""
 
 
-class BoatListView(ListView):
+class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"
     paginate_by = 10
+    search_fields = ["boat_name", ]
 
-    def get_ordering(self):  # метод возвращает поле по которому идет сортировка
+    def get_ordering(self):
+        """метод возвращает поле по которому идет сортировка"""
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
-        if self.field not in (f.name for f in BoatModel._meta.get_fields()) and self.mark:
-            messages.add_message(self.request, messages.WARNING, message="Please choose sorting pattern",
-                                 fail_silently=True)
+        # if self.field not in (f.name for f in BoatModel._meta.get_fields()) and self.mark:
+        if self.field == '':
+            messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
+                                                                         "pattern", fail_silently=True)
             return None
         if all([self.field, self.mark]):
-            verbose_name = BoatModel._meta.get_field(self.field).verbose_name
-            message = 'Boats are ordered by:\xa0\"' + verbose_name + "\"\xa0in\xa0" + \
+            self.verbose_name = BoatModel._meta.get_field(self.field).verbose_name
+            message = 'Boats are ordered by:\xa0\"' + self.verbose_name + "\"\xa0in\xa0" + \
                       self.mark + "\xa0order"
-            messages.add_message(self.request, messages.SUCCESS, message=message, fail_silently=True)
+            if self.field != self.request.COOKIES["ordering"] or \
+                    self.mark != self.request.COOKIES["mark"]:
+                messages.add_message(self.request, messages.SUCCESS, message=message, fail_silently=True)
             if self.mark == "descending":
                 self.field = "-" + self.field
             return self.field
-        return self.ordering  # return none
-
+        #  return self.ordering
 
     def get_context_data(self, **kwargs):
         context = ListView.get_context_data(self, **kwargs)
         context["images"] = BoatImage.objects.all().distinct('boat')  # выбирает только 1 уникальный
         # объект из группы объектов с  одинаковым фк, остальные отсеивает
-        context["request"] = self.request
+        if self.field:
+            context["verbose_name"] = self.verbose_name
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        """Для корректного возврата после поиска к отсортированному списку. Сохраняем сортироку в куках,
+         а затем извлекаем ее в шаблоне и запихиваем в УРЛ через ГЕТ параметры"""
+        response = ListView.render_to_response(self, context, **response_kwargs)
+        if all([self.field, self.mark]):
+            if self.field.startswith("-"):
+                self.field = self.field[1:]
+            response.set_cookie('ordering', self.field)
+            response.set_cookie("mark", self.mark)
+        return response
 
 
 """ просмотр  детальной информации о лодке"""

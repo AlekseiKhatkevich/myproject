@@ -10,6 +10,8 @@ class UniqueNameValidator:
 
     def __call__(self, val):
         if SubHeading.objects.filter(name__iexact=val, foreignkey__name__ne="Articles on boats").exists():
+        #if SubHeading.objects.filter(name__iexact=val).exclude(foreignkey__name="Articles on boats").
+        # exists():
             raise ValidationError("Subheading with this name is already exists", code="unique")
 
 

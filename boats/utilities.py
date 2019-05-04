@@ -1,9 +1,10 @@
 from django.template.loader import render_to_string
 from django.core.signing import Signer
-from myproject.settings import ALLOWED_HOSTS
+from myproject.settings import ALLOWED_HOSTS, BASE_DIR
 from datetime import datetime
 from os.path import splitext
 from django.contrib import messages
+import os
 
 signer = Signer()
 
@@ -25,5 +26,8 @@ def get_timestamp_path(instance, filename):
     return "%s%s" % (datetime.now().timestamp(), splitext(filename)[1])
 
 
+def clean_cache():
+    if os.path.exists(os.path.join(BASE_DIR, 'data/cache/file_resubmit')):
+        os.remove(BASE_DIR, 'data/cache/file_resubmit')
 
 
