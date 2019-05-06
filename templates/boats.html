@@ -4,7 +4,7 @@
 {% load static %}
 {% bootstrap_jquery "full" %}
 {% load thumbnail %}
-
+{% load i18n %}
 
 {% block title %} List of the boats{% endblock title %}
 {% block content %}
@@ -22,7 +22,7 @@
         <div class="row d-flex flex-row align-baseline">
 
             <div class="col-2">
-                <form action="{{ request.get_full_path  }}" method="get" name="form1" id="1">
+                <form action="{{ request.get_full_path_info }}" method="get" name="form1" id="1">
 
 
                     <select class="custom-select" name="ordering">
@@ -47,26 +47,25 @@
                     <select class="custom-select" name="mark" aria-label="Recipient's username" aria-describedby="button-addon2">
                          <option selected value="{{ request.GET.mark}}">
                              {% if  request.GET.mark %}
-                             in {{ request.GET.mark}} order
+                          {% trans "in" %}   {{ request.GET.mark}} {% trans "order" %}
                                  {% else %}
-                                 Choose sort order
+                                 {% trans "Choose sort order" %}
                              {% endif %}
                          </option>
                         <option value="descending">--in descending order</option>
                         <option value="ascending">--in ascending order</option>
                     </select>
                     <div class="input-group-append">
-                        <button type="submit" value="on" class=" btn secondary border-primary mt-0 btn-sm " data-toggle="tooltip" data-placement="right" title="Apply ordering" name="button" role="button"  id="button-addon2" > Apply ordering </button>
+                        <button type="submit"  class=" btn secondary border-primary mt-0 btn-sm " data-toggle="tooltip" data-placement="right" title="Apply ordering"   role="button"  id="button-addon2" > Apply ordering </button>
                     </div>
                 </div>
             </div>
-
-
             </form>
 
 
+
             <div class="col-3 text-left">
-                <form   action="{{ request.get_full_path  }}" method="get" name="form2" id="2">
+                <form   action="{{ request.get_full_path_info  }}" method="get" name="form2" id="2">
 
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="{% firstof   request.GET.q "Search" %}" aria-label="Recipient's username" aria-describedby="button-addon2" name="q">
@@ -98,7 +97,20 @@
 
 
                 <div class = "{% cycle "col-md-3 pl-4" "col-md-3 pl-0" %}">
-                    <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong><img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/>
+                    <strong><a href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong>
+
+
+
+                    {% if "country" in request.GET %}
+                     <a  href=" {{  request.META.HTTP_REFERER }}"> <img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/></a>
+                        {% else %}
+ <a  href=" {{ request.path_info }}?country={{ boat.boat_country_of_origin }}"> <img class=" align-self-center " style="margin: 6px 4px 0; width: 30px; height: 17px; align-content: center" src='{{boat.boat_country_of_origin.flag}}'/></a>
+
+                    {% endif %}
+
+
+
+
                     <br>
                     <ul>
                         <li> boat length -{{ boat.boat_length }}</li>
@@ -139,3 +151,5 @@
 {% endcomment %}
 
 {% endblock content%}
+
+

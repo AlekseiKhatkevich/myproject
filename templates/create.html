@@ -22,22 +22,18 @@
 
 
 
-<div class="row">
+                    <div class="row">
 
-    <p class="text-muted ml-4">Please enter first and last years of the model manufacturing:</p>
-</div>
+                        <p class="text-muted ml-4">Please enter first and last years of the model manufacturing:</p>
+                    </div>
                     <div class="row">
                         <div class="col ml-2 mb-3 ">
-                <span class="">{{ form1.first_year.label }} - {{ form1.first_year}}</span>
+                            <span class="">{{ form1.first_year.label }} - {{ form1.first_year}}</span>
 
-             <span>   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ form1.last_year.label}} {{ "-"|center:20 }} {{ form1.last_year  }}</span>
+                            <span>   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ form1.last_year.label}} {{ "-"|center:20 }} {{ form1.last_year  }}</span>
 
-                            </div>
-</div>
-
-
-
-
+                        </div>
+                    </div>
 
 
 
@@ -48,22 +44,24 @@
                         <div class="row  ">
                             <div class="col border border-white my-1 ml-1">
 
-                                    {{ form.boat_photo }}
+                                {{ form.boat_photo }}
                                 {% if form2.can_delete %}
-                                 {{ form.DELETE }} delete
-                                {% endif %}
+                                    {{ form.DELETE }} delete
 
+                                    {% if forloop.last %}
+                                        <button class="   badge  badge-pill badge-info float-right" title='Add a new row' type='submit' name='add_row' value='Add a new row'>Add a new row </button>
+                                    {% endif %}
+
+                                {% endif %}
 
 
                             </div>
                         </div>
-<hr>
+                        <hr>
                     {% endfor %}
 
 
-                    {% comment %}
-                {% bootstrap_formset form2  form_group_class="btn btn-outline-secondary" layout='inline'    %}
-{% endcomment %}
+
 
                     <div class="row">
                         <div class="col-12 text-center">
@@ -75,9 +73,8 @@
                                 <button type="reset" class="form-button btn btn-secondary btn-lg">
                                     Reset
                                 </button>
+
                             {% endbuttons %}
-
-
 
                         </div>
                     </div>

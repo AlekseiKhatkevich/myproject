@@ -7,6 +7,19 @@ from django.contrib. staticfiles.views import serve
 from django.views.decorators.cache import never_cache
 from django.views.defaults import permission_denied
 from django.utils.functional import curry
+from django.conf import settings
+from django.conf.urls import  url
+from django.conf.urls.i18n import i18n_patterns
+from django.contrib import admin
+
+"""
+admin.autodiscover()
+
+i18n_urls = (  #  new
+    path('admin/', admin.site.urls),  # может быть конфликт с админом ниже
+    path('i18n/', include('django.conf.urls.i18n')),
+)
+"""
 
 
 urlpatterns = [
@@ -32,3 +45,8 @@ handler403 = curry(permission_denied, exception=Exception('Permission Denied'), 
 admin.site.site_header = "Boat's project  Admin"
 admin.site.site_title = "BOATS Admin Portal"
 admin.site.index_title = "BOATS administration page"
+"""
+# new
+urlpatterns.extend(i18n_patterns(*i18n_urls, prefix_default_language=False))
+urlpatterns.extend(static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
+"""

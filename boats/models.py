@@ -1,5 +1,5 @@
 from django.db import models
-from django.dispatch import Signal
+from django.dispatch import Signal, receiver
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
@@ -11,15 +11,17 @@ from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
 from django.db.models.fields import Field
 from .lookups import NotEqual
+from myproject.settings import CACHES
+import os
+from datetime import datetime
+from django.contrib.postgres.indexes import BrinIndex
 
-# рагистрация кастомного lookup
+#   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
 
 
-"""Сигнал user_registrated
-#573  431  437
-"""
 user_registrated = Signal(providing_args=["instance"])
+"""Сигнал user_registrated #573  431  437"""
 
 
 def user_registrated_dispatcher(sender, **kwargs):
@@ -27,6 +29,7 @@ def user_registrated_dispatcher(sender, **kwargs):
 
 
 user_registrated.connect(user_registrated_dispatcher)
+
 
 """ вторичная модель изображений"""
 
@@ -41,7 +44,6 @@ class BoatImage(models.Model):
 
     #  запоминаем значение ФК на случай  срабатывания on_delete = SET_NULL (для последующего
     #  восстановления)
-
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.boat and not self.memory:  # сохраняем
             self.memory = self.boat_id
@@ -49,6 +51,11 @@ class BoatImage(models.Model):
             self.boat_id = self.memory
         elif self.boat and self.memory and self.boat_id != self.memory:  # корректируем на крайняк
             self.memory = self.boat_id
+        # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2 месяцев
+        useless_old_images = BoatImage.objects.filter(boat_id__isnull=True)
+        for image in useless_old_images:
+                if datetime.now().timestamp() - os.path.getatime(image.boat_photo.path) > 5184000:
+                    image.delete()
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
 
@@ -127,6 +134,7 @@ class BoatModel(models.Model):
         verbose_name = "Boats primary data"
         verbose_name_plural = "Boats primary data"
         ordering = ["-boat_publish_date"]
+        indexes = (BrinIndex(fields=["boat_publish_date"]),)
 
     def __str__(self):
         return self.boat_name
@@ -164,15 +172,18 @@ class BoatModel(models.Model):
                 self.heading.delete()  # удаляем, если не содержит статей
         except articles.models.SubHeading.DoesNotExist or ObjectDoesNotExist:
             pass
+        for image in self.boatimage_set.all():  # удаляем ассоциированные тумбнейлы
+            thumbnailer = get_thumbnailer(image.boat_photo)
+            thumbnailer.delete_thumbnails()
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        import articles.models  # to avoid circular import with articles
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-
+        clean_cache(path=CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)  # очишаем кэш           ресубмита (интервал -сутки)
+        import articles.models  # to avoid circular import with articles
         # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой лодки и
         # без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной лодки.
         try:
@@ -189,7 +200,7 @@ class BoatModel(models.Model):
                 for article in current_subheading.article_set.all():
                     article.foreignkey_to_subheading = subheading
                     article.save(update_fields=['foreignkey_to_subheading', ])
-                current_subheading.delete()  # удаляем тукущий подзаголовок
+                current_subheading.delete()  # удаляем текущий подзаголовок
 
                 # связываем подзаголовок с лодкой. С этого места и ниже идет код для создаваемой с нуля
                 # лодки. Выше был для лодки в случае изменения ее имени ( уже сущ. лодки)
@@ -216,6 +227,7 @@ class ExtraUser(AbstractUser):
 
     class Meta(AbstractUser.Meta):
         unique_together = ("first_name", "last_name", )
+        indexes = (BrinIndex(fields=["date_joined"]), )
 
 
 

@@ -1,7 +1,7 @@
 {# load css and JavaScript #}
 {% load bootstrap4 %}
 {%  load static %}
-
+{% load i18n %}
 {% bootstrap_jquery "full" %}
 
 <!doctype html>
@@ -26,8 +26,8 @@
 <body >
 
 
-
-<div class="row " >
+<!-- если контент выползает за экран то смотри сюда -->
+<div class="row " style="width: 100%;">
 
     <nav class="navbar navbar-expand-lg navbar navbar-dark  navbar-fixed-top"
          style="background-color: rgba(41,41,41,0.8); width: 100%;  ">
@@ -79,7 +79,7 @@
                 </li>
             </ul>
         </div>
-
+<div class="float-right text-white mr-3"> current language -- {{ request.LANGUAGE_CODE }}</div>
         <img height=50 width=50 src="{% static "boats/1.png" %}" alt="boat image">
     </nav>
 </div>
@@ -88,6 +88,35 @@
 <div class="messages" id="message_container">
 {% bootstrap_messages %}
 </div>
+
+
+{% comment %}
+<form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+    <input name="next" type="hidden" value="{{ redirect_to }}" />
+    <select name="language">
+        {% get_current_language as LANGUAGE_CODE %}
+        {% get_available_languages as LANGUAGES %}
+        {% get_language_info_list for LANGUAGES as languages %}
+        {% for language in languages %}
+            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
+                {{ language.name_local }} ({{ language.code }})
+            </option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="{% trans 'Change' %}" />
+</form>
+{% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
 
 
 <div>
@@ -99,7 +128,7 @@
 
   {% if is_paginated %}
     <div class="pagination pagination-centered justify-content-center mt-2" >
-{% bootstrap_pagination page_obj url=request.get_full_path  %}
+{% bootstrap_pagination page_obj url=request.get_full_path_info  %}
         </div>
     {% endif %}
 

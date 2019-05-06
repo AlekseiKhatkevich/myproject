@@ -1,9 +1,8 @@
 from django.template.loader import render_to_string
 from django.core.signing import Signer
-from myproject.settings import ALLOWED_HOSTS, BASE_DIR
+from myproject.settings import ALLOWED_HOSTS
 from datetime import datetime
 from os.path import splitext
-from django.contrib import messages
 import os
 
 signer = Signer()
@@ -26,8 +25,14 @@ def get_timestamp_path(instance, filename):
     return "%s%s" % (datetime.now().timestamp(), splitext(filename)[1])
 
 
-def clean_cache():
-    if os.path.exists(os.path.join(BASE_DIR, 'data/cache/file_resubmit')):
-        os.remove(BASE_DIR, 'data/cache/file_resubmit')
+def clean_cache(path, time_interval):  # https://pastebin.com/0SPBLJfD
+    """Очистка кэша ресубмита """
+    if os.path.exists(path) and os.path.isdir(path):
+        for (dirpath, dirnames, filenames) in os.walk(path):
+            for filename in filenames:
+                if datetime.now().timestamp() - os.path.getctime(os.path.join(dirpath, filename)) > \
+                        time_interval:  # проверяем насколько файлы старые
+                    os.remove(os.path.join(dirpath, filename))
+
 
 

@@ -5,6 +5,7 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from boats.models import BoatModel, ExtraUser
 from dynamic_validator import ModelFieldRequiredMixin
 from captcha.fields import CaptchaField
+from django.contrib.postgres.indexes import BrinIndex
 
 """ модель группы"""
 
@@ -106,6 +107,7 @@ class Article(models.Model):
         verbose_name_plural = "Articles"
         ordering = ["-created_at"]
         unique_together = ("foreignkey_to_subheading", "title")
+        indexes = (BrinIndex(fields=["created_at"]), )
 
 
 """ Модель комментов """
@@ -132,5 +134,5 @@ class Comment(ModelFieldRequiredMixin, models.Model):
         verbose_name = "Comment"
         verbose_name_plural = "Comments"
         ordering = ["-created_at", ]
-
+        indexes = (BrinIndex(fields=["created_at"]),)
 

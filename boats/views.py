@@ -17,7 +17,7 @@ from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
-from django.db.models import Prefetch
+from django.db.models import Prefetch, F
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -26,14 +26,13 @@ from .decorators import login_required_message, MessageLoginRequiredMixin
 from .render import Render, link_callback
 from django.template.loader import get_template
 import xhtml2pdf.pisa as pisa
-
-
+from django.utils.translation import ugettext as _
 
 """Контроллер редактирования данных о лодке"""
 
 
 @atomic
-@login_required_message(message="You must be logged in in order to edit this boat entry")
+@login_required_message(message=_("You must be logged in in order to edit this boat entry"))
 @login_required
 def viewname_edit(request, pk):
     obj1 = BoatModel.objects.get(pk=pk)
@@ -44,7 +43,7 @@ def viewname_edit(request, pk):
             if form1.has_changed() or form2.has_changed():
                 boat_obj = form1.save()
                 form2.save()
-                message = "You successfully edited %s  data" % boat_obj.boat_name
+                message = "You successfully edited %(name)s  data" % {"name": boat_obj.boat_name}
                 messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
             else:
@@ -117,7 +116,7 @@ class BoatListView(SearchableListMixin, ListView):
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
         # if self.field not in (f.name for f in BoatModel._meta.get_fields()) and self.mark:
-        if self.field == '':
+        if self.field == '' or self.mark == "":
             messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
                                                                          "pattern", fail_silently=True)
             return None
@@ -127,23 +126,23 @@ class BoatListView(SearchableListMixin, ListView):
                       self.mark + "\xa0order"
             if self.field != self.request.COOKIES["ordering"] or \
                     self.mark != self.request.COOKIES["mark"]:
-                messages.add_message(self.request, messages.SUCCESS, message=message, fail_silently=True)
+                messages.add_message(self.request, messages.SUCCESS, message=message,
+                                     fail_silently=True)
             if self.mark == "descending":
                 self.field = "-" + self.field
             return self.field
-        #  return self.ordering
 
     def get_context_data(self, **kwargs):
         context = ListView.get_context_data(self, **kwargs)
         context["images"] = BoatImage.objects.all().distinct('boat')  # выбирает только 1 уникальный
         # объект из группы объектов с  одинаковым фк, остальные отсеивает
-        if self.field:
+        if self.field and self.mark:
             context["verbose_name"] = self.verbose_name
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        """Для корректного возврата после поиска к отсортированному списку. Сохраняем сортироку в куках,
-         а затем извлекаем ее в шаблоне и запихиваем в УРЛ через ГЕТ параметры"""
+        """Для корректного возврата после поиска к отсортированному списку. Сохраняем сортировку в
+         куках, а затем извлекаем ее в шаблоне и запихиваем в УРЛ через ГЕТ параметры"""
         response = ListView.render_to_response(self, context, **response_kwargs)
         if all([self.field, self.mark]):
             if self.field.startswith("-"):
@@ -151,6 +150,18 @@ class BoatListView(SearchableListMixin, ListView):
             response.set_cookie('ordering', self.field)
             response.set_cookie("mark", self.mark)
         return response
+
+    def get_queryset(self):
+        """фильтрация кс при нажатии на флажок по стране"""
+        qs = SearchableListMixin.get_queryset(self)
+        country = self.request.GET.get('country', False)
+        if country:
+            boat = qs.filter(boat_country_of_origin=country).only("boat_country_of_origin")[
+                   :1].iterator()  # i hate "for" cycles within  only one  object in queryset :))
+            message = 'Boats are filtered by county "%s"' % next(boat).boat_country_of_origin.name
+            messages.add_message(self.request, messages.SUCCESS, message=message, fail_silently=True)
+            return qs.filter(boat_country_of_origin=country)
+        return qs
 
 
 """ просмотр  детальной информации о лодке"""
@@ -174,13 +185,18 @@ def boat_detail_view(request, pk):
 @login_required_message(message="You must be logged in in order to create new boat entry")
 @login_required
 def viewname(request):
+    form1 = BoatForm(request.POST or None, request.FILES or None, prefix="form1")
     if request.method == 'POST':
-        form1 = BoatForm(request.POST, request.FILES, prefix="form1")
+        if "add_row" in request.POST:
+            cp = request.POST.copy()
+            cp['form2-TOTAL_FORMS'] = int(cp['form2-TOTAL_FORMS']) + 1
+            form2 = boat_image_inline_formset(cp, request.FILES, prefix="form2")
+            context = {"form1": form1, "form2": form2}
+            return render(request, "create.html", context)
         if form1.is_valid():
             prim = form1.save(commit=False)
             prim.author = request.user
-            form2 = boat_image_inline_formset(request.POST, request.FILES,
-                                              prefix="form2", instance=prim)
+            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=prim)
         else:
             form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2")
             context = {"form1": form1, "form2": form2}
@@ -190,15 +206,12 @@ def viewname(request):
             form2.save()
             message = "You successfully added a boat called:\xa0" + boat.boat_name
             messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
-            return HttpResponseRedirect(reverse_lazy("boats:boat_detail",
-                                                     args=(prim.pk, )))
+            return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(prim.pk, )))
         else:
-            form2 = boat_image_inline_formset(request.POST, request.FILES,
-                                              prefix="form2", instance=prim)
+            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=prim)
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
     else:
-        form1 = BoatForm(prefix="form1")
         form2 = boat_image_inline_formset(prefix="form2")
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
@@ -463,6 +476,7 @@ def render_pdf_view(request, pk):
     # Create a Django response object, and specify content_type as pdf
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="%s"' % (current_boat.boat_name + ".pdf")
+
     # find the template and render it.
     template = get_template(template_path)
     html = template.render(context)

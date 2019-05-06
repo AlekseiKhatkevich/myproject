@@ -25,6 +25,7 @@ xhtml2pdf = "*"
 django-reversion = "*"
 django-file-resubmit = "*"
 
+
 [requires]
 python_version = "3.7"
 
