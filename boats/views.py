@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic import ListView
+from django.views.generic import ListView, FormView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
@@ -17,7 +17,7 @@ from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
-from django.db.models import Prefetch, F
+from django.db.models import Prefetch
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -27,6 +27,8 @@ from .render import Render, link_callback
 from django.template.loader import get_template
 import xhtml2pdf.pisa as pisa
 from django.utils.translation import ugettext as _
+from reversion.models import Version
+
 
 """Контроллер редактирования данных о лодке"""
 
@@ -488,3 +490,47 @@ def render_pdf_view(request, pk):
     if pisaStatus.err:
        return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
+
+
+""" Список лодок для восстановкления"""
+
+
+class ReversionView(MessageLoginRequiredMixin, TemplateView):
+    template_name = "reversion.html"
+    redirect_message = "You need to be authenticated to recover boat's data"
+
+    def get_context_data(self, **kwargs):
+        context = TemplateView.get_context_data(self, **kwargs)
+        # pk всех существующих  в базе лодок
+        existing_boats_pk = [pk["pk"] for pk in BoatModel.objects.all().values("pk")]
+        #  Выбираем все удаленные лодки текущим пользователем
+        versions = Version.objects.get_for_model(BoatModel).filter(
+            Q(revision__user_id=self.request.user.id) | Q(revision__user_id__isnull=True)).exclude(
+            object_id__in=existing_boats_pk).order_by("object_id").distinct("object_id")
+        context["versions"] = versions
+        # фото всех удаленных лодок
+        images = BoatImage.objects.filter(boat_id__isnull=True).exclude(memory__in=existing_boats_pk)
+        images.memory_list = [str(image["memory"]) for image in images.values("memory")]
+        for image in images:
+            image.memory = str(image.memory)
+        context["images"] = images
+        return context
+
+
+""" Контроллер восстановления конкретной лодки"""
+
+
+@login_required_message(message="You need to be authenticated to recover boat's data")
+@login_required
+def reversion_confirm_view(request, pk):
+    versions = Version.objects.get_for_model(BoatModel).filter(object_id=pk)[0:1]
+    if request.method == "POST":
+        versions[0].revision.revert()
+        restored_boat = BoatModel.objects.get(boat_name=versions[0].object_repr)
+        restored_boat.save()
+        message = 'Boat "%(boat_name)s" is restored!' % {"boat_name": versions[0].object_repr}
+        messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+        return HttpResponseRedirect(reverse_lazy("boats:boat_detail",  args=(pk, )))
+    else:
+        context = {"versions": versions}
+        return render(request, "reversion_confirmation.html", context)

@@ -45,17 +45,19 @@ class BoatImage(models.Model):
     #  запоминаем значение ФК на случай  срабатывания on_delete = SET_NULL (для последующего
     #  восстановления)
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2 месяцев
+        useless_old_images = BoatImage.objects.filter(boat_id__isnull=True, memory__isnull=False)
+        for image in useless_old_images:
+                if datetime.now().timestamp() - os.path.getatime(image.boat_photo.path) > 5184000:
+                    image.delete()
+
         if self.boat and not self.memory:  # сохраняем
             self.memory = self.boat_id
         elif not self.boat and self.memory:  # восстанавливаем
             self.boat_id = self.memory
         elif self.boat and self.memory and self.boat_id != self.memory:  # корректируем на крайняк
             self.memory = self.boat_id
-        # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2 месяцев
-        useless_old_images = BoatImage.objects.filter(boat_id__isnull=True)
-        for image in useless_old_images:
-                if datetime.now().timestamp() - os.path.getatime(image.boat_photo.path) > 5184000:
-                    image.delete()
+
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
 

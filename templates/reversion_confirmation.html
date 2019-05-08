@@ -1,0 +1,31 @@
+<!--templates/reversion_confirmation.html   -->
+{%  extends "base.html" %}
+{% load bootstrap4 %}
+{% block title %}
+Reversions confirmation
+{% endblock %}
+{% block content %}
+
+    <div class="container">
+    {% for version in versions %}
+    <h4 class="text-center mt-4">Please confirm that you want to recover {{ version.object_repr }} </h4>
+        {% endfor %}
+    <div class="row ">
+    <div class="col text-center ">
+<form method="post" class="mt-5" >
+{%  csrf_token %}
+
+
+<div class="btn-group rounded " role="group" aria-label="Basic example">
+  <button type="submit" class="btn btn-secondary btn-lg bg-danger text-white ">Recover</button>
+
+  <a  href=" {{  request.META.HTTP_REFERER }}"><button type="button" class="btn btn-secondary btn-lg bg-success ">Go back</button>
+</div>
+</form>
+
+
+</div>
+</div>
+</div>
+
+{% endblock content %}

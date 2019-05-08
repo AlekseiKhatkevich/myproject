@@ -85,7 +85,10 @@
 
             <div class="col text-right mr-5 mb-0">
                 {% buttons %}
-                    <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="left" title="Create new boat"  > Create new boat</button></a>
+                    <a href="{% url "boats:reversion" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="left" title="Restore deleted boats"  > Restore a boat </button></a>
+
+
+                    <a href="{% url "boats:boat_create" %}"><button type="button" class="form-button btn secondary border-primary mt-0" data-toggle="tooltip" data-placement="bottom" title="Create new boat"  > Create new boat</button></a>
                 {% endbuttons %}
             </div>
         </div>

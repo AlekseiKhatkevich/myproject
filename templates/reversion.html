@@ -1,0 +1,78 @@
+<!--templates/reversion.html   -->
+{%  extends "base.html" %}
+{% load bootstrap4 %}
+{% load thumbnail %}
+{%  load static %}
+{% bootstrap_jquery "full" %}
+{% block title %}
+    Reversions
+{% endblock %}
+{% block content %}
+
+    <style>
+        body {
+            background-image: url({% static "boats/SCS-logo3-e1463360121342.jpg" %});
+            background-repeat: no-repeat, repeat;
+            background-position: center;
+            background-size: 60%;
+        }
+    </style>
+
+    <script>
+        $(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+
+
+
+
+    <div class="offset-10">
+        <img    class="  " style="position: absolute;   " height=  width= src="{% static "boats/images (2).jpg" %}" alt="save the mf boat">
+    </div>
+
+    <div class="container"   >
+
+
+        <div class="text-center my-4 ">
+            <h3 class="font-weight-bold text-monospace" > List of the boats created by {{ request.user.username }} available for recovery </h3>
+
+        </div>
+
+
+
+        <Ul >
+            {% for instance in versions %}
+                <div class="row">
+                    <div class="col-2 offset-4 ">
+                        <li><h6 class="text-center mb-3  " style="font-size: 20">{{ instance.object_repr }}</h6></li>
+                    </div>
+                </div>
+
+
+
+                <div class="row offset-4">
+                    {% for image in images %}
+                        {% if instance.object_id ==  image.memory and forloop.counter < 4 %}
+                            <a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary rounded ml-3 mb-2" src="{% thumbnail image.boat_photo "medium"  %}"></a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {%  if instance.object_id  not in images.memory_list  %}
+                        <img class="   ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip" data-placement="right" title="This boat doesn't have any photo">
+                    {%  endif %}
+                    <div class="col float-left">
+                        <a href="{% url "boats:reversion_confirmation" pk=instance.object_id %}" class="badge badge-success">Recover</a>
+                    </div>
+                </div>
+            {% empty %}
+                <h5 class="text-center  text-warning " style="font-size: 20">You dont have any deleted boats yet</h5>
+            {% endfor %}
+        </Ul >
+
+
+
+
+    </div> <!--container
+
+{% endblock content %}
