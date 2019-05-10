@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic import ListView, FormView
+from django.views.generic import ListView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
@@ -17,7 +17,7 @@ from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Subquery, Min
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -117,7 +117,7 @@ class BoatListView(SearchableListMixin, ListView):
         """метод возвращает поле по которому идет сортировка"""
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
-        # if self.field not in (f.name for f in BoatModel._meta.get_fields()) and self.mark:
+        # if self.field not in [f.name for f in BoatModel._meta.get_fields(include_parents=False)] and self.mark:
         if self.field == '' or self.mark == "":
             messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
                                                                          "pattern", fail_silently=True)
@@ -175,9 +175,73 @@ def boat_detail_view(request, pk):
     images = current_boat.boatimage_set.all()
     comments = current_boat.comment_set.all()
     articles = current_boat.article_set.all()
+    versions = Version.objects.select_related("revision").get_for_object_reference(BoatModel, pk)
     context = {"images": images, "current_boat": current_boat, "comments": comments,
-               "articles": articles}
-    return render(request, "boat_detail.html", context)
+               "articles": articles, "versions": versions}
+    if request.method == "GET":
+        return render(request, "boat_detail.html", context)
+    else:
+        version_num = request.POST.get("rollback")
+        if version_num == "":
+            messages.add_message(request, messages.WARNING, message="Please choose the rollback point"
+                                                                    " date", fail_silently=True)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        elif current_boat.author != request.user:
+            messages.add_message(request, messages.WARNING, message="You can only rollback your own"
+                                                                    " entries", fail_silently=True)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+        return HttpResponseRedirect(reverse_lazy("boats:rollback",  args=(pk, version_num)))
+
+
+""" Контроллер отката версий лодки"""
+
+
+class RollbackView(MessageLoginRequiredMixin, DetailView):
+    template_name = "rollback.html"
+    model = BoatModel
+    redirect_message = "You have to be authenticated to rollback boat's data"
+
+    def get_context_data(self, **kwargs):
+        context = DetailView.get_context_data(self, **kwargs)
+        #  объект выбранной версии
+        version = Version.objects.select_related("revision").get(id=self.kwargs["version_id"])
+        #  список всех полей модели
+        fields = [f.name for f in BoatModel._meta.get_fields(include_parents=False)]
+        boat = {}
+        #  собираем контекст лодки из версии для отображения состояния лодки на момент сохранения
+        #  версии
+        for fld in fields:
+            try:
+                boat[fld] = version.field_dict[fld]
+            except KeyError:
+                boat[fld] = "DoesNotExists"
+        boat.update({"author": version.revision.user})
+        context.update({"boat": boat, "version": version})
+        # самая старая фотка
+        minimal_id = BoatImage.objects.aggregate(min=Min('id', filter=Q(boat_id=self.kwargs["pk"])))
+        try:
+            context["image"] = BoatImage.objects.get(boat_id=self.kwargs["pk"], pk=minimal_id["min"])
+        except ObjectDoesNotExist:
+            pass
+        return context
+
+    def post(self, request, *args, **kwargs):
+        version = Version.objects.get(id=self.kwargs["version_id"])
+        version.revision.revert()
+        self.get_object().save()
+        message = "You successfully rolled back %(name)s ` data. Rollback date is %(date)s " % \
+                  ({"name": self.get_object().boat_name, "date": version.revision.date_created})
+        messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+        return HttpResponseRedirect(reverse_lazy('boats:boat_detail', args=(self.kwargs["pk"], )))
+
+    def dispatch(self, request, *args, **kwargs):
+        """только автор лодки может делать роллбэк"""
+        if self.request.user != self.get_object().author:
+            messages.add_message(request, messages.WARNING, "You can only rollback your own entries",
+                                 fail_silently=True)
+            return self.handle_no_permission()
+        return MessageLoginRequiredMixin.dispatch(self, request, *args, **kwargs)
 
 
 """ Контроллер добавления новой лодки"""
@@ -198,7 +262,8 @@ def viewname(request):
         if form1.is_valid():
             prim = form1.save(commit=False)
             prim.author = request.user
-            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=prim)
+            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
+                                              instance=prim)
         else:
             form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2")
             context = {"form1": form1, "form2": form2}
@@ -210,7 +275,8 @@ def viewname(request):
             messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(prim.pk, )))
         else:
-            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=prim)
+            form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
+                                              instance=prim)
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
     else:
@@ -272,7 +338,7 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
     def get_context_data(self, **kwargs):
         context = TemplateView.get_context_data(self, **kwargs)
         context["boats_by_user"] = \
-            BoatModel.objects.order_by("boat_publish_date").filter(author=self.request.user)[: 10]
+            BoatModel.objects.order_by("-boat_publish_date").filter(author=self.request.user)[: 10]
         context["articles_by_user"] = \
             Article.objects.order_by("created_at").filter(author=self.request.user)[: 10]
         filter1 = Comment.objects.filter(foreignkey_to_article__author=self.request.user,
@@ -502,7 +568,7 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = TemplateView.get_context_data(self, **kwargs)
         # pk всех существующих  в базе лодок
-        existing_boats_pk = [pk["pk"] for pk in BoatModel.objects.all().values("pk")]
+        existing_boats_pk = BoatModel.objects.all().values_list("pk", flat=True).iterator()
         #  Выбираем все удаленные лодки текущим пользователем
         versions = Version.objects.get_for_model(BoatModel).filter(
             Q(revision__user_id=self.request.user.id) | Q(revision__user_id__isnull=True)).exclude(
@@ -510,7 +576,8 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
         context["versions"] = versions
         # фото всех удаленных лодок
         images = BoatImage.objects.filter(boat_id__isnull=True).exclude(memory__in=existing_boats_pk)
-        images.memory_list = [str(image["memory"]) for image in images.values("memory")]
+        # список рк всех фоток не привязанных к лодкам
+        images.memory_list = str(images.values_list("memory", flat=True))
         for image in images:
             image.memory = str(image.memory)
         context["images"] = images

@@ -31,7 +31,7 @@ urlpatterns = [
 ]
 
 if DEBUG:
-    urlpatterns.append(path("static/<path:path>", never_cache(serve)))
+    urlpatterns.append(path("static/<path:path>", never_cache(serve)))  # если не загр. картинки то смотреть сюда
     urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
     if "debug_toolbar" in INSTALLED_APPS:
         import debug_toolbar

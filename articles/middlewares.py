@@ -1,11 +1,14 @@
 from .models import *
+from django.db.models import Count
 
 """контекстный процессор помещает список подзаголовков в контекст и доп инфу для поиска и пагинации"""
 
 
 def articles_context_processor(request):
     context = {}
-    context["subheadings"] = SubHeading.objects.all()
+    context["subheadings"] = SubHeading.objects.annotate(cnt=Count("article"), boat_num=Count(
+        "one_to_one_to_boat")).prefetch_related("article_set").select_related("foreignkey",).all()
+
     context["keyword"] = ""
     context["all"] = ""
     if "keyword" in request.GET:

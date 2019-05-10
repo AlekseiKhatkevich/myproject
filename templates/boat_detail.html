@@ -33,7 +33,7 @@
 
             </div>
             <div class="col-md-7 border-right ">
-                <p>Description-{{ current_boat.boat_description }}</p>
+                <p><span class="font-weight-bold"> Description -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>{{ current_boat.boat_description }}</p>
 
 
 
@@ -68,6 +68,30 @@
 
 
 
+ <div class="row text-right mt-2">
+ <div class="col">
+     <form action="{{ request.get_full_path_info }}" method="post" name="form1" id="1">
+{% csrf_token %}
+
+                    <select class="custom-select" name="rollback">
+                        <option selected value="" class=" ">Select rollback date </option>
+                        {% for version in versions %}
+                        <option value="{{ version.id }}">--{{ version.revision.date_created }}</option>
+                          {% endfor %}
+                    </select>
+     {% buttons %}
+         <button type="submit" class="btn btn-secondary   border-success mt-2 rounded mr-1" style="width:106px">Rollback</button>
+     {% endbuttons %}
+
+   </form>
+ </div>
+</div>
+
+
+
+
+
+
                 <div class = row >
                     <div class="col mr-2">
 
@@ -78,7 +102,7 @@
                                     <li><a href="{% url "articles:detail" current_heading_pk=article.foreignkey_to_subheading_id  pk=article.pk %}{{ all }}">{{ article.title }}</a></li>
                                 </ul>
                                 {% empty %}
-                                <h6 class="mt-4"> {{ current_boat.boat_name }} doesn't have any article. </h6>
+                                <h6 class="mt-4"> <span style="font-size: 22">{{ current_boat.boat_name }}</span> doesn't have any article. </h6>
                             {% endfor %}
 
 
@@ -118,6 +142,7 @@
         </Ul>
         <hr>
     {%  endfor %}
+
 
 
 

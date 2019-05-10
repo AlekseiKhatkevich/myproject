@@ -184,19 +184,22 @@ class BoatModel(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-        clean_cache(path=CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)  # очишаем кэш           ресубмита (интервал -сутки)
+        clean_cache(path=CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)  # очишаем
+        #  кэш           ресубмита (интервал -сутки)
         import articles.models  # to avoid circular import with articles
         # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой лодки и
         # без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной лодки.
         try:
             subheading = articles.models.SubHeading.objects.prefetch_related("article_set").get(
                 name__iexact=self.boat_name, one_to_one_to_boat_id__isnull=True,
-                foreignkey_id=articles.models.UpperHeading.objects.get(name__exact="Articles on boats").pk)
+                foreignkey_id=articles.models.UpperHeading.objects.get(name__exact="Articles on"
+                                                                                   " boats").pk)
             # есть ли у текущей лодки есть подзаголовок? Т.е мы не создаем лодку а изменяем имя текущей
             # лодки и ее имя совпадает с категорией (смотри описание возле try)
             if articles.models.SubHeading.objects.filter(one_to_one_to_boat_id=self.id).exists():
                 # получаем   подзаголовок текущей лодки
-                current_subheading = articles.models.SubHeading.objects.prefetch_related("article_set").get(
+                current_subheading = articles.models.SubHeading.objects.prefetch_related(
+                    "article_set").get(
                     one_to_one_to_boat_id=self.id)
                 # каждуй статью в этом подзаголовке связываем с подзаголовком в TRY:
                 for article in current_subheading.article_set.all():

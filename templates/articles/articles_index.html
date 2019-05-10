@@ -1,6 +1,7 @@
 <!-- templates/articles/articles_index.html  -->
 {%  extends "base.html" %}
 {% load bootstrap4 %}
+{% load static %}
 
 {% block title %}
 Articles main page
@@ -11,7 +12,14 @@ Articles main page
         .btn-group-vertical a, .btn-group-vertical button {
             width: 100%; margin-right: 20px;
         }
+
     </style>
+
+
+
+ <img class=" offset-6 " style="position: absolute;   " height=  width=  src="{% static "articles/hobie-16-special-edition-16se.jpg" %}" alt="training boat">
+
+
 
     <div class="container-fluid mt-3 ">
 
@@ -27,11 +35,14 @@ Articles main page
 
                     <a class="ml-3"  style=" font-size: 18px" href="{% url "articles:show_by_heading" pk=heading.pk   %}">{{ heading.name|truncatechars:20 }} </a>
 
-                    {% if not heading.article_set.all.exists %}
+                    {% if not heading.cnt %}
                         <span class="badge badge-light text-muted"> EMPTY </span>
+
+                        {% else %}
+        <span class="badge badge-primary text-white"> {{ heading.cnt }} </span>
                     {% endif %}
 
-                {% if heading.one_to_one_to_boat %}
+                {% if heading.boat_num %}
                 <span class="badge badge-warning text-muted"> CONNECTED TO BOAT </span>
                 {% endif %}
 
