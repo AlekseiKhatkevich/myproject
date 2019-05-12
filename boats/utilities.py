@@ -1,11 +1,24 @@
 from django.template.loader import render_to_string
 from django.core.signing import Signer
-from myproject.settings import ALLOWED_HOSTS
+from myproject.settings import ALLOWED_HOSTS, MEDIA_ROOT
 from datetime import datetime
 from os.path import splitext
 import os
 
+
 signer = Signer()
+
+
+def files_list():
+    """ список файлов в media"""
+    spisok = set()
+    allowed_extensions = ("jpg", "png", "gif", "tiff", "bmp", "psd")
+    for (dirpath, dirnames, filenames) in os.walk(MEDIA_ROOT):
+        for file in filenames:
+            if dirpath == MEDIA_ROOT and file.split(".")[-1] in allowed_extensions:
+                spisok.add(file)
+    return spisok
+
 
 """ функция отправки писем"""
 
@@ -33,6 +46,7 @@ def clean_cache(path, time_interval):  # https://pastebin.com/0SPBLJfD
                 if datetime.now().timestamp() - os.path.getctime(os.path.join(dirpath, filename)) > \
                         time_interval:  # проверяем насколько файлы старые
                     os.remove(os.path.join(dirpath, filename))
+
 
 
 

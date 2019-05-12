@@ -33,7 +33,8 @@ def show_by_heading_view(request, pk): #597
     if "keyword" in request.GET:
         keyword = request.GET["keyword"]
         keyword_unidecode = unidecode.unidecode(keyword)
-        q = Q(title__icontains=keyword) | Q(content__icontains=keyword) | Q(title__icontains=keyword_unidecode) | Q(content__icontains=keyword_unidecode)
+        q = Q(title__icontains=keyword) | Q(content__icontains=keyword) | Q(
+            title__icontains=keyword_unidecode) | Q(content__icontains=keyword_unidecode)
         list_of_articles = list_of_articles.filter(q)
     else:
         keyword = ""
@@ -89,8 +90,16 @@ class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView)
         return self.initial.copy()
 
     def get_success_url(self):
-        return reverse('articles:detail',
-                       args=(self.object.foreignkey_to_subheading.pk, self.object.pk, ))
+        """ передача через гет параметры кода того, была ли создана статьия из boats:detail. Нужно
+        для корректной работы кнопки Back to Heading Или back to boat в зависимости откуда была
+        создана статья"""
+        referer = self.request.POST.get("button", None)
+        if referer and "boats" in referer:
+            code = "boats"
+        else:
+            code = "articles"
+        return "%s?code=%s" % (reverse('articles:detail',
+                    args=(self.object.foreignkey_to_subheading.pk, self.object.pk,)), code)
 
 
 """ контроллер редактирования статьи"""

@@ -25,7 +25,16 @@
                     </style>
 
                     <div class="btn-group-vertical text-right  rounded mr-3" role="group" aria-label="page management">
+
+
+                    {% if request.GET.code == "boats"  %}
+                             <a href="{% url "boats:boat_detail" pk=object.foreignkey_to_boat_id %}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the boat" > Back to the boat</button></a>
+
+
+{% else %}
                         <a href="{% url "articles:show_by_heading"  pk=object.foreignkey_to_subheading_id%}{{ all }}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the heading view" > Back to the heading</button></a>
+
+{% endif %}
 
 
                         <a href="{% url "articles:comment" key="article" pk=object.pk %}"><button type="button" class="form-button btn secondary border-success  mt-2" data-toggle="tooltip" data-placement="top" title="Comment this article" > Comment</button></a>

@@ -28,7 +28,7 @@
                     <li>Price-{{ boat.boat_price }} &euro;</li>
                     <li>Manufacturing history of the model - {{ boat.first_year }} to {{ boat.last_year }}</li>
                     <li> <a href="{{ boat.boat_sailboatdata_link }}">Link to SailboatData</a></li>
-                    <li> Entry Author-{{ boat.author}}</li>
+                    <li> Entry Author-{{ boat.author|default_if_none:"Author is unknown"}}</li>
                 </ul>
             </div>
 

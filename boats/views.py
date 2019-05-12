@@ -17,17 +17,17 @@ from .utilities import *
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
-from django.db.models import Prefetch, Subquery, Min
+from django.db.models import Prefetch,  Min, Q
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
-from django.db.models import Q
 from .decorators import login_required_message, MessageLoginRequiredMixin
 from .render import Render, link_callback
 from django.template.loader import get_template
 import xhtml2pdf.pisa as pisa
 from django.utils.translation import ugettext as _
 from reversion.models import Version
+import os
 
 
 """Контроллер редактирования данных о лодке"""
@@ -117,10 +117,11 @@ class BoatListView(SearchableListMixin, ListView):
         """метод возвращает поле по которому идет сортировка"""
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
-        # if self.field not in [f.name for f in BoatModel._meta.get_fields(include_parents=False)] and self.mark:
+        # if self.field not in [f.name for f in BoatModel._meta.get_fields(include_parents=False)]
+        # and self.mark:
         if self.field == '' or self.mark == "":
             messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
-                                                                         "pattern", fail_silently=True)
+                                                                        "pattern", fail_silently=True)
             return None
         if all([self.field, self.mark]):
             self.verbose_name = BoatModel._meta.get_field(self.field).verbose_name
@@ -227,9 +228,22 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
+        # получаем необходимую версию записи и откатываемся до нее
         version = Version.objects.get(id=self.kwargs["version_id"])
         version.revision.revert()
+        #  сайв нужен для привязки /перепривязки категорий статей
         self.get_object().save()
+        # если файл  изображения был фактически удален и его путь в бд ведет в никуда то мы его
+        # удаляем из БД чтобы пустой путь не был привязан к объекту изображения
+        images = self.get_object().boatimage_set.all()
+        score = 0
+        for image in images:
+            if not os.path.exists(image.boat_photo.path):
+                image.true_delete(self)  # удаляем по настоящему
+                score += 1
+        if score != 0:
+            message = "%d broken image instances  has been deleted from DB" % score
+            messages.add_message(request, messages.WARNING, message=message, fail_silently=True)
         message = "You successfully rolled back %(name)s ` data. Rollback date is %(date)s " % \
                   ({"name": self.get_object().boat_name, "date": version.revision.date_created})
         messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
@@ -530,7 +544,7 @@ class Pdf(TemplateView):
         pr = Prefetch("boatimage_set", to_attr="images")
         current_boat = BoatModel.objects.prefetch_related(pr).get(pk=self.kwargs["pk"])
         params = {"current_boat": current_boat, "request": request}
-        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)  # см. .render.py
+        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)  # см.                                                                                            .render.py
 
 
 """контроллер рендеринга в PDF  в файл"""
@@ -554,7 +568,7 @@ def render_pdf_view(request, pk):
        html, dest=response, link_callback=link_callback)
     # if error then show some funny view
     if pisaStatus.err:
-       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
 
 

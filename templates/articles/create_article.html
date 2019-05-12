@@ -21,8 +21,8 @@
         <div class="row">
             <div class=" col text-center">
                 {% buttons %}
-
-                    <button type="submit"  name="submit"   class="form-button btn-lg btn-light rounded font-weight-bold text-muted">
+<!-- передаем адресс предыдущей страницы в контроллер -->
+                    <button type="submit"  name="button" value="{{ request.META.HTTP_REFERER }}"   class="form-button btn-lg btn-light rounded font-weight-bold text-muted"  >
                         Submit
                     </button>
                     <button type="reset" class="form-button btn-lg btn-light rounded font-weight-bold text-muted">

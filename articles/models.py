@@ -95,6 +95,7 @@ class Article(models.Model):
     author = models.ForeignKey(ExtraUser, on_delete=models.SET(superuser))
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published at")
     url_to_article = models.URLField(max_length=100, unique=True, verbose_name="URL to the article",                                                 help_text="Please insert URL of the article")
+    show = models.BooleanField(default=True, blank=False, null=False, editable=False)
 
     def __str__(self):
         return self.title
@@ -135,4 +136,5 @@ class Comment(ModelFieldRequiredMixin, models.Model):
         verbose_name_plural = "Comments"
         ordering = ["-created_at", ]
         indexes = (BrinIndex(fields=["created_at"]),)
+
 

@@ -3,8 +3,6 @@ from django.dispatch import Signal, receiver
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
-from .utilities import get_timestamp_path
-from easy_thumbnails.fields import  ThumbnailerImageField
 from .utilities import *
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
 from django_countries.fields import CountryField
@@ -45,11 +43,12 @@ class BoatImage(models.Model):
     #  запоминаем значение ФК на случай  срабатывания on_delete = SET_NULL (для последующего
     #  восстановления)
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2 месяцев
+        # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2
+        # месяцев
         useless_old_images = BoatImage.objects.filter(boat_id__isnull=True, memory__isnull=False)
         for image in useless_old_images:
                 if datetime.now().timestamp() - os.path.getatime(image.boat_photo.path) > 5184000:
-                    image.delete()
+                    image.true_delete(self)  # удаляем по настоящему
 
         if self.boat and not self.memory:  # сохраняем
             self.memory = self.boat_id
@@ -64,11 +63,32 @@ class BoatImage(models.Model):
     def delete(self, using=None, keep_parents=False):  # удаляем thumbnails ассоциированные
         thumbnailer = get_thumbnailer(self.boat_photo)
         thumbnailer.delete_thumbnails()
-        models.Model.delete(self, using=None, keep_parents=False)
+        # вместо удаления фоток мы устанавкливаем их ФК в <null>
+        self.boat.boatimage_set.remove(self)
+        #  models.Model.delete(self, using=None, keep_parents=False)
+
+    def true_delete(self, using=None, keep_parents=False):
+        """ Удаляем по настоящему"""
+        return models.Model.delete(self, using=None, keep_parents=False)
 
     def __str__(self):
         return "Boat photo - %s, boat name - %s, boat id - %s  " % \
                (self.boat_photo.name, self.boat.boat_name, self.boat_id)
+
+    def filename(self):
+        """метод возвращает имя файла"""
+        return os.path.basename(self.boat_photo.name)
+
+    @staticmethod
+    def clean_media_root():
+        """метод очистки лишних изображений в медиа рут"""
+        files_in_db = {image.filename() for image in BoatImage.objects.all().only("boat_photo")}
+        useless_files = files_list() - files_in_db
+        counter = 0
+        for file in useless_files:
+            os.remove(os.path.join(MEDIA_ROOT, file))
+            counter += 1
+        print(counter, "\xa0\\files were removed from MEDIA_ROOT")
 
     class Meta:
         verbose_name = "Boat photo"
@@ -199,8 +219,7 @@ class BoatModel(models.Model):
             if articles.models.SubHeading.objects.filter(one_to_one_to_boat_id=self.id).exists():
                 # получаем   подзаголовок текущей лодки
                 current_subheading = articles.models.SubHeading.objects.prefetch_related(
-                    "article_set").get(
-                    one_to_one_to_boat_id=self.id)
+                    "article_set").get(one_to_one_to_boat_id=self.id)
                 # каждуй статью в этом подзаголовке связываем с подзаголовком в TRY:
                 for article in current_subheading.article_set.all():
                     article.foreignkey_to_subheading = subheading
@@ -217,8 +236,8 @@ class BoatModel(models.Model):
                 article.save(update_fields=['foreignkey_to_boat', ])
         except articles.models.SubHeading.DoesNotExist:  # если нет, то создаем или обновляем категорию
             # согласно имени лодки
-            articles.models.SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,                          foreignkey_id=articles.models.UpperHeading.objects.get(name__exact="Articles on boats").pk,
-                                                                defaults={"name": self.boat_name})
+            articles.models.SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,                          foreignkey_id=articles.models.UpperHeading.objects.get
+                (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
 
 
 """Расширенная модель юзера """
@@ -233,6 +252,8 @@ class ExtraUser(AbstractUser):
     class Meta(AbstractUser.Meta):
         unique_together = ("first_name", "last_name", )
         indexes = (BrinIndex(fields=["date_joined"]), )
+
+
 
 
 
