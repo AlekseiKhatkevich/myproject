@@ -176,7 +176,8 @@ def boat_detail_view(request, pk):
     images = current_boat.boatimage_set.all()
     comments = current_boat.comment_set.all()
     articles = current_boat.article_set.all()
-    versions = Version.objects.select_related("revision").get_for_object_reference(BoatModel, pk)
+    versions = Version.objects.select_related("revision").\
+        get_for_object_reference(BoatModel, pk).only("id", "revision")
     context = {"images": images, "current_boat": current_boat, "comments": comments,
                "articles": articles, "versions": versions}
     if request.method == "GET":

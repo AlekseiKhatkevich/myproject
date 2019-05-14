@@ -1,0 +1,43 @@
+<!-- templates/articles/resurrection.html  -->
+{%  extends "base.html" %}
+{%  load bootstrap4 %}
+{% block title %}
+    restore the article
+{% endblock %}
+
+{% block content %}
+
+
+    <div class="container-fluid">
+
+        <div class="row ">
+            <div class="col text-center">
+                <h4 class="mt-3 font-italic mb-3"> List of the article made by <span class="font-weight-bold font">{{ request.user }}</span> available to recover </h4>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-10  offset-1">
+                <form method="post" >
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+
+                    <div class="row">
+                        <div class="col text-center">
+                            {% buttons %}
+<div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+                                <button type="submit"  name="submit"   class="form-button btn-lg btn-outline-success rounded-left font-weight-bold   btn btn-block " >Recover</button>
+                                <a href="{% url "articles:articles_main" %}"> <button type="button"  name="back"   class="rounded-right form-button btn-lg btn-outline-primary  font-weight-bold   btn btn-block" style="width: 150%">Back </button> </a>
+                                </div>
+
+                            {% endbuttons %}
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div> <!--container-->
+
+{% endblock content %}

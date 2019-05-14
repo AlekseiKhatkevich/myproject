@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic.base import TemplateView
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, FormView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import *
 from .forms import *
@@ -146,9 +146,10 @@ class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     def post(self, request, *args, **kwargs):
-        messages.add_message(request, messages.SUCCESS,
-                             "Article has deleted from the database",
-                             fail_silently=True, extra_tags="alert alert-info")
+        message = "Article %(name)s has deleted from the database" % {"name": self.get_object(
+        ).title}
+        messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True,
+                             extra_tags="alert alert-info")
         return DeleteView.post(self, request, *args, **kwargs)
 
 
@@ -194,7 +195,7 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
         return kwargs
 
 
-""" Контроллер допаления ап-категории и субкатегории"""
+""" Контроллер добавления ап-категории и субкатегории"""
 
 
 @atomic
@@ -210,7 +211,8 @@ def headingcreateview(request, pk):
             subheading = form2.save(commit=False)
             subheading.foreignkey = upperheading
             subheading.save()
-            message = "You have successfully added an upper-heading\xa0\"" + upperheading.name + "\""
+            message = "You have successfully added an upper-heading\xa0\"" + upperheading.name +\
+                      "\""
             messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
         elif form2.is_valid() and pk != 0:
@@ -226,3 +228,35 @@ def headingcreateview(request, pk):
             return render(request, "articles/add_heading.html", context)
     else:
         return render(request, "articles/add_heading.html", context)
+
+
+""" Контроллер восстановления статей"""
+
+
+class ArticleResurrectionView(MessageLoginRequiredMixin, FormView):
+    model = Article
+    form_class = ArticleResurrectionForm
+    template_name = "articles/resurrection.html"
+    success_url = reverse_lazy("articles:articles_main")
+    redirect_message = "You have to be logged in to recover articles "
+
+    def get_form_kwargs(self):
+        kwargs = FormView.get_form_kwargs(self)
+        kwargs["author_id"] = self.request.user.pk
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            articles = Article.default.filter(id__in=request.POST.getlist('pk')).only("title")
+            message = "Articles "
+            for counter, article in enumerate(articles):
+                if counter == (len(articles)-1):
+                    message += " " + article.title + " "
+                else:
+                    message += " " + article.title + ", "
+            message += ' are restored, totally - %s articles' % len(articles)
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)

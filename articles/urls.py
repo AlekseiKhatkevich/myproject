@@ -10,6 +10,7 @@ urlpatterns = [
     path("article_edit/<int:pk>/", ArticleEditView.as_view(), name="article_edit"),
     path("add_article/<int:pk>/", AddArticleView.as_view(), name="add_article"),
     path("add_heading/<int:pk>/", headingcreateview, name="add_heading"),
+    path("resurrection/", ArticleResurrectionView.as_view(), name="resurrection"),
     path("", ArticlesMainView.as_view(), name="articles_main"),
 
 ]

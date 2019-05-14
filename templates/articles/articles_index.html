@@ -50,9 +50,13 @@ Articles main page
 
                 {% if forloop.counter == 1 %}
                     <div class="col   text-right mr-5  item">
-                        <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="Button coalition">
+                        <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="Button coalition"  >
                             <a href="{% url "articles:add_article" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom  ">Add an Article</button></a>
-                            <a href="{%  url "articles:add_heading" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0">Add new Heading</button></a>
+                            <a href="{%  url "articles:add_heading" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom " >Add new Heading</button></a>
+                            <a href="{%  url "articles:resurrection" %}"><button type="button" class="btn btn-secondary rounded-0">Recover  Articles</button></a>
+
+
+
                         </div>
                     </div>
                 {% endif %}

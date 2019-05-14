@@ -6,6 +6,7 @@ from boats.models import BoatModel, ExtraUser
 from dynamic_validator import ModelFieldRequiredMixin
 from captcha.fields import CaptchaField
 from django.contrib.postgres.indexes import BrinIndex
+import datetime
 
 """ модель группы"""
 
@@ -84,8 +85,19 @@ def superuser():
         return user.id
 
 
+class ArticleManager(models.Manager):
+    """Менеджер прямой связи . Показываем только не удаленные статьи"""
+    def get_queryset(self):
+        return models.Manager.get_queryset(self).exclude(show=False)
+
+
 class Article(models.Model):
-    foreignkey_to_subheading = models.ForeignKey(SubHeading, on_delete=models.PROTECT,                                  verbose_name="Subheading", help_text="Please choose subheading")
+    # менеджеры прямой связи
+    default = models.Manager()  # админ использует первый сверху менеджер
+    objects = ArticleManager()
+
+    foreignkey_to_subheading = models.ForeignKey(SubHeading,
+                                                 on_delete=models.PROTECT,verbose_name="Subheading",                                                    help_text="Please choose subheading")
     foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.SET_NULL,                                  verbose_name="Parent boat for article", help_text="Please choose the boat",
                                            blank=True, null=True)
     title = models.CharField(max_length=50, verbose_name="Article header",
@@ -95,13 +107,28 @@ class Article(models.Model):
     author = models.ForeignKey(ExtraUser, on_delete=models.SET(superuser))
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published at")
     url_to_article = models.URLField(max_length=100, unique=True, verbose_name="URL to the article",                                                 help_text="Please insert URL of the article")
-    show = models.BooleanField(default=True, blank=False, null=False, editable=False)
+    show = models.BooleanField(default=True, blank=False, null=False, verbose_name="deleted mark",
+                               help_text='Marked articles are shown everywhere, unmarked considered as '
+                                         'deleted ones')
+    change_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
         return "/articles/%s/%s/" % (self.foreignkey_to_subheading.pk, self.pk)
+
+    def delete(self, using=None, keep_parents=False):
+        """усланавливаем show=False , чтобы не отображать статьи на сайте вместо их фактического
+         удаления. За фильтрацию статей с show=False отвечает переопределенный менеджер прямой связи"""
+        self.show = False
+        # устанавливаем время удаления для последующего показа в форме восстановления
+        self.change_date = datetime.datetime.now()
+        self.save(update_fields=["show", "change_date"])
+
+    def true_delete(self, using=None, keep_parents=False):
+        """ Удаляем по настоящему"""
+        return models.Model.delete(self, using=None, keep_parents=False)
 
     class Meta:
         verbose_name = "Article"

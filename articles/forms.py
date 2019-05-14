@@ -2,18 +2,7 @@ from .models import *
 from django import forms
 from django.shortcuts import get_object_or_404
 import requests
-
-"""Форма поля выбора ап-группы (для админки),обязательное к заполнению"""
-
-"""
-class SubHeadingForm(forms.ModelForm):
-    upper_heading = forms.ModelChoiceField(queryset=UpperHeading.objects.all(),
-                                           empty_label=None, label="Upper Heading", required=True)
-
-    class Meta:
-        model = SubHeading
-        fields = '__all__'
-"""
+from django.db.models import Q, F
 
 """search form"""
 
@@ -58,7 +47,7 @@ class ArticleForm(forms.ModelForm):
 
     class Meta:
         model = Article
-        exclude = ("created_at", )
+        exclude = ("created_at", "show", "change_date" )
         widgets = {"author": forms.HiddenInput, }
 
 
@@ -76,6 +65,7 @@ class ArticleCommentForm(forms.ModelForm):
         else:
             self.fields["foreignkey_to_article"].widget = forms.HiddenInput()
             """
+        # подключение Popover в форме
         for field in self.fields:   # нужен javascript
             help_text = self.fields[field].help_text
             self.fields[field].help_text = None
@@ -136,5 +126,45 @@ class SubHeadingForm(forms.ModelForm):
         labels = {"name": "Sub heading name"}
         help_texts = {"name": "Please type in name of the new sub-heading",
                       "order": "Order of the sub-headings in the headings category"}
+
+
+"""Форма восстановления статей"""
+
+
+class CustomM2MChoiceFiled(forms.ModelMultipleChoiceField):
+    """слегка кастомизированное поле"""
+    # https://docs.djangoproject.com/en/dev/ref/forms/fields/#django.forms.ModelChoiceField
+    def label_from_instance(self, obj):
+        """ возвращаем человеческий плесхолдер для формы"""
+        return "//DELETED// %s, title - '%s', created - %s \xa0 %s, deleted - %s \xa0 %s" % (
+            obj.foreignkey_to_subheading, obj.title,  obj.created_at.date(), obj.created_at.ctime()
+            [11:-4], obj.change_date.date(), obj.change_date.ctime()[11:-4])
+
+
+class ArticleResurrectionForm(forms.ModelForm):
+
+    pk = CustomM2MChoiceFiled(label="Deleted articles:", queryset=Article.default.none(),
+    help_text="Please select the articles to recover (you can select multiple articles by using shift "
+              "or crtl )")
+    #  https://stackoverflow.com/questions/56099703/pass-request-user-into-form-with
+    #  -modelmultiplechoicefield-django/56099757#56099757
+
+    def __init__(self, *args, **kwargs):
+        author_id = kwargs.pop("author_id", None)
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields["pk"].queryset = Article.default.select_related(
+            "foreignkey_to_subheading").filter(author_id=author_id, show=False,).order_by(
+            "-created_at")
+
+    def clean(self):
+        """Восстанавливаем статьи методом перевода show  в True"""
+        forms.ModelForm.clean(self)
+        pk_list = self.cleaned_data["pk"]
+        Article.default.filter(id__in=pk_list).update(show=True)
+
+    class Meta:
+        model = Article
+        fields = ("pk", )
+
 
 
