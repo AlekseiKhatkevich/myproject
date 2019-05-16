@@ -24,7 +24,8 @@ django-countries = "*"
 xhtml2pdf = "*"
 django-reversion = "*"
 django-file-resubmit = "*"
-
+beautifulsoup4 = "*"
+currencyconverter = "*"
 
 [requires]
 python_version = "3.7"

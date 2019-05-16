@@ -1,0 +1,43 @@
+<!-- templates/blocket.html  -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% load filtersandtags %}
+
+{% block title %}
+    Show announcements for {{ current_boat.boat_name }}
+{% endblock title %}
+
+{% block content %}
+    <div class="container-fluid">
+
+        <div class="row text-muted pl-5 my-3"><h4>List of the announcements available on  <span class="font-weight-bold">www.blocket.se</span> for the <span class="font-weight-bold">{{ object.boat_name }}</span> </h4></div>
+
+        <ul>
+            {% for boat, url in blocket.items %}
+
+                <div class="row pl-5">
+                    <li><a href="{{ url }}" target="_blank">{{ boat }} </a> , price -{{pricelist|get_at_index:forloop.counter0|default_if_none:" is not availible"  }}
+
+
+
+                        {%   if pricelist|get_at_index:forloop.counter0  != None  %}
+
+                        (SEK){{pricelist|get_at_index:forloop.counter0|default_if_none:0|currency_converter }} </li>
+                    {% else  %}
+                    </li>
+                    {% endif %}
+                </div>
+            {% empty %} There are no announcements available on the {{ object.boat_name}}
+            {% endfor %}
+
+        </ul>
+
+
+
+
+    </div>
+
+
+
+
+{% endblock content %}

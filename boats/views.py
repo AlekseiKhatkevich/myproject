@@ -185,7 +185,8 @@ def boat_detail_view(request, pk):
     else:
         version_num = request.POST.get("rollback")
         if version_num == "":
-            messages.add_message(request, messages.WARNING, message="Please choose the rollback point"
+            messages.add_message(request, messages.WARNING, message="Please choose the rollback"
+                                                                    " point"
                                                                     " date", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         elif current_boat.author != request.user:
@@ -616,3 +617,17 @@ def reversion_confirm_view(request, pk):
     else:
         context = {"versions": versions}
         return render(request, "reversion_confirmation.html", context)
+
+
+"""Контроллер показа объявлений о лодке на https://www.blocket.se """
+
+
+class BlocketView(DetailView):
+    model = BoatModel
+    template_name = 'blocket.html'
+
+    def get_context_data(self, **kwargs):
+        context = DetailView.get_context_data(self, **kwargs)
+        context["blocket"], context['pricelist'] = (spider(self.kwargs.get("name")))
+        return context
+

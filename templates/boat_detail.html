@@ -15,7 +15,9 @@
 
                 <ul type="square" class="border-right">
                     <h4 > {% trans "Boat details" %}</h4>
-                    <li>Boat name -{{ current_boat.boat_name }}</li>
+                    <li>Boat name -<strong>{{ current_boat.boat_name }}</strong></li>
+                    <li> Entry Author-{{ current_boat.author}}</li>
+
                     <li>Boat waterline length-{{ current_boat.boat_length }} feats </li>
                     <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
                     <li >Country of origin-{{ current_boat.boat_country_of_origin.name }}
@@ -27,7 +29,8 @@
                     <li>Price-{{ current_boat.boat_price }} &euro;</li>
                     <li>Manufacturing history of the model - {{ current_boat.first_year }} to {{ current_boat.last_year }}</li>
                     <li> <a href="{{ current_boat.boat_sailboatdata_link }}">Link to SailboatData</a></li>
-                    <li> Entry Author-{{ current_boat.author}}</li>
+                    <li><a href="https://www.blocket.se/hela_sverige?q={{ current_boat.boat_name }}&cg=1060&w=3&st=s&ps=&pe=&c=1062&ca=11&is=1&l=0&md=li" target="_blank">Check it on www.blocket.se</a></li>
+                    <li><a href="{% url "boats:blocket" pk=current_boat.id name=current_boat.boat_name  %}" target="_blank">Open list of BLOCKET announcements on a separate page</a></li>
 
                 </ul>
 

@@ -2,10 +2,12 @@ from django.contrib import admin
 from .models import *
 from .forms import *
 from reversion.admin import VersionAdmin
+from django.contrib import messages
 
 
 class SubHeadingInline(admin.TabularInline):
     model = SubHeading
+    show_change_link = True
 
 
 """ап-категория """
@@ -14,9 +16,37 @@ class SubHeadingInline(admin.TabularInline):
 class UpperHeadingAdmin(admin.ModelAdmin):
     exclude = ("foreignkey", )
     inlines = (SubHeadingInline, )
+    raw_id_fields = ("one_to_one_to_boat", )
 
 
 """статьи"""
+
+
+def fake_delete(ArticlesAdmin, request, queryset):
+    """метод добавляет  в actions select возможность удалять статьи переводом show в False"""
+    message = "Articles: "
+    for cnt, rec in enumerate(queryset.only("title"), 1):
+        rec.delete()
+        if cnt != queryset.count():
+            message += " " + rec.title + " "
+        else:
+            message += " " + rec.title + ",  "
+    message += " have deleted , totally - %d articles" % queryset.count()
+    ArticlesAdmin.message_user(request, message=message, fail_silently=True)
+
+
+def kinda_undelete(ArticlesAdmin, request, queryset):
+    """метод переводит show в True"""
+    cnt = queryset.filter(show=False).update(show=True)
+    if cnt == 0:
+        message, level = "Please select only deleted articles to recover", messages.WARNING
+    else:
+        message, level = "% d articles have been restored" % cnt, messages.INFO
+    ArticlesAdmin.message_user(request, message=message, fail_silently=True, level=level)
+
+
+fake_delete.short_description = "Mark as deleted instead of TRUE delete"
+kinda_undelete.short_description = "Recover deleted articles"
 
 
 class DeletedFilter(admin.SimpleListFilter):
@@ -49,6 +79,7 @@ class ArticlesAdmin(VersionAdmin):
     list_select_related = True
     raw_id_fields = ("foreignkey_to_subheading", "foreignkey_to_boat")
     date_hierarchy = "created_at"
+    actions = (fake_delete, kinda_undelete)
 
     def get_queryset(self, request):
         return VersionAdmin.get_queryset(self, request)

@@ -34,6 +34,8 @@ class BoatsAdmin(VersionAdmin):
     search_fields = ("boat_name",)
     inlines = (BoatimageInline, )
     list_select_related = True
+    radio_fields = {"author": admin.HORIZONTAL}
+
 
 """ админ дополнительной (расширенной) модели пользователя"""
 

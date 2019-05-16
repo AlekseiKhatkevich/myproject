@@ -24,6 +24,7 @@ urlpatterns = [
     path("boats/reversion/confirmation/<int:pk>/", reversion_confirm_view, name="reversion_confirmation"),
     path("boats/reversion/", ReversionView.as_view(), name="reversion"),
     path("boats/rollback/<int:pk>/<int:version_id>/", RollbackView.as_view(), name="rollback"),
+    path("boats/blocket/<int:pk>/<str:name>/", BlocketView.as_view(), name="blocket"),
     path("boats/", BoatListView.as_view(), name="boats"),
     path("feedback/", feedback_view, name="feedback"),
     path("", IndexPageView.as_view(), name="index"),

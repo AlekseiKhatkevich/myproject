@@ -27,11 +27,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django.forms",  # for a custom widgets
     # custom
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
     "testapp.apps.TestappConfig",
-    #3rd party
+    # 3rd party
     "captcha",
     "bootstrap4",
     "django_cleanup",
@@ -42,11 +43,9 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "reversion",
     "dynamic_validator",
-    "django.forms",  #   for a custom widgets
     "django_countries",
     "xhtml2pdf",
     "file_resubmit",
-
 ]
 
 
