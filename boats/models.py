@@ -190,7 +190,8 @@ class BoatModel(models.Model):
         except EmptyResultSet:
             pass
         try:  # удаление sub категорий   связанных с лодкой при ее удалении
-            if not articles.models.SubHeading.objects.get(one_to_one_to_boat=self).article_set.exists():
+            if not articles.models.SubHeading.objects.get(
+                    one_to_one_to_boat=self).article_set.exists():
                 self.heading.delete()  # удаляем, если не содержит статей
         except articles.models.SubHeading.DoesNotExist or ObjectDoesNotExist:
             pass
@@ -214,7 +215,8 @@ class BoatModel(models.Model):
                 name__iexact=self.boat_name, one_to_one_to_boat_id__isnull=True,
                 foreignkey_id=articles.models.UpperHeading.objects.get(name__exact="Articles on"
                                                                                    " boats").pk)
-            # есть ли у текущей лодки есть подзаголовок? Т.е мы не создаем лодку а изменяем имя текущей
+            # есть ли у текущей лодки есть подзаголовок? Т.е мы не создаем лодку а изменяем имя
+            # текущей
             # лодки и ее имя совпадает с категорией (смотри описание возле try)
             if articles.models.SubHeading.objects.filter(one_to_one_to_boat_id=self.id).exists():
                 # получаем   подзаголовок текущей лодки
@@ -226,7 +228,8 @@ class BoatModel(models.Model):
                     article.save(update_fields=['foreignkey_to_subheading', ])
                 current_subheading.delete()  # удаляем текущий подзаголовок
 
-                # связываем подзаголовок с лодкой. С этого места и ниже идет код для создаваемой с нуля
+                # связываем подзаголовок с лодкой. С этого места и ниже идет код для создаваемой с
+                # нуля
                 # лодки. Выше был для лодки в случае изменения ее имени ( уже сущ. лодки)
             subheading.one_to_one_to_boat = self
             subheading.save(update_fields=['one_to_one_to_boat', ])
@@ -234,7 +237,8 @@ class BoatModel(models.Model):
             for article in subheading.article_set.all():
                 self.article_set.add(article)
                 article.save(update_fields=['foreignkey_to_boat', ])
-        except articles.models.SubHeading.DoesNotExist:  # если нет, то создаем или обновляем категорию
+        except articles.models.SubHeading.DoesNotExist:  # если нет, то создаем или обновляем
+            # категорию
             # согласно имени лодки
             articles.models.SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,                          foreignkey_id=articles.models.UpperHeading.objects.get
                 (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})

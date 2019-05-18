@@ -28,6 +28,11 @@ import xhtml2pdf.pisa as pisa
 from django.utils.translation import ugettext as _
 from reversion.models import Version
 import os
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.views.decorators.cache import cache_page
+from django.conf import settings
+
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 
 """Контроллер редактирования данных о лодке"""
@@ -40,17 +45,20 @@ def viewname_edit(request, pk):
     obj1 = BoatModel.objects.get(pk=pk)
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1", instance=obj1)
-        form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2", instance=obj1)
+        form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
+                                          instance=obj1)
         if form1.is_valid() and form2.is_valid():
             if form1.has_changed() or form2.has_changed():
                 boat_obj = form1.save()
                 form2.save()
                 message = "You successfully edited %(name)s  data" % {"name": boat_obj.boat_name}
-                messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+                messages.add_message(request, messages.SUCCESS, message=message,
+                                     fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
             else:
                 messages.add_message(request, messages.INFO,
-                                     "You have changed nothing in this form yet", fail_silently=True)
+                                     "You have changed nothing in this form yet",
+                                     fail_silently=True)
                 context = {"form1": form1, "form2": form2}
                 return render(request, "edit_boat.html", context)
         else:
@@ -100,6 +108,7 @@ class BoatDeleteView(DeleteView):
 """ Индекс"""
 
 
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class IndexPageView(TemplateView):
     template_name = "index.html"
 
@@ -121,7 +130,7 @@ class BoatListView(SearchableListMixin, ListView):
         # and self.mark:
         if self.field == '' or self.mark == "":
             messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
-                                                                        "pattern", fail_silently=True)
+                                                                "pattern", fail_silently=True)
             return None
         if all([self.field, self.mark]):
             self.verbose_name = BoatModel._meta.get_field(self.field).verbose_name
@@ -185,13 +194,11 @@ def boat_detail_view(request, pk):
     else:
         version_num = request.POST.get("rollback")
         if version_num == "":
-            messages.add_message(request, messages.WARNING, message="Please choose the rollback"
-                                                                    " point"
-                                                                    " date", fail_silently=True)
+            messages.add_message(request, messages.WARNING, message=
+            "Please choose the rollback point date", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         elif current_boat.author != request.user:
-            messages.add_message(request, messages.WARNING, message="You can only rollback your own"
-                                                                    " entries", fail_silently=True)
+            messages.add_message(request, messages.WARNING, message="You can only rollback your                                                     own entries", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         return HttpResponseRedirect(reverse_lazy("boats:rollback",  args=(pk, version_num)))
@@ -222,9 +229,11 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
         boat.update({"author": version.revision.user})
         context.update({"boat": boat, "version": version})
         # самая старая фотка
-        minimal_id = BoatImage.objects.aggregate(min=Min('id', filter=Q(boat_id=self.kwargs["pk"])))
+        minimal_id = BoatImage.objects.aggregate(min=Min('id',
+                                                         filter=Q(boat_id=self.kwargs["pk"])))
         try:
-            context["image"] = BoatImage.objects.get(boat_id=self.kwargs["pk"], pk=minimal_id["min"])
+            context["image"] = BoatImage.objects.get(boat_id=self.kwargs["pk"],
+                                                     pk=minimal_id["min"])
         except ObjectDoesNotExist:
             pass
         return context
@@ -254,8 +263,8 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
     def dispatch(self, request, *args, **kwargs):
         """только автор лодки может делать роллбэк"""
         if self.request.user != self.get_object().author:
-            messages.add_message(request, messages.WARNING, "You can only rollback your own entries",
-                                 fail_silently=True)
+            messages.add_message(request, messages.WARNING, "You can only rollback your own "
+                                                            "entries", fail_silently=True)
             return self.handle_no_permission()
         return MessageLoginRequiredMixin.dispatch(self, request, *args, **kwargs)
 
@@ -300,32 +309,11 @@ def viewname(request):
         context = {"form1": form1, "form2": form2}
         return render(request, "create.html", context)
 
-"""
-# альтернативный вариант
-@ method_decorator(atomic, name="forms_valid")
-class CreateBoatView(LoginRequiredMixin, CreateWithInlinesView):
-    model = BoatModel
-    inlines = [ItemInline]
-    fields = ["boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price", "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description"]
-    template_name = 'create.html'
 
-    def get_success_url(self):
-        return reverse('boats:boat_detail', args=(self.object.pk, ))
-
-    def forms_valid(self, form, inlines):
-        self.object = form.save(commit=False)
-        self.object.author = self.request.user
-        form.save(commit=True)
-        for formset in inlines:
-            formset.save()
-            messages.add_message(self.request, messages.SUCCESS,
-                                 "Boat has been added", fail_silently=True)
-        return HttpResponseRedirect(self.get_success_url())
-
-"""
 """ контроллер LOGIN"""
 
 
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class AdminLoginView(SuccessMessageMixin, LoginView):
     template_name = "admin/login.html"
     success_message = "You have logged in, %(username)s"
@@ -335,6 +323,7 @@ class AdminLoginView(SuccessMessageMixin, LoginView):
 """ контроллер LOGOUT"""
 
 
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
 
@@ -404,6 +393,7 @@ class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordCh
 """ добавление нового пользователя"""
 
 
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class AddNewUserView(CreateView):
     model = ExtraUser
     template_name = "admin/add_new_user.html"
@@ -541,6 +531,7 @@ class PassResConfView(SuccessMessageMixin, PasswordResetConfirmView):
 """контроллер рендеринга в PDF  в поток"""
 
 
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class Pdf(TemplateView):
     def get(self, request, *args, **kwargs):
         pr = Prefetch("boatimage_set", to_attr="images")
@@ -552,6 +543,7 @@ class Pdf(TemplateView):
 """контроллер рендеринга в PDF  в файл"""
 
 
+@cache_page(CACHE_TTL)
 def render_pdf_view(request, pk):
     template_path = "pdf/pdf.html"
     pr = Prefetch("boatimage_set", to_attr="images")
@@ -622,12 +614,25 @@ def reversion_confirm_view(request, pk):
 """Контроллер показа объявлений о лодке на https://www.blocket.se """
 
 
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class BlocketView(DetailView):
     model = BoatModel
     template_name = 'blocket.html'
 
     def get_context_data(self, **kwargs):
         context = DetailView.get_context_data(self, **kwargs)
-        context["blocket"], context['pricelist'] = (spider(self.kwargs.get("name")))
+        context["blocket"], context['pricelist'], context["cities"] \
+            = (spider(self.kwargs.get("name")))
+        rate = currency_converter(1000)
+        context["pricelist_euro"] = []
+        for price in context['pricelist']:
+                try:
+                    context["pricelist_euro"].append(int(price/rate))
+                except TypeError:
+                    context["pricelist_euro"].append(None)
         return context
+
+
+class MapView(TemplateView):
+    template_name = "map1.html"
 

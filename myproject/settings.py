@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "django_cleanup",
     "easy_thumbnails",
     "social_django",
-    "crispy_forms",
     "extra_views",
     "debug_toolbar",
     "reversion",
@@ -46,6 +45,8 @@ INSTALLED_APPS = [
     "django_countries",
     "xhtml2pdf",
     "file_resubmit",
+    #"celery",
+    #'redis',
 ]
 
 
@@ -273,13 +274,38 @@ if DEBUG: INTERNAL_IPS = "127.0.0.1"
 
 # for file resubmit
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    #'default': {
+        #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     },
+
     "file_resubmit": {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        "LOCATION": os.path.join(BASE_DIR, 'data/cache/file_resubmit')
-    },
+        "LOCATION": os.path.join(BASE_DIR, 'data/cache/file_resubmit')},
 }
+
+# REDIS related settings
+REDIS_HOST = 'localhost'
+REDIS_PORT = '6379'
+BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+# время жизни кеша (15 минут)
+CACHE_TTL = 60*15
+
+# CELERY related settings
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+# celery -A myproject worker --pool=solo -l info для запуска воркера под винду
+#celery -A myproject beat -для запуска задач по рассписанию
+
 
 

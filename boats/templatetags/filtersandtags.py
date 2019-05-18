@@ -1,6 +1,7 @@
 from django import template
 from currency_converter import CurrencyConverter, RateNotFoundError
 
+
 register = template.Library()
 
 
@@ -14,10 +15,10 @@ def get_at_index(_list, index):
 
 
 @register.filter
-def currency_converter(price, curr1="SEK", curr2="EUR"): # assincio
+def currency_converter(price, curr1="SEK", curr2="EUR"):
     """конвертер валют . Работает медленно"""
     c = CurrencyConverter()
     try:
         return c.convert(price, curr1, curr2)
-    except RateNotFoundError as err:
+    except ValueError or RateNotFoundError as err:
         return str(err)

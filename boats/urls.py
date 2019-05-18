@@ -27,5 +27,6 @@ urlpatterns = [
     path("boats/blocket/<int:pk>/<str:name>/", BlocketView.as_view(), name="blocket"),
     path("boats/", BoatListView.as_view(), name="boats"),
     path("feedback/", feedback_view, name="feedback"),
+    path("map/", MapView.as_view(), name="map"),
     path("", IndexPageView.as_view(), name="index"),
 ]

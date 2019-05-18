@@ -18,11 +18,12 @@
                 <div class="row pl-5">
                     <li><a href="{{ url }}" target="_blank">{{ boat }} </a> , price -{{pricelist|get_at_index:forloop.counter0|default_if_none:" is not availible"  }}
 
-
-
                         {%   if pricelist|get_at_index:forloop.counter0  != None  %}
+                            (SEK)
 
-                        (SEK){{pricelist|get_at_index:forloop.counter0|default_if_none:0|currency_converter }} </li>
+                       ~ {{ pricelist_euro|get_at_index:forloop.counter0 }} (EURO)
+
+                            </li>
                     {% else  %}
                     </li>
                     {% endif %}
@@ -33,11 +34,10 @@
         </ul>
 
 
-
+<p class="text-muted ml-3 mt-4">Currency rates are provided by  <a href="http://www.ecb.int/">European Central Bank</a> , effective on date {% now "SHORT_DATE_FORMAT"%}</p>
 
     </div>
 
-
-
+<a href="{% url "boats:map" %}">MAP</a>
 
 {% endblock content %}

@@ -13,7 +13,6 @@ easy-thumbnails = "*"
 django-cleanup = "*"
 social-auth-app-django = "*"
 django-ratelimit = "*"
-django-crispy-forms = "*"
 django-extra-views = "*"
 unidecode = "*"
 django-debug-toolbar = "*"
@@ -26,6 +25,8 @@ django-reversion = "*"
 django-file-resubmit = "*"
 beautifulsoup4 = "*"
 currencyconverter = "*"
+celery = {extras = ["redis"],version = "*"}
+django-redis = "*"
 
 [requires]
 python_version = "3.7"
