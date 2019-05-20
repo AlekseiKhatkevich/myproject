@@ -3,16 +3,17 @@ from django.dispatch import Signal, receiver
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
-from .utilities import *
+from .utilities import files_list, send_activation_notofication, get_timestamp_path, clean_cache, clean_map
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
 from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
 from django.db.models.fields import Field
 from .lookups import NotEqual
-from myproject.settings import CACHES
+from myproject.settings import CACHES, MEDIA_ROOT
 import os
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
+
 
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
@@ -117,11 +118,11 @@ class BoatModel(models.Model):
                                null=True, blank=True,
                                verbose_name="Author of the entry")
 
-    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat model",
-                                 help_text="Please input boat model")
+    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name=
+    "Boat model", help_text="Please input boat model")
 
-    boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
-                                    help_text="Please input boat water-line length",)
+    boat_length = models.FloatField(null=False, blank=False, verbose_name=
+    "Boat water-line length", help_text="Please input boat water-line length",)
 
     boat_description = models.TextField(blank=True, verbose_name="Boat description",
                                         help_text="Please describe the boat", )
@@ -133,7 +134,9 @@ class BoatModel(models.Model):
     boat_price = models.PositiveIntegerField(verbose_name="price of the boat",
                                                   help_text="Please input boat price", )
 
-    boat_country_of_origin = CountryField(verbose_name="Boat country of origin", blank_label="Select                            country of origin", help_text="Please specify boat's country of origin")
+    boat_country_of_origin = CountryField(verbose_name="Boat country of origin",
+                                          blank_label="Select country of origin",
+                                          help_text="Please specify boat's country of origin")
 
     boat_sailboatdata_link = models.URLField(max_length=100, blank=True,
                                              verbose_name="URL to Sailboatdata",
@@ -169,11 +172,8 @@ class BoatModel(models.Model):
     def delete(self, using=None, keep_parents=False):
         import articles.models  # to avoid circular import with articles
         """
-       for ai in self.boatimage_set.all():  # для правильного србатывания django_cleanup
-            ai.delete()
-        """
-        """
-            # очистка всех пустых подкатегорий  в категории "Articles on boats" без статей и без связи с
+            # очистка всех пустых подкатегорий  в категории "Articles on boats" без статей и без 
+            связи с
             # лодкой
             # - условия срабатывания системы очистки:
             # 1 находится в папке Articles on boats
@@ -183,7 +183,8 @@ class BoatModel(models.Model):
         try:
             subheadings_query_set = articles.models.SubHeading.objects.filter(
                 foreignkey_id=articles.models.UpperHeading.objects.get(
-                            name__exact="Articles on boats").pk, one_to_one_to_boat_id__isnull=True)
+                            name__exact="Articles on boats").pk,
+                one_to_one_to_boat_id__isnull=True)
             for subheading in subheadings_query_set:
                 if not subheading.article_set.exists():
                     subheading.delete()
@@ -198,6 +199,8 @@ class BoatModel(models.Model):
         for image in self.boatimage_set.all():  # удаляем ассоциированные тумбнейлы
             thumbnailer = get_thumbnailer(image.boat_photo)
             thumbnailer.delete_thumbnails()
+        # удаляем карту, если она есть
+        clean_map(pk=self.id)
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки
@@ -205,11 +208,13 @@ class BoatModel(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-        clean_cache(path=CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)  # очишаем
-        #  кэш           ресубмита (интервал -сутки)
+        clean_cache(path=CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)
+        # очишаем#  кэш  ресубмита (интервал -сутки)
         import articles.models  # to avoid circular import with articles
-        # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой лодки и
-        # без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной лодки.
+        # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой
+        # лодки и
+        # без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной
+        # лодки.
         try:
             subheading = articles.models.SubHeading.objects.prefetch_related("article_set").get(
                 name__iexact=self.boat_name, one_to_one_to_boat_id__isnull=True,
@@ -248,8 +253,7 @@ class BoatModel(models.Model):
 
 
 class ExtraUser(AbstractUser):
-    is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?",
-                                       help_text="Specifies whether user has been activated or not")
+    is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?", help_text="Specifies whether user has been activated or not")
     email = models.EmailField(unique=True, blank=False, verbose_name="user's email",
                               help_text='Please type in your email address')
 

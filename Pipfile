@@ -27,6 +27,8 @@ beautifulsoup4 = "*"
 currencyconverter = "*"
 celery = {extras = ["redis"],version = "*"}
 django-redis = "*"
+folium = "*"
+geocoder = "*"
 
 [requires]
 python_version = "3.7"

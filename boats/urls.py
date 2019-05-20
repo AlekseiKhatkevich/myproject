@@ -4,7 +4,8 @@ from .views import *
 app_name = 'boats'
 urlpatterns = [
 
-    path("accounts/reset/<uidb64>/<token>/", PassResConfView.as_view(), name='password_reset_confirm'),
+    path("accounts/reset/<uidb64>/<token>/", PassResConfView.as_view(),
+         name='password_reset_confirm'),
     path("accounts/password_reset/", PassResView.as_view(), name="password_reset"),
     path("accounts/register/activate/<str:sign>/", user_activate_view, name="register_activate"),
     path('account/password/change', PasswordCorrectionView.as_view(), name="password_change"),
@@ -21,12 +22,13 @@ urlpatterns = [
     path("boats/render/pdf/<int:pk>/", Pdf.as_view(), name="pdf"),
     path("boats/delete/<int:pk>/", BoatDeleteView.as_view(), name="boat_delete"),
     path("boats/create/", viewname, name="boat_create"),
-    path("boats/reversion/confirmation/<int:pk>/", reversion_confirm_view, name="reversion_confirmation"),
+    path("boats/reversion/confirmation/<int:pk>/", reversion_confirm_view,
+         name="reversion_confirmation"),
     path("boats/reversion/", ReversionView.as_view(), name="reversion"),
     path("boats/rollback/<int:pk>/<int:version_id>/", RollbackView.as_view(), name="rollback"),
     path("boats/blocket/<int:pk>/<str:name>/", BlocketView.as_view(), name="blocket"),
     path("boats/", BoatListView.as_view(), name="boats"),
     path("feedback/", feedback_view, name="feedback"),
-    path("map/", MapView.as_view(), name="map"),
+    path("map/<int:pk>/", MapView.as_view(),   name="map"),
     path("", IndexPageView.as_view(), name="index"),
 ]

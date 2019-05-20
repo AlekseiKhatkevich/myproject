@@ -13,7 +13,8 @@ from django.core.signing import BadSignature
 from .models import *
 from articles.models import Article, Comment
 from .forms import *
-from .utilities import *
+#from .utilities import map_folium, signer, spider, currency_converter
+import boats.utilities
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
@@ -31,6 +32,7 @@ import os
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 from django.conf import settings
+from django.core.cache import cache
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -153,8 +155,9 @@ class BoatListView(SearchableListMixin, ListView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        """Для корректного возврата после поиска к отсортированному списку. Сохраняем сортировку в
-         куках, а затем извлекаем ее в шаблоне и запихиваем в УРЛ через ГЕТ параметры"""
+        """Для корректного возврата после поиска к отсортированному списку. Сохраняем
+        сортировку в куках, а затем извлекаем ее в шаблоне и запихиваем в УРЛ через ГЕТ
+        параметры"""
         response = ListView.render_to_response(self, context, **response_kwargs)
         if all([self.field, self.mark]):
             if self.field.startswith("-"):
@@ -169,9 +172,11 @@ class BoatListView(SearchableListMixin, ListView):
         country = self.request.GET.get('country', False)
         if country:
             boat = qs.filter(boat_country_of_origin=country).only("boat_country_of_origin")[
-                   :1].iterator()  # i hate "for" cycles within  only one  object in queryset :))
-            message = 'Boats are filtered by county "%s"' % next(boat).boat_country_of_origin.name
-            messages.add_message(self.request, messages.SUCCESS, message=message, fail_silently=True)
+                   :1].iterator()
+            message = 'Boats are filtered by county "%s"' % next(
+                boat).boat_country_of_origin.name
+            messages.add_message(self.request, messages.SUCCESS, message=message,
+                                 fail_silently=True)
             return qs.filter(boat_country_of_origin=country)
         return qs
 
@@ -258,7 +263,8 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
         message = "You successfully rolled back %(name)s ` data. Rollback date is %(date)s " % \
                   ({"name": self.get_object().boat_name, "date": version.revision.date_created})
         messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
-        return HttpResponseRedirect(reverse_lazy('boats:boat_detail', args=(self.kwargs["pk"], )))
+        return HttpResponseRedirect(reverse_lazy('boats:boat_detail',
+                                                 args=(self.kwargs["pk"], )))
 
     def dispatch(self, request, *args, **kwargs):
         """только автор лодки может делать роллбэк"""
@@ -343,7 +349,8 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
     def get_context_data(self, **kwargs):
         context = TemplateView.get_context_data(self, **kwargs)
         context["boats_by_user"] = \
-            BoatModel.objects.order_by("-boat_publish_date").filter(author=self.request.user)[: 10]
+            BoatModel.objects.order_by("-boat_publish_date").\
+        filter(author=self.request.user)[:10]
         context["articles_by_user"] = \
             Article.objects.order_by("created_at").filter(author=self.request.user)[: 10]
         filter1 = Comment.objects.filter(foreignkey_to_article__author=self.request.user,
@@ -413,7 +420,7 @@ class RegisterDoneView(TemplateView):
 
 def user_activate_view(request, sign):  # 575
     try:
-        username = signer.unsign(sign)
+        username = boats.utilities.signer.unsign(sign)
     except BadSignature:
         return render(request, "admin/bad_signature.html")
     user = get_object_or_404(ExtraUser, username=username)
@@ -444,7 +451,8 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
             user = self.request.user
             user.is_active = user.is_activated = False
             user.save()
-            message = 'Your profile "%s" is successfully deactivated.' % self.request.user.username
+            message = 'Your profile "%s" is successfully deactivated.' % \
+                      self.request.user.username
             messages.success(request, message=message, fail_silently=True)
             logout(self.request)
             return HttpResponseRedirect(reverse_lazy("boats:index"))
@@ -537,7 +545,7 @@ class Pdf(TemplateView):
         pr = Prefetch("boatimage_set", to_attr="images")
         current_boat = BoatModel.objects.prefetch_related(pr).get(pk=self.kwargs["pk"])
         params = {"current_boat": current_boat, "request": request}
-        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)  # см.                                                                                            .render.py
+        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)  # см.                                                                                        .render.py
 
 
 """контроллер рендеринга в PDF  в файл"""
@@ -579,11 +587,13 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
         existing_boats_pk = BoatModel.objects.all().values_list("pk", flat=True).iterator()
         #  Выбираем все удаленные лодки текущим пользователем
         versions = Version.objects.get_for_model(BoatModel).filter(
-            Q(revision__user_id=self.request.user.id) | Q(revision__user_id__isnull=True)).exclude(
+            Q(revision__user_id=self.request.user.id) | Q(
+                revision__user_id__isnull=True)).exclude(
             object_id__in=existing_boats_pk).order_by("object_id").distinct("object_id")
         context["versions"] = versions
         # фото всех удаленных лодок
-        images = BoatImage.objects.filter(boat_id__isnull=True).exclude(memory__in=existing_boats_pk)
+        images = BoatImage.objects.filter(boat_id__isnull=True).exclude(
+            memory__in=existing_boats_pk)
         # список рк всех фоток не привязанных к лодкам
         images.memory_list = str(images.values_list("memory", flat=True))
         for image in images:
@@ -614,7 +624,7 @@ def reversion_confirm_view(request, pk):
 """Контроллер показа объявлений о лодке на https://www.blocket.se """
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
+#method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class BlocketView(DetailView):
     model = BoatModel
     template_name = 'blocket.html'
@@ -622,17 +632,31 @@ class BlocketView(DetailView):
     def get_context_data(self, **kwargs):
         context = DetailView.get_context_data(self, **kwargs)
         context["blocket"], context['pricelist'], context["cities"] \
-            = (spider(self.kwargs.get("name")))
-        rate = currency_converter(1000)
+            = (boats.utilities.spider(self.kwargs.get("name")))
+        rate = boats.utilities.currency_converter(1000)
         context["pricelist_euro"] = []
         for price in context['pricelist']:
                 try:
                     context["pricelist_euro"].append(int(price/rate))
                 except TypeError:
                     context["pricelist_euro"].append(None)
+        cache.add(self.object.id, context["cities"], 60*60*12)
         return context
 
 
-class MapView(TemplateView):
-    template_name = "map1.html"
+""" Контроллер просмотра кары с местами продажи лодок """
 
+
+#@method_decorator(cache_page(60*60*24), name="dispatch")
+class MapView(TemplateView):
+    model = BoatModel
+    template_name = ""
+
+    def get_template_names(self):
+        TemplateView.get_template_names(self)
+        template_name = "maps/" + str(self.kwargs.get("pk")) + ".html"
+        return template_name
+
+    def get(self, request, *args, **kwargs):
+        boats.utilities.map_folium(cache.get(self.kwargs.get("pk")), pk=self.kwargs.get("pk"))
+        return TemplateView.get(self, request, *args, **kwargs)

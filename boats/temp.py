@@ -252,31 +252,69 @@ def viewname(request):
 """
 """
 def spider(name):
-   Поиск лодок по названию на Блоксете. Метод возвращает словарь с {названием лодки из объявления:
-     УРЛом объявления} + список цен
+     
     address = "https://www.blocket.se/hela_sverige?q=%s&cg=1060&w=3&st=s&ps=&pe=&c=1062&ca=11&is=1&l=0&md=li" % name.replace(" ", "+")
     try:
         html = urlopen(address)
     except HTTPError:
         return {"HTTPError": "www.blocket.se hasn't accepted the search or has other sort of HTTP "
-                           "troubles "}
+                           "troubles "}, None, None
     else:
         bsObj = BeautifulSoup(html.read(), features="lxml")
+
         #  ищем названиия объявлений и урлы лодок
         raw_search = bsObj.findAll("a", {"tabindex": "50"})
         url_dict = {}
         for unit in raw_search:
+
+            # ищем теги где в названииях есть имя лодки
             final_search = bsObj.find("a", {"tabindex": "50", "title": unit.get_text()})
             if final_search:
+                #  достаем урл
                 url = (re.findall(r"http(?:s)?://\S+", str(final_search)))
                 title = final_search.get_text()
-                url_dict.update({title: url[0][: -1]})
+                url_dict.update({title: url[0][: -1]})  # словарь цена: урл
+
                 #  Ищем цены
         prices = bsObj.findAll("p", {"itemprop": "price"})
         pricelist = []
         for price in prices:  # why dont just use API instead ??? LOL
             #  отбираем только цену. Фильтруем таги и др. хрень
             digits = ''.join(filter(lambda x: x.isdigit(), price.get_text()))
-            pricelist.append(int(digits)) if digits else pricelist.append(None)
-        return url_dict, pricelist
+            pricelist.append(int(digits)) if digits else pricelist.append(0)
+
+        # ищем места продажи лодок (возвращаемый словарь не сортирован по уровню цен)
+        places = bsObj.find_all("header", {"itemprop": "itemOffered"})
+        cities_dict = {}  # лодка : город
+        for place, boat in zip(places, url_dict.keys()):
+            # отделяем экранированные символы от текста и шлак в начале строки
+            text = place.get_text().strip().split()[-1]
+            cities_dict.update({boat: text})  # имя лодки: город
+        # сортировка цен по возрастанию
+        if pricelist and url_dict:
+            result_list, result_dict, = zip(*sorted(zip(pricelist, url_dict.items())))
+            result_list, result_dict = list(result_list), dict(result_dict)
+        else:
+            result_list = result_dict = {}
+        # Заменяем 0 на None для корректной работы шаблона
+        if 0 in result_list:
+            for cnt, price in enumerate(result_list):
+                if price == 0:
+                    result_list[cnt] = None
+        return result_dict, result_list, cities_dict
+
+"""
+
+
+"""
+def map_folium(places: dict, pk: int ):
+    map = folium.Map(location=[59.20, 18.04], zoom_start=7)
+    for name, place in places.items():
+        try:
+            folium.Marker(location=geocoder.osm(place + ', Sweden').latlng, popup=name,
+                      icon=folium.Icon(color='gray')).add_to(map)
+        except TypeError:
+            pass
+
+    map.save(str(pk) + ".html")
 """

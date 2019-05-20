@@ -2,15 +2,27 @@
 {% extends "base.html" %}
 {% load bootstrap4 %}
 {% load filtersandtags %}
+{% load cache %}
 
 {% block title %}
-    Show announcements for {{ current_boat.boat_name }}
+    Show announcements for {{ object.boat_name  }}
 {% endblock title %}
 
 {% block content %}
     <div class="container-fluid">
 
-        <div class="row text-muted pl-5 my-3"><h4>List of the announcements available on  <span class="font-weight-bold">www.blocket.se</span> for the <span class="font-weight-bold">{{ object.boat_name }}</span> </h4></div>
+        <div class="row">
+
+            <div class="col-10 text-muted pl-5 my-3"><h4>List of the announcements available on  <span class="font-weight-bold">www.blocket.se</span> for the <span class="font-weight-bold">{{ object.boat_name }}</span> </h4></div>
+
+
+            <div class="col-2 text-right">
+
+                <a href="{% url "boats:map" object.id %}" target="_blank"><button type="button" class="btn btn-warning mt-3 mr-5 rounded boarder">Show all on map</button></a>
+            </div>
+
+        </div>
+
 
         <ul>
             {% for boat, url in blocket.items %}
@@ -21,12 +33,12 @@
                         {%   if pricelist|get_at_index:forloop.counter0  != None  %}
                             (SEK)
 
-                       ~ {{ pricelist_euro|get_at_index:forloop.counter0 }} (EURO)
+                            ~ {{ pricelist_euro|get_at_index:forloop.counter0 }} (EURO)
 
                             </li>
-                    {% else  %}
-                    </li>
-                    {% endif %}
+                        {% else  %}
+                            </li>
+                        {% endif %}
                 </div>
             {% empty %} There are no announcements available on the {{ object.boat_name}}
             {% endfor %}
@@ -34,10 +46,17 @@
         </ul>
 
 
-<p class="text-muted ml-3 mt-4">Currency rates are provided by  <a href="http://www.ecb.int/">European Central Bank</a> , effective on date {% now "SHORT_DATE_FORMAT"%}</p>
+        <p class="text-muted ml-3 mt-4">Currency rates are provided by  <a href="http://www.ecb.int/">European Central Bank</a> , effective on date {% now "SHORT_DATE_FORMAT"%}</p>
 
     </div>
 
-<a href="{% url "boats:map" %}">MAP</a>
+
+
+
+    {% comment %}
+{%  cache 43200 objects.id   %}
+{{ cities }}
+    {%  endcache %}
+{% endcomment %}
 
 {% endblock content %}
