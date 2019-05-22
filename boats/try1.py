@@ -22,21 +22,38 @@ def spider(name):
         raw_search = bsObj.findAll("a", {"tabindex": "50"})
         url_dict = {}
         for unit in raw_search:
-
             # ищем теги где в названииях есть имя лодки
             final_search = bsObj.find("a", {"tabindex": "50", "title": unit.get_text()})
-            if final_search:
+            if final_search:  # если поиск сработал
                 #  достаем урл
                 url = (re.findall(r"http(?:s)?://\S+", str(final_search)))
                 title = final_search.get_text()
-                url_dict.update({title: url[0][: -1]})
-            else:
+                url_dict.update({title: url[0][: -1]})  # словарь цена: урл
+            else:  # если не сработал то пробуем извлечь данные в сыром поиске
                 url = (re.findall(r"http(?:s)?://\S+", str(unit)))
                 title = unit.get_text()
-                if not title.isspace():
+                if not title.isspace():  # отсекаем строки с экранированными символами
                     url_dict.update({title: url[0][: -1]})
+                #  Ищем цены
+        prices = bsObj.findAll("p", {"itemprop": "price"})
+        pricelist = []
+        for price in prices:  # why dont just use API instead ??? LOL
+            #  отбираем только цену. Фильтруем таги и др. хрень
+            digits = ''.join(filter(lambda x: x.isdigit(), price.get_text()))
+            pricelist.append(int(digits)) if digits else pricelist.append(0)
+        # ищем места продажи лодок (возвращаемый словарь не сортирован по уровню цен)
+        places = bsObj.find_all("header", {"itemprop": "itemOffered"})
+        cities_dict = {}  # лодка : город
+        for place, boat in zip(places, url_dict.keys()):
+            # отделяем экранированные символы от текста и шлак в начале строки
+            text = place.get_text().strip().split()[-1]
+            print(boat, text)
+            cities_dict.update({boat: text})  # имя лодки: город
 
-    print(url_dict)
-    print(len(url_dict))
-spider("Smaragd")
+
+
+
+if __name__ ==  "__main__":
+
+    spider("Najad")
 #[295000, 86000, 80000, 80000, 230000, 129000, 160000, 170000, 130000, 89000, 250000]

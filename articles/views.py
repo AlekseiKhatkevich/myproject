@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from boats.decorators import login_required_message, MessageLoginRequiredMixin
 
+
 """контроллер гл. стр. артиклес"""
 
 
@@ -68,7 +69,7 @@ class ContentListView(DetailView):
 """контроллер добавления новой статьи"""
 
 
-class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView):
+class AddArticleView( SuccessMessageMixin, MessageLoginRequiredMixin, CreateView):
     model = Article
     template_name = "articles/create_article.html"
     form_class = ArticleForm
@@ -81,8 +82,7 @@ class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView)
         if self.kwargs["pk"] and self.kwargs["pk"] != 0:
             self.initial["foreignkey_to_subheading"] =\
                 get_object_or_404(SubHeading, pk=self.kwargs["pk"])
-        try:  # устанавливаем нач. знач поля foreignkey_to_boat если заходим с категории Articles on
-            # boats
+        try:  # устанавливаем нач. знач поля foreignkey_to_boat если заходим с категории                    #Articles on boats
             current_subheading = get_object_or_404(SubHeading, pk=self.kwargs["pk"])
             self.initial["foreignkey_to_boat"] = current_subheading.one_to_one_to_boat
         except Http404:
@@ -120,7 +120,8 @@ class ArticleEditView(SuccessMessageMixin, MessageLoginRequiredMixin, UpdateView
         if self.get_object().author == self.request.user:
             return UpdateView.get(self, request, *args, **kwargs)
         else:
-            messages.add_message(request, messages.WARNING, "You can only edit your own entries!",
+            messages.add_message(request, messages.WARNING,
+                                 "You can only edit your own entries!",
                                  fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -134,14 +135,15 @@ class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
     redirect_message = "You must be authenticated in order to delete this article"
 
     def get_success_url(self):
-        return reverse('articles:show_by_heading', args=(self.object.foreignkey_to_subheading.pk, ))
+        return reverse('articles:show_by_heading',
+                       args=(self.object.foreignkey_to_subheading.pk, ))
 
     def get(self, request, *args, **kwargs):
         if self.get_object().author == self.request.user:
             return DeleteView.get(self, request, *args, **kwargs)
         else:
-            message = 'Dear %s, you can only delete your own articles. This article has been ' \
-                      'created by %s' % (self.request.user, self.get_object().author)
+            message = 'Dear %s, you can only delete your own articles. This article has been' \
+                      ' created by %s' % (self.request.user, self.get_object().author)
             messages.add_message(request, messages.WARNING, message=message, fail_silently=True, )
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -176,9 +178,11 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
         if self.request.user.is_authenticated:
             self.initial["author"] = self.request.user.username
         if self.kwargs["key"] == "article":
-            self.initial["foreignkey_to_article"] = get_object_or_404(Article, pk=self.kwargs["pk"])
+            self.initial["foreignkey_to_article"] = get_object_or_404(Article,
+                                                                      pk=self.kwargs["pk"])
         else:
-            self.initial["foreignkey_to_boat"] = get_object_or_404(BoatModel, pk=self.kwargs["pk"])
+            self.initial["foreignkey_to_boat"] = get_object_or_404(BoatModel,
+                                                                   pk=self.kwargs["pk"])
         return self.initial.copy()
 
     def get_success_url(self):
@@ -211,20 +215,23 @@ def headingcreateview(request, pk):
             subheading = form2.save(commit=False)
             subheading.foreignkey = upperheading
             subheading.save()
-            message = "You have successfully added an upper-heading\xa0\"" + upperheading.name +\
-                      "\""
-            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            message = "You have successfully added an upper-heading\xa0\"" + \
+                      upperheading.name + "\""
+            messages.add_message(request, messages.SUCCESS, message=message,
+                                 fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
         elif form2.is_valid() and pk != 0:
             subheading = form2.save(commit=False)
             subheading.foreignkey = get_object_or_404(UpperHeading, pk=pk)
             subheading.save()
             message = 'You have successfully added a sub-heading  "%s"' % subheading.name
-            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            messages.add_message(request, messages.SUCCESS, message=message,
+                                 fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("articles:articles_main"))
         else:
             messages.add_message(request, messages.WARNING,
-                                 "Forms are not valid. Please check the data", fail_silently=True)
+                                 "Forms are not valid. Please check the data",
+                                 fail_silently=True)
             return render(request, "articles/add_heading.html", context)
     else:
         return render(request, "articles/add_heading.html", context)
@@ -256,7 +263,8 @@ class ArticleResurrectionView(MessageLoginRequiredMixin, FormView):
                 else:
                     message += " " + article.title + ", "
             message += ' are restored, totally - %s articles' % len(articles)
-            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            messages.add_message(request, messages.SUCCESS, message=message,
+                                 fail_silently=True)
             return self.form_valid(form)
         else:
             return self.form_invalid(form)

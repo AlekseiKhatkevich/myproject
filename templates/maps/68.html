@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_19c4a587ee6746c2a18feabc755de298 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>    
+    
+            <div class="folium-map" id="map_19c4a587ee6746c2a18feabc755de298" ></div>
+        
+</body>
+<script>    
+    
+            var map_19c4a587ee6746c2a18feabc755de298 = L.map(
+                "map_19c4a587ee6746c2a18feabc755de298",
+                {
+                    center: [59.2, 18.04],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 7,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_a966ce6490124ed7b6436012971f6e4b = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_19c4a587ee6746c2a18feabc755de298);
+        
+    
+            var marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b = L.markerClusterGroup(
+                {}
+            );
+            map_19c4a587ee6746c2a18feabc755de298.addLayer(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var marker_414b8731231040e6a6116efb10bbbbef = L.marker(
+                [59.3251172, 18.0710935],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_ba0756e265e6402393c0038f5291fd5a = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_414b8731231040e6a6116efb10bbbbef.setIcon(icon_ba0756e265e6402393c0038f5291fd5a);
+        
+    
+        var popup_863a4a9af5f9483aa0aebcd48c3556e6 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_4a9c03c6a27c49cba7399f705f84a784 = $(`<div id="html_4a9c03c6a27c49cba7399f705f84a784" style="width: 100.0%; height: 100.0%;"> Maxi Fenix Classic, location - Stockholm </div>`)[0];
+            popup_863a4a9af5f9483aa0aebcd48c3556e6.setContent(html_4a9c03c6a27c49cba7399f705f84a784);
+        
+
+        marker_414b8731231040e6a6116efb10bbbbef.bindPopup(popup_863a4a9af5f9483aa0aebcd48c3556e6)
+        ;
+
+        
+    
+    
+            var marker_85878c4046cd4805bb44d8b26acf9672 = L.marker(
+                [57.7072326, 11.9670171],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_e6d1ea1424274f17a36b08a17848bc69 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_85878c4046cd4805bb44d8b26acf9672.setIcon(icon_e6d1ea1424274f17a36b08a17848bc69);
+        
+    
+        var popup_e861c43552f447408ec140ad89321337 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_3652941a310d4aedadb6f41ceb6c7c5a = $(`<div id="html_3652941a310d4aedadb6f41ceb6c7c5a" style="width: 100.0%; height: 100.0%;"> Sinergia 40 performance-cruiser, location - Göteborg </div>`)[0];
+            popup_e861c43552f447408ec140ad89321337.setContent(html_3652941a310d4aedadb6f41ceb6c7c5a);
+        
+
+        marker_85878c4046cd4805bb44d8b26acf9672.bindPopup(popup_e861c43552f447408ec140ad89321337)
+        ;
+
+        
+    
+    
+            var marker_be2d2d29b78a455a9e2e2b58322cf9b2 = L.marker(
+                [59.34228190059346, 18.022072459852193],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_144b21af37644aba8f889477d6e60557 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_be2d2d29b78a455a9e2e2b58322cf9b2.setIcon(icon_144b21af37644aba8f889477d6e60557);
+        
+    
+        var popup_2368faad5f964f9991b936e7755b75d7 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_0bf121058f6b4b7282f7d5bf23db67d9 = $(`<div id="html_0bf121058f6b4b7282f7d5bf23db67d9" style="width: 100.0%; height: 100.0%;"> Archambault Grand Suprise, location - Stockholm </div>`)[0];
+            popup_2368faad5f964f9991b936e7755b75d7.setContent(html_0bf121058f6b4b7282f7d5bf23db67d9);
+        
+
+        marker_be2d2d29b78a455a9e2e2b58322cf9b2.bindPopup(popup_2368faad5f964f9991b936e7755b75d7)
+        ;
+
+        
+    
+    
+            var marker_ff97aee2bbdc4b8dad61dc49adabd834 = L.marker(
+                [57.67912756291161, 11.983391986020873],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_9016ae15fb5b40b7bcae21f42a0733ec = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_ff97aee2bbdc4b8dad61dc49adabd834.setIcon(icon_9016ae15fb5b40b7bcae21f42a0733ec);
+        
+    
+        var popup_7264da0c9018405c939184a596551751 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_0105cecbfd4f438d909205d87b2e48d6 = $(`<div id="html_0105cecbfd4f438d909205d87b2e48d6" style="width: 100.0%; height: 100.0%;"> Arcona 430 nr 45. levererad 2013, location - Göteborg </div>`)[0];
+            popup_7264da0c9018405c939184a596551751.setContent(html_0105cecbfd4f438d909205d87b2e48d6);
+        
+
+        marker_ff97aee2bbdc4b8dad61dc49adabd834.bindPopup(popup_7264da0c9018405c939184a596551751)
+        ;
+
+        
+    
+    
+            var marker_f1f788a6359a46e283926f8fe8d45f6b = L.marker(
+                [55.7029296, 13.1929449],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_af9b61374e51472abaef781e95ddf530 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_f1f788a6359a46e283926f8fe8d45f6b.setIcon(icon_af9b61374e51472abaef781e95ddf530);
+        
+    
+        var popup_698a87d6ef894c7a93505eece2a0a4a5 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_8fb3438de9944d7b84d06c48739dd823 = $(`<div id="html_8fb3438de9944d7b84d06c48739dd823" style="width: 100.0%; height: 100.0%;"> Melges 24, SWE-667, location - Lund </div>`)[0];
+            popup_698a87d6ef894c7a93505eece2a0a4a5.setContent(html_8fb3438de9944d7b84d06c48739dd823);
+        
+
+        marker_f1f788a6359a46e283926f8fe8d45f6b.bindPopup(popup_698a87d6ef894c7a93505eece2a0a4a5)
+        ;
+
+        
+    
+    
+            var marker_5025cb3124e54b43a93abc0d574ad224 = L.marker(
+                [59.32768328292819, 18.091915306833915],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_015f2b91dd714d6abfb6bea11961cc85 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_5025cb3124e54b43a93abc0d574ad224.setIcon(icon_015f2b91dd714d6abfb6bea11961cc85);
+        
+    
+        var popup_3552013accb544449bfab34229c7b84c = L.popup({"maxWidth": "100%"});
+
+        
+            var html_0575362cddc04bd29193f11ad3126dcf = $(`<div id="html_0575362cddc04bd29193f11ad3126dcf" style="width: 100.0%; height: 100.0%;"> Fountaine Pajot - Helia 44, location - Stockholm </div>`)[0];
+            popup_3552013accb544449bfab34229c7b84c.setContent(html_0575362cddc04bd29193f11ad3126dcf);
+        
+
+        marker_5025cb3124e54b43a93abc0d574ad224.bindPopup(popup_3552013accb544449bfab34229c7b84c)
+        ;
+
+        
+    
+    
+            var marker_fa39f0ddda4540f0a480b6273ad336b7 = L.marker(
+                [59.348910641827665, 18.056205490496318],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_e058724724fc4f8a952b07f41399ad32 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_fa39f0ddda4540f0a480b6273ad336b7.setIcon(icon_e058724724fc4f8a952b07f41399ad32);
+        
+    
+        var popup_2915666b37854d3fac4696b740c84294 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_d8e5b36c25104c71b346cfea8b4f70dc = $(`<div id="html_d8e5b36c25104c71b346cfea8b4f70dc" style="width: 100.0%; height: 100.0%;"> Hallberg-Rassy 342, location - Stockholm </div>`)[0];
+            popup_2915666b37854d3fac4696b740c84294.setContent(html_d8e5b36c25104c71b346cfea8b4f70dc);
+        
+
+        marker_fa39f0ddda4540f0a480b6273ad336b7.bindPopup(popup_2915666b37854d3fac4696b740c84294)
+        ;
+
+        
+    
+    
+            var marker_eda0ad7a51414f5eb5f2fd590521a8a6 = L.marker(
+                [59.2985457207929, 18.039875985461045],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_02d8c4b262054413a861ee59083717bc = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_eda0ad7a51414f5eb5f2fd590521a8a6.setIcon(icon_02d8c4b262054413a861ee59083717bc);
+        
+    
+        var popup_3b369c51674648b8b2032081651ed828 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_46c39a2264fa4942b4f32fab36741d7e = $(`<div id="html_46c39a2264fa4942b4f32fab36741d7e" style="width: 100.0%; height: 100.0%;"> S-30, location - Stockholm </div>`)[0];
+            popup_3b369c51674648b8b2032081651ed828.setContent(html_46c39a2264fa4942b4f32fab36741d7e);
+        
+
+        marker_eda0ad7a51414f5eb5f2fd590521a8a6.bindPopup(popup_3b369c51674648b8b2032081651ed828)
+        ;
+
+        
+    
+    
+            var marker_a6c1984bca3e42eb9ec3f30c95d7a153 = L.marker(
+                [57.67793811521355, 11.930289753781878],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_cdbdde51a0d947c3b0b6aee43e72cad6 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_a6c1984bca3e42eb9ec3f30c95d7a153.setIcon(icon_cdbdde51a0d947c3b0b6aee43e72cad6);
+        
+    
+        var popup_411c005615474ccd95cd69f5324aae72 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_a3a3702a1f474c9c84c17c6d25480e42 = $(`<div id="html_a3a3702a1f474c9c84c17c6d25480e42" style="width: 100.0%; height: 100.0%;"> Sailing boat Dufour Arpege, location - Göteborg </div>`)[0];
+            popup_411c005615474ccd95cd69f5324aae72.setContent(html_a3a3702a1f474c9c84c17c6d25480e42);
+        
+
+        marker_a6c1984bca3e42eb9ec3f30c95d7a153.bindPopup(popup_411c005615474ccd95cd69f5324aae72)
+        ;
+
+        
+    
+    
+            var marker_fea0496a47634205990005eda35a59fc = L.marker(
+                [59.289815765153286, 18.107932045293733],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_01320d2a4452438785018247ec37dd40 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_fea0496a47634205990005eda35a59fc.setIcon(icon_01320d2a4452438785018247ec37dd40);
+        
+    
+        var popup_ec5666020cc5465093aad7be68cd492c = L.popup({"maxWidth": "100%"});
+
+        
+            var html_f20b6a1273b74735a6b23f3e0209895f = $(`<div id="html_f20b6a1273b74735a6b23f3e0209895f" style="width: 100.0%; height: 100.0%;"> Luffe 40.04 / 2008, location - Stockholm </div>`)[0];
+            popup_ec5666020cc5465093aad7be68cd492c.setContent(html_f20b6a1273b74735a6b23f3e0209895f);
+        
+
+        marker_fea0496a47634205990005eda35a59fc.bindPopup(popup_ec5666020cc5465093aad7be68cd492c)
+        ;
+
+        
+    
+    
+            var marker_378e303b1dce4202bbc6650d5efbc13c = L.marker(
+                [57.7272736134975, 11.983441109126352],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_bc318b6224bd43eda082160bb88479c6 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_378e303b1dce4202bbc6650d5efbc13c.setIcon(icon_bc318b6224bd43eda082160bb88479c6);
+        
+    
+        var popup_bcc3306109b24410a8a3be7fe241c7ac = L.popup({"maxWidth": "100%"});
+
+        
+            var html_0c95ec7fabd5480eb77d5286c0d771be = $(`<div id="html_0c95ec7fabd5480eb77d5286c0d771be" style="width: 100.0%; height: 100.0%;"> Segelbåt Activity 35 från 2002 i Grekland, location - Göteborg </div>`)[0];
+            popup_bcc3306109b24410a8a3be7fe241c7ac.setContent(html_0c95ec7fabd5480eb77d5286c0d771be);
+        
+
+        marker_378e303b1dce4202bbc6650d5efbc13c.bindPopup(popup_bcc3306109b24410a8a3be7fe241c7ac)
+        ;
+
+        
+    
+    
+            var marker_496a6ebd1c0c4767b5558ab2d266551c = L.marker(
+                [61.06037785, 14.2150873169591],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_cbd00ec8d70f457ea4c75b51a44b4f58 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_496a6ebd1c0c4767b5558ab2d266551c.setIcon(icon_cbd00ec8d70f457ea4c75b51a44b4f58);
+        
+    
+        var popup_d4dcec4e450b4c26b405e6c8eaadeb8a = L.popup({"maxWidth": "100%"});
+
+        
+            var html_773f696321c14886832905ef6e5945d0 = $(`<div id="html_773f696321c14886832905ef6e5945d0" style="width: 100.0%; height: 100.0%;"> Hughes Trimaran, location - Dalarna </div>`)[0];
+            popup_d4dcec4e450b4c26b405e6c8eaadeb8a.setContent(html_773f696321c14886832905ef6e5945d0);
+        
+
+        marker_496a6ebd1c0c4767b5558ab2d266551c.bindPopup(popup_d4dcec4e450b4c26b405e6c8eaadeb8a)
+        ;
+
+        
+    
+    
+            var marker_a007812ccbaf41c7b426221b3d2caccd = L.marker(
+                [59.34370073434636, 18.110322542703813],
+                {"radius": 1}
+            ).addTo(marker_cluster_cf89e0a7c34343c686b28b7e666f3d3b);
+        
+    
+            var icon_5c82205c511b4738864aab17525bef15 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_a007812ccbaf41c7b426221b3d2caccd.setIcon(icon_5c82205c511b4738864aab17525bef15);
+        
+    
+        var popup_8bc70854746542e0b339358ef6a9cade = L.popup({"maxWidth": "100%"});
+
+        
+            var html_db2d37c660b340b4a7ea062cbf47dadf = $(`<div id="html_db2d37c660b340b4a7ea062cbf47dadf" style="width: 100.0%; height: 100.0%;"> TRIMARAN Challenge 30, location - Stockholm </div>`)[0];
+            popup_8bc70854746542e0b339358ef6a9cade.setContent(html_db2d37c660b340b4a7ea062cbf47dadf);
+        
+
+        marker_a007812ccbaf41c7b426221b3d2caccd.bindPopup(popup_8bc70854746542e0b339358ef6a9cade)
+        ;
+
+        
+    
+</script>

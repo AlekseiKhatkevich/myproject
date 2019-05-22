@@ -51,7 +51,8 @@ def clean_cache(path, time_interval):  # https://pastebin.com/0SPBLJfD
     if os.path.exists(path) and os.path.isdir(path):
         for (dirpath, dirnames, filenames) in os.walk(path):
             for filename in filenames:
-                if datetime.now().timestamp() - os.path.getctime(os.path.join(dirpath, filename))\
+                if datetime.now().timestamp() - os.path.getctime(os.path.join(dirpath,
+                                                                              filename))\
                         > time_interval:  # проверяем насколько файлы старые
                     os.remove(os.path.join(dirpath, filename))
 
@@ -67,7 +68,7 @@ def clean_map(pk):
 
 
 def currency_converter(price, curr1="SEK", curr2="EUR"):
-    """конвертер валют . Работает медленно"""
+    """конвертер валют . Работает медленно. Возвращает обменный курс"""
     c = CurrencyConverter()
     try:
         converted_price = c.convert(price, curr1, curr2)
@@ -77,14 +78,24 @@ def currency_converter(price, curr1="SEK", curr2="EUR"):
         return str(err)
 
 
+def currency_converter_original(price, curr1, curr2="EUR"):
+    """конвертер валют . Работает медленно.Возвращает конвертированное значение"""
+    c = CurrencyConverter()
+    try:
+        converted_price = c.convert(price, curr1, curr2)
+        return converted_price
+    except ValueError or RateNotFoundError as err:
+        return err
+
+
 def spider(name):
     """Поиск лодок по названию на Блоксете. Метод возвращает словарь с {названием лодки из объявления: УРЛом объявления} + список цен + словарь имя лодки: город продажи"""
     address = "https://www.blocket.se/hela_sverige?q=%s&cg=1060&w=3&st=s&ps=&pe=&c=1062&ca=11&is=1&l=0&md=li" % name.replace(" ", "+")
     try:
         html = urlopen(address)
     except HTTPError:
-        return {"HTTPError": "www.blocket.se hasn't accepted the search or has other sort of HTTP "
-                           "troubles "}, None, None
+        return {"HTTPError": "www.blocket.se hasn't accepted the search or has other sort of"
+                             " HTTP troubles "}, None, None
     else:
         bsObj = BeautifulSoup(html.read(), features="lxml")
 
@@ -163,10 +174,11 @@ def map_folium(places: dict, pk: int):
                         (boat_name, place), icon=folium.Icon(color='gray')).\
                 add_to(marker_cluster)
         except TypeError:
-            ...
+            pass
     map.save(os.path.join(BASE_DIR, "templates", "maps",  str(pk) + ".html"))
 
-
+#from django.core.cache import cache
+#map_folium(cache.get(52), 52)
 
 
 

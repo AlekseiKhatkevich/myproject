@@ -2,9 +2,10 @@
 {%  extends "base.html" %}
 {% load bootstrap4 %}
 {% load static %}
+{% bootstrap_jquery "full" %}
 
 {% block title %}
-Articles main page
+    Articles main page
 {% endblock %}
 {% block content %}
 
@@ -12,12 +13,11 @@ Articles main page
         .btn-group-vertical a, .btn-group-vertical button {
             width: 100%; margin-right: 20px;
         }
-
     </style>
 
 
 
- <img class=" offset-6 " style="position: absolute;   " height=  width=  src="{% static "articles/hobie-16-special-edition-16se.jpg" %}" alt="training boat">
+    <img class=" offset-6 " style="position: absolute;   " height=  width=  src="{% static "articles/hobie-16-special-edition-16se.jpg" %}" alt="training boat">
 
 
 
@@ -38,27 +38,18 @@ Articles main page
                     {% if not heading.cnt %}
                         <span class="badge badge-light text-muted"> EMPTY </span>
 
-                        {% else %}
-        <span class="badge badge-primary text-white"> {{ heading.cnt }} </span>
+                    {% else %}
+                        <span class="badge badge-primary text-white"> {{ heading.cnt }} </span>
                     {% endif %}
 
-                {% if heading.boat_num %}
-                <span class="badge badge-warning text-muted">  BOAT </span>
-                {% endif %}
+                    {% if heading.boat_num %}
+                        <span class="badge badge-warning text-muted">  BOAT </span>
+                    {% endif %}
 
                 </div>
 
                 {% if forloop.counter == 1 %}
-                    <div class="col   text-right mr-5  item" style="position: absolute">
-                        <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="Button coalition"  >
-                            <a href="{% url "articles:add_article" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom  ">Add an Article</button></a>
-                            <a href="{%  url "articles:add_heading" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom " >Add new Heading</button></a>
-                            <a href="{%  url "articles:resurrection" %}"><button type="button" class="btn btn-secondary rounded-0">Recover  Articles</button></a>
 
-
-
-                        </div>
-                    </div>
                 {% endif %}
 
             </div>
@@ -69,7 +60,14 @@ Articles main page
 
     </div>
 
+    <div class="col-2   text-right mr-3  item float-right" style=" position:absolute; top: 90px; right: 0px; ">
+        <div class="btn-group-vertical btn-outline-dark rounded border border-success" role="group" aria-label="Button coalition"  >
+            <a href="{% url "articles:add_article" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom  ">Add an Article</button></a>
+            <a href="{%  url "articles:add_heading" pk=0 %}"><button type="button" class="btn btn-secondary rounded-0 border-bottom " >Add new Heading</button></a>
+            <a href="{%  url "articles:resurrection" %}"><button type="button" class="btn btn-secondary rounded-0">Recover  Articles</button></a>
 
+        </div>
+    </div>
 
 
 {% endblock content%}

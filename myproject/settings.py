@@ -15,7 +15,7 @@ SECRET_KEY = 'y-qmn=e5t89m7t4=^%hv+1x&21y)c2mjibrx!xsma9&(#7@duv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", 'localhost', 'testserver']  # new, old = []
 
 
 # Application definition
@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     "django_countries",
     "xhtml2pdf",
     "file_resubmit",
-    #"celery",
-    #'redis',
+
 ]
 
 

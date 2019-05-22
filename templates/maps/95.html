@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_880f16f5440e45929cd0d5c79a5686ac {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>    
+    
+            <div class="folium-map" id="map_880f16f5440e45929cd0d5c79a5686ac" ></div>
+        
+</body>
+<script>    
+    
+            var map_880f16f5440e45929cd0d5c79a5686ac = L.map(
+                "map_880f16f5440e45929cd0d5c79a5686ac",
+                {
+                    center: [59.2, 18.04],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 7,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_b1ce76f5460d4b18820dd23dc4c3c760 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_880f16f5440e45929cd0d5c79a5686ac);
+        
+    
+            var marker_cluster_d5bce1b7d4074c9294aecfb60f947b11 = L.markerClusterGroup(
+                {}
+            );
+            map_880f16f5440e45929cd0d5c79a5686ac.addLayer(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var marker_80658d984da24132a558033da3e8be07 = L.marker(
+                [57.68410652594158, 11.919147108909867],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_f87a35a14e3345289c01512063b61898 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_80658d984da24132a558033da3e8be07.setIcon(icon_f87a35a14e3345289c01512063b61898);
+        
+    
+        var popup_2edd293732404da489379d70ab90a14e = L.popup({"maxWidth": "100%"});
+
+        
+            var html_c06dee3c81a7404bb5c29352af6e5add = $(`<div id="html_c06dee3c81a7404bb5c29352af6e5add" style="width: 100.0%; height: 100.0%;">boat -  X 95, location - Göteborg </div>`)[0];
+            popup_2edd293732404da489379d70ab90a14e.setContent(html_c06dee3c81a7404bb5c29352af6e5add);
+        
+
+        marker_80658d984da24132a558033da3e8be07.bindPopup(popup_2edd293732404da489379d70ab90a14e)
+        ;
+
+        
+    
+    
+            var marker_5a7f58f41d5749c19d735ac431623eb8 = L.marker(
+                [59.29225189024851, 18.10087105667694],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_5f488444fb8f4414bf2d081ca7166044 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_5a7f58f41d5749c19d735ac431623eb8.setIcon(icon_5f488444fb8f4414bf2d081ca7166044);
+        
+    
+        var popup_28e82827eab5416c88b64b6185c1d3e0 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_a9f14a8448464ff18fab806e5a51740b = $(`<div id="html_a9f14a8448464ff18fab806e5a51740b" style="width: 100.0%; height: 100.0%;">boat -  Arcona 435 Ny, location - Stockholm </div>`)[0];
+            popup_28e82827eab5416c88b64b6185c1d3e0.setContent(html_a9f14a8448464ff18fab806e5a51740b);
+        
+
+        marker_5a7f58f41d5749c19d735ac431623eb8.bindPopup(popup_28e82827eab5416c88b64b6185c1d3e0)
+        ;
+
+        
+    
+    
+            var marker_6b6571ee984848debe4c4c1b36893a19 = L.marker(
+                [57.80481070801634, 14.11527748726307],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_1742ec7f05e345dcb0775c5c5a38fdfa = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_6b6571ee984848debe4c4c1b36893a19.setIcon(icon_1742ec7f05e345dcb0775c5c5a38fdfa);
+        
+    
+        var popup_25bec3b2a99d40bc837513543a30f4a4 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_aadac7dd701b422cae9f046242aad8bc = $(`<div id="html_aadac7dd701b422cae9f046242aad8bc" style="width: 100.0%; height: 100.0%;">boat -  Najad 343 Dl #8 1981, location - Jönköping </div>`)[0];
+            popup_25bec3b2a99d40bc837513543a30f4a4.setContent(html_aadac7dd701b422cae9f046242aad8bc);
+        
+
+        marker_6b6571ee984848debe4c4c1b36893a19.bindPopup(popup_25bec3b2a99d40bc837513543a30f4a4)
+        ;
+
+        
+    
+    
+            var marker_b779bf6c527a4d84a5094ef7682456b9 = L.marker(
+                [56.090219212610855, 15.41953597049415],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_071e5488971c46e8af07b0c391ddc3f0 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_b779bf6c527a4d84a5094ef7682456b9.setIcon(icon_071e5488971c46e8af07b0c391ddc3f0);
+        
+    
+        var popup_213660d7f4e642148ba2202ee38e8016 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_2c9f5f5085034322a28ab59b24967c74 = $(`<div id="html_2c9f5f5085034322a28ab59b24967c74" style="width: 100.0%; height: 100.0%;">boat -  Far East 28R, 2017, location - Blekinge </div>`)[0];
+            popup_213660d7f4e642148ba2202ee38e8016.setContent(html_2c9f5f5085034322a28ab59b24967c74);
+        
+
+        marker_b779bf6c527a4d84a5094ef7682456b9.bindPopup(popup_213660d7f4e642148ba2202ee38e8016)
+        ;
+
+        
+    
+    
+            var marker_c9b0c74738f5441990570f5de79b817b = L.marker(
+                [59.3525237727802, 18.06790347813085],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_caa943dd10f4435a8bffee6e475b9c27 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_c9b0c74738f5441990570f5de79b817b.setIcon(icon_caa943dd10f4435a8bffee6e475b9c27);
+        
+    
+        var popup_22c9881d21e14e6081a14e999ddf865b = L.popup({"maxWidth": "100%"});
+
+        
+            var html_85f838fb5afa498f9b1ad90546056d9a = $(`<div id="html_85f838fb5afa498f9b1ad90546056d9a" style="width: 100.0%; height: 100.0%;">boat -  Oerhört fin Marieholm IF, location - Stockholm </div>`)[0];
+            popup_22c9881d21e14e6081a14e999ddf865b.setContent(html_85f838fb5afa498f9b1ad90546056d9a);
+        
+
+        marker_c9b0c74738f5441990570f5de79b817b.bindPopup(popup_22c9881d21e14e6081a14e999ddf865b)
+        ;
+
+        
+    
+    
+            var marker_5f0d255761764bfd898f480855772c66 = L.marker(
+                [59.314714686530735, 18.06031093370932],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_8fc5ab7107b548fc9090c7ec63b7cff4 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_5f0d255761764bfd898f480855772c66.setIcon(icon_8fc5ab7107b548fc9090c7ec63b7cff4);
+        
+    
+        var popup_f15417449ac043b495c883008d57ea8e = L.popup({"maxWidth": "100%"});
+
+        
+            var html_4bd3332d3c914943b58cf32111830968 = $(`<div id="html_4bd3332d3c914943b58cf32111830968" style="width: 100.0%; height: 100.0%;">boat -  Grinde nr 59 Jolanna II, location - Stockholm </div>`)[0];
+            popup_f15417449ac043b495c883008d57ea8e.setContent(html_4bd3332d3c914943b58cf32111830968);
+        
+
+        marker_5f0d255761764bfd898f480855772c66.bindPopup(popup_f15417449ac043b495c883008d57ea8e)
+        ;
+
+        
+    
+    
+            var marker_23f960c537ec49c9b803fcc6d2141600 = L.marker(
+                [56.03784302986827, 12.727536487054344],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_ccd6e99e8fa24986a4723071b8a25f86 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_23f960c537ec49c9b803fcc6d2141600.setIcon(icon_ccd6e99e8fa24986a4723071b8a25f86);
+        
+    
+        var popup_05e2fb0016634dea925216acd804aed5 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_6be864e7a6624cc68c4ad8a224854876 = $(`<div id="html_6be864e7a6624cc68c4ad8a224854876" style="width: 100.0%; height: 100.0%;">boat -  X-362 Sport - 2001, location - Helsingborg </div>`)[0];
+            popup_05e2fb0016634dea925216acd804aed5.setContent(html_6be864e7a6624cc68c4ad8a224854876);
+        
+
+        marker_23f960c537ec49c9b803fcc6d2141600.bindPopup(popup_05e2fb0016634dea925216acd804aed5)
+        ;
+
+        
+    
+    
+            var marker_b18c85f71f564d0eb8d42f910df82fea = L.marker(
+                [56.132559079501966, 15.422380374326],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_74b4d168147e44bd9833081a99440c92 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_b18c85f71f564d0eb8d42f910df82fea.setIcon(icon_74b4d168147e44bd9833081a99440c92);
+        
+    
+        var popup_06799fafb3a841cc8f7b7372f56f7d93 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_05bdb3b776d746d6ae0916594e72d6c1 = $(`<div id="html_05bdb3b776d746d6ae0916594e72d6c1" style="width: 100.0%; height: 100.0%;">boat -  NF, Nordisk familjebåt, med stark motor 2006, location - Blekinge </div>`)[0];
+            popup_06799fafb3a841cc8f7b7372f56f7d93.setContent(html_05bdb3b776d746d6ae0916594e72d6c1);
+        
+
+        marker_b18c85f71f564d0eb8d42f910df82fea.bindPopup(popup_06799fafb3a841cc8f7b7372f56f7d93)
+        ;
+
+        
+    
+    
+            var marker_ce8ae75b3d4d4792b64a13d038e41270 = L.marker(
+                [57.737197054286085, 11.977303535071357],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_8381057fbf2f4e6e99f96f7947cee5eb = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_ce8ae75b3d4d4792b64a13d038e41270.setIcon(icon_8381057fbf2f4e6e99f96f7947cee5eb);
+        
+    
+        var popup_acb908a40a9d429db80e6a37bd9782bc = L.popup({"maxWidth": "100%"});
+
+        
+            var html_3adeb94a467d4189897afc2a2386a4c5 = $(`<div id="html_3adeb94a467d4189897afc2a2386a4c5" style="width: 100.0%; height: 100.0%;">boat -  Bavaria 50 vision ( eu vat 25% paid), location - Göteborg </div>`)[0];
+            popup_acb908a40a9d429db80e6a37bd9782bc.setContent(html_3adeb94a467d4189897afc2a2386a4c5);
+        
+
+        marker_ce8ae75b3d4d4792b64a13d038e41270.bindPopup(popup_acb908a40a9d429db80e6a37bd9782bc)
+        ;
+
+        
+    
+    
+            var marker_bd74ee6edb044b048681173acfff98e5 = L.marker(
+                [56.675243911942026, 16.3172729600142],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_c88350f8852c434fa4fcf23d1287ecf9 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_bd74ee6edb044b048681173acfff98e5.setIcon(icon_c88350f8852c434fa4fcf23d1287ecf9);
+        
+    
+        var popup_0503d1ddda584ef79f3324417ba4b0e7 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_61ccb5b5bcb64ce08189d0fd1396aa5c = $(`<div id="html_61ccb5b5bcb64ce08189d0fd1396aa5c" style="width: 100.0%; height: 100.0%;">boat -  Omega 36, location - Kalmar </div>`)[0];
+            popup_0503d1ddda584ef79f3324417ba4b0e7.setContent(html_61ccb5b5bcb64ce08189d0fd1396aa5c);
+        
+
+        marker_bd74ee6edb044b048681173acfff98e5.bindPopup(popup_0503d1ddda584ef79f3324417ba4b0e7)
+        ;
+
+        
+    
+    
+            var marker_347d4106dcaa4765acb443d792dc2158 = L.marker(
+                [56.97454510007694, 12.830358574867958],
+                {"radius": 1}
+            ).addTo(marker_cluster_d5bce1b7d4074c9294aecfb60f947b11);
+        
+    
+            var icon_989dde42daf74e4887a2d782a71ed83c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_347d4106dcaa4765acb443d792dc2158.setIcon(icon_989dde42daf74e4887a2d782a71ed83c);
+        
+    
+        var popup_d22359ff31364f55a4cdb308f384c2c7 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_15b2d7e54ce7466987e2fe399e0e7e1e = $(`<div id="html_15b2d7e54ce7466987e2fe399e0e7e1e" style="width: 100.0%; height: 100.0%;">boat -  Saare 41 - 2010, location - Halland </div>`)[0];
+            popup_d22359ff31364f55a4cdb308f384c2c7.setContent(html_15b2d7e54ce7466987e2fe399e0e7e1e);
+        
+
+        marker_347d4106dcaa4765acb443d792dc2158.bindPopup(popup_d22359ff31364f55a4cdb308f384c2c7)
+        ;
+
+        
+    
+</script>

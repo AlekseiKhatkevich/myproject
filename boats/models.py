@@ -150,10 +150,12 @@ class BoatModel(models.Model):
 
     boat_primary_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, #"photos/"
                                            verbose_name='Boat primary photo',
-                                           help_text="Please attach a primary photo of the boat")
+                                           help_text="Please attach a primary photo of the "
+                                                     "boat")
     first_year = models.PositiveSmallIntegerField(blank=True, null=True,
-                                                  verbose_name="first manufacturing year")
-    last_year = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="Last manufacturing year")
+                                    verbose_name="first manufacturing year of the model")
+    last_year = models.PositiveSmallIntegerField(blank=True, null=True,
+                                    verbose_name="Last manufacturing year of the model")
 
     class Meta:
         verbose_name = "Boats primary data"

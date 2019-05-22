@@ -46,14 +46,16 @@ CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 def viewname_edit(request, pk):
     obj1 = BoatModel.objects.get(pk=pk)
     if request.method == 'POST':
-        form1 = BoatForm(request.POST, request.FILES, prefix="form1", instance=obj1)
+        form1 = BoatForm(request.POST, request.FILES, prefix="form1",
+                         instance=obj1, pk=pk)
         form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
                                           instance=obj1)
         if form1.is_valid() and form2.is_valid():
             if form1.has_changed() or form2.has_changed():
                 boat_obj = form1.save()
                 form2.save()
-                message = "You successfully edited %(name)s  data" % {"name": boat_obj.boat_name}
+                message = "You successfully edited %(name)s  data" % {"name":
+                                                                          boat_obj.boat_name}
                 messages.add_message(request, messages.SUCCESS, message=message,
                                      fail_silently=True)
                 return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
@@ -65,19 +67,20 @@ def viewname_edit(request, pk):
                 return render(request, "edit_boat.html", context)
         else:
             messages.add_message(request, messages.WARNING,
-                                 "Forms are not valid. Please check the data", fail_silently=True)
+                                 "Forms are not valid. Please check the data",
+                                 fail_silently=True)
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
     else:
         if request.user == obj1.author:
-            form1 = BoatForm(prefix="form1", instance=obj1)
+            form1 = BoatForm(prefix="form1", instance=obj1, pk=pk)
             form2 = boat_image_inline_formset(prefix="form2", instance=obj1)
 
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
         else:
-            messages.add_message(request, messages.WARNING, "You can only edit your own entries!",
-                                 extra_tags="text-muted  font-weight-bold", fail_silently=True)
+            messages.add_message(request, messages.WARNING, "You can only edit your own "
+            "entries!", extra_tags="text-muted  font-weight-bold", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -289,8 +292,10 @@ def viewname(request):
             cp['form2-TOTAL_FORMS'] = int(cp['form2-TOTAL_FORMS']) + 1
             form2 = boat_image_inline_formset(cp, request.FILES, prefix="form2")
             context = {"form1": form1, "form2": form2}
+            # для предотвращения появления ошибок про добавлении нового рядя
+            form1.errors.clear(), form2.errors.clear()
             return render(request, "create.html", context)
-        if form1.is_valid():
+        elif form1.is_valid():
             prim = form1.save(commit=False)
             prim.author = request.user
             form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
@@ -303,7 +308,8 @@ def viewname(request):
             boat = form1.save()
             form2.save()
             message = "You successfully added a boat called:\xa0" + boat.boat_name
-            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            messages.add_message(request, messages.SUCCESS, message=message,
+                                 fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(prim.pk, )))
         else:
             form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
@@ -495,6 +501,7 @@ def feedback_view(request):
         else:
             context = {"form": form, }
             return render(request, "feedback.html", context)
+
     else:
         if request.user.is_authenticated:
             form = ContactForm(initial={"sender": auth.get_user(request).email,
@@ -624,7 +631,7 @@ def reversion_confirm_view(request, pk):
 """Контроллер показа объявлений о лодке на https://www.blocket.se """
 
 
-#method_decorator(cache_page(CACHE_TTL), name="dispatch")
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class BlocketView(DetailView):
     model = BoatModel
     template_name = 'blocket.html'
@@ -640,14 +647,14 @@ class BlocketView(DetailView):
                     context["pricelist_euro"].append(int(price/rate))
                 except TypeError:
                     context["pricelist_euro"].append(None)
-        cache.add(self.object.id, context["cities"], 60*60*12)
+        cache.set(self.object.id, context["cities"], 60*60*12)
         return context
 
 
 """ Контроллер просмотра кары с местами продажи лодок """
 
 
-#@method_decorator(cache_page(60*60*24), name="dispatch")
+@method_decorator(cache_page(60*60*24), name="dispatch")
 class MapView(TemplateView):
     model = BoatModel
     template_name = ""
@@ -660,3 +667,6 @@ class MapView(TemplateView):
     def get(self, request, *args, **kwargs):
         boats.utilities.map_folium(cache.get(self.kwargs.get("pk")), pk=self.kwargs.get("pk"))
         return TemplateView.get(self, request, *args, **kwargs)
+
+
+

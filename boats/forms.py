@@ -9,10 +9,10 @@ from django_countries.widgets import CountrySelectWidget
 from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField, CaptchaTextInput
-from extra_views import InlineFormSetFactory
 from django.core.validators import MinValueValidator
 import datetime
 from. widgets import *
+from .utilities import currency_converter_original
 
 """ форма лодки"""
 
@@ -21,35 +21,70 @@ def year_choices():
     return [(r, r) for r in range(1950, datetime.date.today().year + 1)]
 
 
+def currency_choices():
+    choices = ["EUR", 'USD', "SEK", "RUB", 'GBP']
+    result = [(name, name) for name in choices]
+    result.insert(0, (None, "Please specify currency (to be converted in EURO"))
+    return result
+
+
 class BoatForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self.pk = kwargs.pop("pk", None)
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        #  Не показываем поле "currency" в форме редактирования
+        if self.pk:
+            self.fields["currency"].widget = forms.HiddenInput()
+            self.fields["currency"].required = False
+
     boat_name = forms.CharField(validators=[UniqueNameValidator()], label="Boat model name",
                                 help_text="Please type in boat model  name")
-    boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line length",)
-    boat_price = forms.IntegerField(help_text="Please input boat price",
-        validators=[validators.MinValueValidator(5000, message="Are you sure? It is almost free!",)])
+    boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line"
+                                                           " length",)
     first_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
-                                    help_text="Please enter first manufacturing year of the model")
+                                    help_text="Please enter first manufacturing year of the"
+                                              " model")
     last_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
-                                    help_text="Please enter last manufacturing year of the model")
+                                    help_text="Please enter last manufacturing year of the "
+                                              "model")
     boat_sailboatdata_link = forms.URLField(validators=[UniqueSailboatLinkValidator(), ],
-                                            help_text="Please type in URL to Sailboatdata page for this"
-                                                      " boat")
+                                            help_text="Please type in URL to Sailboatdata page "
+                                                      "for this boat")
+    currency = forms.ChoiceField(choices=currency_choices, initial=None,
+                                 help_text="Please choice desirable currency",
+                                 label="currency(to be converted to EURO)")
 
     class Meta:
         model = BoatModel
-        fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",   "boat_price",
+        fields = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type",
+                  "boat_price", 'currency',
                   "boat_country_of_origin", "boat_sailboatdata_link",  "boat_description",
                   "first_year", "last_year")
         widgets = {"boat_country_of_origin": CountrySelectWidget(layout='{widget}<img  class="country-select-flag" id="{flag_id}" style="margin: 6px 4px 0; width: 45px; height: 26px;  " src="{country.flag}">')}
 
     def clean(self):
         cleaned_data = forms.ModelForm.clean(self)
-        first_year = int(cleaned_data.get("first_year"))
-        last_year = int(cleaned_data.get("last_year"))
+        first_year = cleaned_data.get("first_year")
+        last_year = cleaned_data.get("last_year")
+        currency = self.cleaned_data.get("currency")
+        price = self.cleaned_data.get("boat_price")
 
+        #  проверяем, чтобы год началы был раньше года окончания
         if first_year > last_year and first_year and last_year:
             msg = 'Last year has to be superior then first year'
             self.add_error("last_year", msg)
+
+        #  проверям, чтобы цена не была менее 5000 euro
+        msg = "Are you sure? It is almost free!"
+        if not self.pk:  # для создаваемой лодки
+            final_price = currency_converter_original(price, currency)
+            if final_price < 5000:
+                self.add_error("boat_price", msg + "\xa0 Price in EURO: %d" % final_price)
+        else:  # для редактируемой лодки
+            if price < 5000:
+                self.add_error("boat_price", msg)
+        return cleaned_data
 
         # проверяет живой ли урл и , что урл веден на 'sailboatdata.com'
     def clean_boat_sailboatdata_link(self):
@@ -66,6 +101,17 @@ class BoatForm(forms.ModelForm):
         except requests.exceptions.ConnectionError:
             self.add_error("boat_sailboatdata_link", msg5)
         return url
+
+    def save(self, commit=True):
+        """Пересчитываем валюту в евро"""
+        boat = forms.ModelForm.save(self, commit=False)
+        boat.currency = self.cleaned_data["currency"]
+        if commit:
+            #  конвертируем только для вновь создаваемых лодок  и если валюта уже не равна EUR
+            if boat.currency != "EUR" and not self.pk:
+                boat.boat_price = currency_converter_original(boat.boat_price, boat.currency)
+            boat.save()
+        return boat
 
 
 """форма доп. изображений лодки"""
