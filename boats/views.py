@@ -16,9 +16,8 @@ from .forms import *
 #from .utilities import map_folium, signer, spider, currency_converter
 import boats.utilities
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
-from django.db.models import Prefetch,  Min, Q
+from django.db.models import Prefetch,  Min, Q, Count, F, Subquery, OuterRef
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -27,12 +26,15 @@ from .render import Render, link_callback
 from django.template.loader import get_template
 import xhtml2pdf.pisa as pisa
 from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
+from django.utils.decorators import method_decorator
 from reversion.models import Version
 import os
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.core.cache import cache
+from django.views.decorators.gzip import gzip_page
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -81,7 +83,7 @@ def viewname_edit(request, pk):
         else:
             messages.add_message(request, messages.WARNING, "You can only edit your own "
             "entries!", extra_tags="text-muted  font-weight-bold", fail_silently=True)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            return redirect(request.META.get('HTTP_REFERER'))
 
 
 """ Контроллер удаления лодки"""
@@ -237,8 +239,8 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
         boat.update({"author": version.revision.user})
         context.update({"boat": boat, "version": version})
         # самая старая фотка
-        minimal_id = BoatImage.objects.aggregate(min=Min('id',
-                                                         filter=Q(boat_id=self.kwargs["pk"])))
+        minimal_id = BoatImage.objects.aggregate(min=Min('id', filter=Q(boat_id=self.kwargs[
+            "pk"])))
         try:
             context["image"] = BoatImage.objects.get(boat_id=self.kwargs["pk"],
                                                      pk=minimal_id["min"])
@@ -262,7 +264,8 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
                 score += 1
         if score != 0:
             message = "%d broken image instances  has been deleted from DB" % score
-            messages.add_message(request, messages.WARNING, message=message, fail_silently=True)
+            messages.add_message(request, messages.WARNING, message=message,
+                                 fail_silently=True)
         message = "You successfully rolled back %(name)s ` data. Rollback date is %(date)s " % \
                   ({"name": self.get_object().boat_name, "date": version.revision.date_created})
         messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
@@ -566,7 +569,8 @@ def render_pdf_view(request, pk):
     context = {"current_boat": current_boat, "request": request}
     # Create a Django response object, and specify content_type as pdf
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="%s"' % (current_boat.boat_name + ".pdf")
+    response['Content-Disposition'] = 'attachment; filename="%s"' % (current_boat.boat_name
+                                                                     + ".pdf")
 
     # find the template and render it.
     template = get_template(template_path)
@@ -599,14 +603,52 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
             object_id__in=existing_boats_pk).order_by("object_id").distinct("object_id")
         context["versions"] = versions
         # фото всех удаленных лодок
-        images = BoatImage.objects.filter(boat_id__isnull=True).exclude(
-            memory__in=existing_boats_pk)
+        images = BoatImage.objects.filter(boat_id__isnull=True).exclude(memory__in=existing_boats_pk)
         # список рк всех фоток не привязанных к лодкам
         images.memory_list = str(images.values_list("memory", flat=True))
         for image in images:
             image.memory = str(image.memory)
         context["images"] = images
+        #  передаем имена лодок в следующий контроллер ReversionDeleteView
+        for version in versions:
+            self.request.session[version.object_id] = version.field_dict["boat_name"]
         return context
+
+
+"""Контроллер удаления версии"""
+
+
+class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
+    template_name = "reversion_delete.html"
+    redirect_message = "You have to be logged in to delete reversions"
+
+    @atomic
+    def post(self, request, *args, **kwargs):
+        versions = Version.objects.select_related("revision").\
+            filter(object_id=self.kwargs.get("pk"))
+        images = BoatImage.objects.filter(memory=self.kwargs.get("pk"))
+        for version in versions:
+            version.revision.delete()
+            version.delete()
+        for image in images:
+            image.true_delete()
+        del self.request.session[str(self.kwargs.get("pk"))]
+        return redirect("boats:reversion")
+
+    def get_context_data(self, **kwargs):
+        context = TemplateView.get_context_data(self, **kwargs)
+        context["boat_name"] = self.request.session.get(str(self.kwargs.get("pk")))
+        context["images"] = BoatImage.objects.filter(memory=self.kwargs.get("pk"))
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        """только автор лодки может удалиь данные полностью"""
+        if self.request.user.pk != Version.objects.filter(object_id=self.kwargs.get("pk")).only(
+                "revision")[:1][0].revision.user_id:
+            messages.add_message(request, messages.WARNING, "You can only delete your own "
+                                                            "entries", fail_silently=True)
+            return self.handle_no_permission()
+        return MessageLoginRequiredMixin.dispatch(self, request, *args, **kwargs)
 
 
 """ Контроллер восстановления конкретной лодки"""
@@ -614,15 +656,37 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
 
 @login_required_message(message="You need to be authenticated to recover boat's data")
 @login_required
+@atomic
 def reversion_confirm_view(request, pk):
+    #  Список имен существующих лодок
+    existing_boats_names = BoatModel.objects.all().values_list("boat_name",  flat=True)
+    #  Текущая версия для восстановления
     versions = Version.objects.get_for_model(BoatModel).filter(object_id=pk)[0:1]
+    #  Имя текущей лодки
+    current_boat_name = versions[0].field_dict["boat_name"]
+    #  РК существующей лодки с таким - же именем, если есть
+    try:
+        existing_boat_pk = BoatModel.objects.filter(boat_name=current_boat_name).only("pk")[0].pk
+        #  Урл на существующую лодку с таким-же именем
+        url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,)))) + \
+              "'>%s</a>" % current_boat_name
+        message = 'Boat with the name "%s" is already exist on the site . You can not restore it! ' \
+                  % url
+    except IndexError or EmptyResultSet:
+        message = ""
+    #  Если лодка с таким именем уже существует то не даем ее восстановить
     if request.method == "POST":
-        versions[0].revision.revert()
-        restored_boat = BoatModel.objects.get(boat_name=versions[0].object_repr)
-        restored_boat.save()
-        message = 'Boat "%(boat_name)s" is restored!' % {"boat_name": versions[0].object_repr}
-        messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
-        return HttpResponseRedirect(reverse_lazy("boats:boat_detail",  args=(pk, )))
+        if current_boat_name in existing_boats_names:
+            messages.add_message(request, messages.WARNING, message=mark_safe(message),
+                                 fail_silently=True)
+            return redirect("boats:reversion")
+        else:
+            versions[0].revision.revert()
+            restored_boat = BoatModel.objects.get(boat_name=versions[0].object_repr)
+            restored_boat.save()
+            message = 'Boat "%(boat_name)s" is restored!' % {"boat_name": versions[0].object_repr}
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            return HttpResponseRedirect(reverse_lazy("boats:boat_detail",  args=(pk, )))
     else:
         context = {"versions": versions}
         return render(request, "reversion_confirmation.html", context)
@@ -654,9 +718,8 @@ class BlocketView(DetailView):
 """ Контроллер просмотра кары с местами продажи лодок """
 
 
-@method_decorator(cache_page(60*60*24), name="dispatch")
+@method_decorator([cache_page(60*60*24), gzip_page], name="dispatch")
 class MapView(TemplateView):
-    model = BoatModel
     template_name = ""
 
     def get_template_names(self):
@@ -665,7 +728,8 @@ class MapView(TemplateView):
         return template_name
 
     def get(self, request, *args, **kwargs):
-        boats.utilities.map_folium(cache.get(self.kwargs.get("pk")), pk=self.kwargs.get("pk"))
+        boats.utilities.map_folium(cache.get(self.kwargs.get("pk")),
+                                   pk=self.kwargs.get("pk"))
         return TemplateView.get(self, request, *args, **kwargs)
 
 

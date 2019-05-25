@@ -4,7 +4,7 @@
 {% bootstrap_javascript jquery='full' %}
 
 
-{% block title %} Correction boats data{% endblock title %}
+{% block title %} Correction of a boats data{% endblock title %}
 
 {% block content %}
     <div class="form-container container col-md-6 bg-light mt-2">
@@ -16,9 +16,45 @@
 
                 <form method="post" enctype="multipart/form-data">
                     {%  csrf_token %}
-                    {%   bootstrap_form form1 layout='horizontal' size="small" label_class="form-label col-md-3"%}
 
-{%   bootstrap_formset form2 layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                    {%   bootstrap_form form1 exclude="first_year, last_year,boat_sailboatdata_link" layout='horizontal' size="small" label_class="form-label col-md-3"%}
+
+
+                    {% bootstrap_field form1.boat_sailboatdata_link layout='horizontal' size="small" label_class="form-label col-md-3" form_group_class=""   %}
+
+                    <div class="row offset-3 mt-1 mb-2">
+
+                        <a class="ml-2" href=" {{  form1.boat_sailboatdata_link.value}}">{{  form1.boat_sailboatdata_link.value}}</a>
+                    </div>
+
+                    <div class="row mt-3 mb-2">
+
+                        <div class="col-3">
+                            <p>First and final manufacturing years</p>
+                        </div>
+
+                        <div class = "col-4">
+                            {% bootstrap_field form1.first_year layout='inline' size="small"   form_group_class="" label_class="form-label col-md-3" %}
+                            <small class="form-text text-muted">{{ form1.first_year.help_text }}</small>
+                        </div>
+
+                        <div class = "offset-1 col-4" >
+                            {% bootstrap_field form1.last_year layout='inline' size="small" form_group_class="" label_class="form-label col-md-3"  %}
+                            <small class="form-text text-muted">{{ form1.last_year.help_text }}</small>
+                        </div>
+
+
+                    </div>
+
+
+
+                    {% comment %}
+                {%   bootstrap_form form1 exclude="boat_name, boat_length, boat_mast_type, boat_keel_type,boat_country_of_origin, boat_sailboatdata_link, boat_price, boat_description" layout='horizontal' size="small" label_class="form-label col-md-3"%}
+{% endcomment %}
+
+
+
+                    {%   bootstrap_formset form2 layout='horizontal' size="small" label_class="form-label col-md-3"%}
 
                     <div class="row">
                         <div class="col-12 text-center">

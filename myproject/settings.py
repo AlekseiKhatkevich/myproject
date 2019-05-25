@@ -1,4 +1,4 @@
-
+import sys
 import os
 from reversion.middleware import RevisionMiddleware
 
@@ -99,17 +99,18 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-
         "ENGINE": "django.db.backends.postgresql",
         "HOST": "localhost",
         "USER": "postgres",
         "PASSWORD": "1q2w3e",
-        "NAME": "postgres_work_1"
-    }
+        "NAME": "postgres_work_1"},
+    "test": {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')},
 }
 
+#if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
+    #DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -272,7 +273,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 if DEBUG: INTERNAL_IPS = "127.0.0.1"
 
 # for file resubmit
+
+
 CACHES = {
+
     #'default': {
         #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
     "default": {

@@ -15,6 +15,7 @@ from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 
 
+
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
 
@@ -118,11 +119,11 @@ class BoatModel(models.Model):
                                null=True, blank=True,
                                verbose_name="Author of the entry")
 
-    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name=
-    "Boat model", help_text="Please input boat model")
+    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat model",
+                                 help_text="Please input boat model")
 
-    boat_length = models.FloatField(null=False, blank=False, verbose_name=
-    "Boat water-line length", help_text="Please input boat water-line length",)
+    boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
+                                    help_text="Please input boat water-line length",)
 
     boat_description = models.TextField(blank=True, verbose_name="Boat description",
                                         help_text="Please describe the boat", )
@@ -165,11 +166,6 @@ class BoatModel(models.Model):
 
     def __str__(self):
         return self.boat_name
-
-    def length_mast_keel(self):  # метод добовляет кастомный атрибут в шаблон {{ current_boat.length_mast_keel }}
-        if self.boat_length and self.boat_keel_type and self.boat_mast_type:
-            return "length - %d feet, keel type - %s, rigging - %s" % (self.boat_length, self.boat_keel_type,  self.boat_mast_type)
-    length_mast_keel.short_description = "Boat length + keel type + mast type"
 
     def delete(self, using=None, keep_parents=False):
         import articles.models  # to avoid circular import with articles

@@ -85,7 +85,7 @@ def currency_converter_original(price, curr1, curr2="EUR"):
         converted_price = c.convert(price, curr1, curr2)
         return converted_price
     except ValueError or RateNotFoundError as err:
-        return err
+        return 0
 
 
 def spider(name):

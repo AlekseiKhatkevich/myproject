@@ -51,19 +51,31 @@
 
 
 
-                <div class="row offset-4">
+                <div class="row offset-2">
                     {% for image in images %}
-                        {% if instance.object_id ==  image.memory and forloop.counter < 4 %}
-                            <a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary rounded ml-3 mb-2" src="{% thumbnail image.boat_photo "medium"  %}"></a>
-                        {% endif %}
+
+
+                        {% ifequal instance.object_id  image.memory     %}
+
+
+
+                            <a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary rounded ml-3 mb-2" src="{% thumbnail image.boat_photo "medium"  %}">    </a>
+
+
+
+                        {% endifequal %}
+
                     {% endfor %}
 
                     {%  if instance.object_id  not in images.memory_list  %}
                         <img class="   ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip" data-placement="right" title="This boat doesn't have any photo">
                     {%  endif %}
                     <div class="col float-left">
-                        <a href="{% url "boats:reversion_confirmation" pk=instance.object_id %}" class="badge badge-success">Recover</a>
+                        <a href="{% url "boats:reversion_confirmation" pk=instance.object_id %}" class="badge badge-success">Recover</a><br>
+                        <a href="{% url "boats:reversion_delete" pk=instance.object_id %}" class="badge badge-danger mt-2">Delete Reversion</a>
                     </div>
+
+
                 </div>
             {% empty %}
                 <h5 class="text-center  text-warning " style="font-size: 20">You dont have any deleted boats yet</h5>

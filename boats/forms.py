@@ -13,6 +13,7 @@ from django.core.validators import MinValueValidator
 import datetime
 from. widgets import *
 from .utilities import currency_converter_original
+from currency_converter import RateNotFoundError
 
 """ форма лодки"""
 
@@ -24,7 +25,7 @@ def year_choices():
 def currency_choices():
     choices = ["EUR", 'USD', "SEK", "RUB", 'GBP']
     result = [(name, name) for name in choices]
-    result.insert(0, (None, "Please specify currency (to be converted in EURO"))
+    result.insert(0, (None, "Please specify currency (to be converted in EURO)"))
     return result
 
 
@@ -49,8 +50,8 @@ class BoatForm(forms.ModelForm):
                                     help_text="Please enter last manufacturing year of the "
                                               "model")
     boat_sailboatdata_link = forms.URLField(validators=[UniqueSailboatLinkValidator(), ],
-                                            help_text="Please type in URL to Sailboatdata page "
-                                                      "for this boat")
+                                            help_text="Please type in URL to Sailboatdata "
+                                                      "page for this boat ")
     currency = forms.ChoiceField(choices=currency_choices, initial=None,
                                  help_text="Please choice desirable currency",
                                  label="currency(to be converted to EURO)")
@@ -69,7 +70,6 @@ class BoatForm(forms.ModelForm):
         last_year = cleaned_data.get("last_year")
         currency = self.cleaned_data.get("currency")
         price = self.cleaned_data.get("boat_price")
-
         #  проверяем, чтобы год началы был раньше года окончания
         if first_year > last_year and first_year and last_year:
             msg = 'Last year has to be superior then first year'
@@ -79,11 +79,18 @@ class BoatForm(forms.ModelForm):
         msg = "Are you sure? It is almost free!"
         if not self.pk:  # для создаваемой лодки
             final_price = currency_converter_original(price, currency)
-            if final_price < 5000:
+            if final_price < 5000 and final_price != 0:
                 self.add_error("boat_price", msg + "\xa0 Price in EURO: %d" % final_price)
         else:  # для редактируемой лодки
             if price < 5000:
                 self.add_error("boat_price", msg)
+        #   Пересчитываем валюту в евро только для новых лодок
+        if currency != "EUR" and not self.pk:
+            self.cleaned_data["boat_price"] = currency_converter_original(price, currency)
+            if self.cleaned_data["boat_price"] == 0:
+                msg = "Currency converter cant convert it. Please chose EURO to save"
+                self.add_error("currency", msg)
+
         return cleaned_data
 
         # проверяет живой ли урл и , что урл веден на 'sailboatdata.com'
@@ -102,16 +109,20 @@ class BoatForm(forms.ModelForm):
             self.add_error("boat_sailboatdata_link", msg5)
         return url
 
+
+"""
     def save(self, commit=True):
-        """Пересчитываем валюту в евро"""
+        Пересчитываем валюту в евро
         boat = forms.ModelForm.save(self, commit=False)
         boat.currency = self.cleaned_data["currency"]
         if commit:
             #  конвертируем только для вновь создаваемых лодок  и если валюта уже не равна EUR
             if boat.currency != "EUR" and not self.pk:
-                boat.boat_price = currency_converter_original(boat.boat_price, boat.currency)
-            boat.save()
+                    boat.boat_price = currency_converter_original(boat.boat_price,
+                                                                  boat.currency)
+        boat.save()
         return boat
+    """
 
 
 """форма доп. изображений лодки"""
@@ -128,18 +139,6 @@ class BoatImageForm(forms.ModelForm):
 
 boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=("boat_photo", ),
 extra=3, can_delete=True, max_num=10, widgets={"boat_photo": CustomKeepImageWidget()}, labels={"boat_photo": None},)
-
-
-"""
-#  альтернативный вариант
-class ItemInline(InlineFormSetFactory):
-    model = BoatImage
-    fields = ["boat_photo"]
-    factory_kwargs = {'extra': 4, 'max_num': None,
-                      'can_order': False, 'can_delete': True}
-"""
-
-"""Форма коректировки пользователя"""
 
 
 class CorrectUserInfoForm(forms.ModelForm):

@@ -12,13 +12,14 @@ import datetime
 
 
 class Heading(models.Model):
-    name = models.CharField(max_length=20, db_index=True, unique=True, verbose_name='heading title')
+    name = models.CharField(max_length=20, db_index=True, unique=True, verbose_name='heading '
+                                                                                    'title')
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Order')
-    foreignkey = models.ForeignKey("UpperHeading", on_delete=models.PROTECT, null=True, blank=True,
-                                      verbose_name="Upper heading", )
+    foreignkey = models.ForeignKey("UpperHeading", on_delete=models.PROTECT, null=True,
+                                   blank=True, verbose_name="Upper heading", )
     one_to_one_to_boat = models.OneToOneField(BoatModel, on_delete=models.SET_NULL, null=True,
-                                              blank=True, verbose_name="correspondent boat for the"
-                                                                       " category", )
+                                              blank=True, verbose_name="correspondent boat"
+                                                                       " for the category", )
 
 
 """ менеджер ап-группы"""
@@ -143,8 +144,10 @@ class Article(models.Model):
 
 class Comment(ModelFieldRequiredMixin, models.Model):
     foreignkey_to_article = models.ForeignKey(Article, blank=True, null=True,
-                                              on_delete=models.CASCADE, verbose_name="Article",                                                       help_text='Please choose the article to comment on')
-    foreignkey_to_boat = models.ForeignKey(BoatModel, blank=True, null=True, on_delete=models.CASCADE,                          verbose_name="Boat", help_text="Please choose the boat to comment on")
+                                on_delete=models.CASCADE, verbose_name="Article",                                                       help_text='Please choose the article to comment on')
+    foreignkey_to_boat = models.ForeignKey(BoatModel, blank=True, null=True,
+                                           on_delete=models.CASCADE,verbose_name="Boat",
+                                           help_text="Please choose the boat to comment on")
     author = models.CharField(max_length=30, verbose_name="Author",
                               help_text="Please type in your name ")
     content = models.TextField(verbose_name="Comment text", help_text="Please type in comment here")

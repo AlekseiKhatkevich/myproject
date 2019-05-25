@@ -318,3 +318,39 @@ def map_folium(places: dict, pk: int ):
 
     map.save(str(pk) + ".html")
 """
+"""
+@login_required_message(message="You need to be authenticated to recover boat's data")
+@login_required
+def reversion_confirm_view(request, pk):
+    #  Список имен существующих лодок
+    existing_boats_names = BoatModel.objects.all().values_list("boat_name",  flat=True)
+    #  Текущая версия для восстановления
+    versions = Version.objects.get_for_model(BoatModel).filter(object_id=pk)[0:1]
+    #  Имя текущей лодки
+    current_boat_name = versions[0].field_dict["boat_name"]
+    #  РК существующей лодки с таким - же именем, если есть
+    existing_boat_pk = BoatModel.objects.filter(boat_name=current_boat_name).only("pk")[0].pk
+    #  Урл на существующую лодку с таким-же именем
+    url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk, )))) + \
+          "'>%s</a>" % current_boat_name
+    message = 'Boat with the name "%s" is already exist on the site . You can not restore it! ' % url
+
+    #  Если лодка с таким именем уже существует то не даем ее восстановить
+    if request.method == "POST":
+        if current_boat_name in existing_boats_names:
+            messages.add_message(request, messages.WARNING, message=mark_safe(message),
+                                 fail_silently=True)
+            return redirect("boats:reversion")
+        else:
+            versions[0].revision.revert()
+            restored_boat = BoatModel.objects.get(boat_name=versions[0].object_repr)
+            restored_boat.save()
+            message = 'Boat "%(boat_name)s" is restored!' % {"boat_name": versions[0].object_repr}
+            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            return HttpResponseRedirect(reverse_lazy("boats:boat_detail",  args=(pk, )))
+    else:
+        context = {"versions": versions}
+        return render(request, "reversion_confirmation.html", context)
+
+
+"""

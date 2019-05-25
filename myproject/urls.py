@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from .settings import DEBUG, MEDIA_URL, MEDIA_ROOT, INSTALLED_APPS
 from django.contrib. staticfiles.views import serve
 from django.views.decorators.cache import never_cache
-from django.views.defaults import permission_denied
+from django.views.defaults import permission_denied, page_not_found
 from django.utils.functional import curry
 from django.conf import settings
 from django.conf.urls import  url
@@ -30,7 +30,7 @@ urlpatterns = [
     path("test/", include("testapp.urls")),
     path("", include("boats.urls")),
 ]
-
+# для отдачи статики в дебаг = фалс ---manage.py runserver --insecure
 if DEBUG:
     urlpatterns.append(path("static/<path:path>", never_cache(serve)))  # если не загр. картинки то смотреть сюда
     urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
@@ -39,8 +39,11 @@ if DEBUG:
         urlpatterns.append(path('__debug__/', include(debug_toolbar.urls)))
 
 # обработчик 403 ошибки(Access denied)
-handler403 = curry(permission_denied, exception=Exception('Permission Denied'), template_name='errors/403.html')
-#handler404 = curry(page_not_found, exception=Exception('Page not Found'), template_name='errors/404.html')
+handler403 = curry(permission_denied, exception=Exception('Permission Denied'),
+                   template_name='errors/403.html')
+# обработчик 404 ошибки(Not Found)
+handler404 = curry(page_not_found, exception=Exception('Page not Found'),
+                   template_name='errors/404.html')
 
 # названия для админки
 admin.site.site_header = "Boat's project  Admin"

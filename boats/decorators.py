@@ -38,7 +38,6 @@ def login_required_message(function=None, message=default_message):
 
 class MessageLoginRequiredMixin(LoginRequiredMixin):
     """Добавляет в миксин сообщение"""
-
     redirect_message = default_message
 
     def dispatch(self, request, *args, **kwargs):

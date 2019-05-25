@@ -1,0 +1,62 @@
+<!-- templates/reversion_delete.html  -->
+{%  extends "base.html" %}
+{% load bootstrap4 %}
+{%  load thumbnail %}
+{% load static %}
+{% block title %}
+    Reversions delete confirmation
+{% endblock %}
+{% block content %}
+
+    <div class="container">
+
+        <div class="row ">
+            <div class="col text-center mt-3">
+                <h4> Please confirm that you want completely delete "{{ boat_name|capfirst }}" data and associated photos? </h4>
+            </div>
+        </div>
+
+
+         <div class="row">
+                    {% for image in images %}
+<div class="col text-center mt-5 mb-5">
+                            <a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary rounded ml-3 mb-2" src="{% thumbnail image.boat_photo "medium"  %}"></a>
+</div>
+                        {%  empty %}
+<div class="col text-center mt-5 mb-5">
+                        <img class="   ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip" data-placement="right" title="This boat doesn't have any photo">
+</div>
+                    {% endfor %}
+         </div>
+
+
+
+
+
+
+
+
+
+
+        <div class="row">
+            <div class="col text-center">
+                <form method="post" class="mt-5" >
+                    {%  csrf_token %}
+
+
+                    <div class="btn-group rounded " role="group" aria-label="Basic example">
+                        <button type="submit" class="btn btn-secondary btn-lg bg-danger text-white ">Full Delete  </button>
+
+                        <a  href=" {{  request.META.HTTP_REFERER }}"><button type="button" class="btn btn-secondary btn-lg bg-success ">Go back</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+
+
+    </div>
+
+{% endblock content %}
+
