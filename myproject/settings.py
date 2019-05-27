@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django_countries",
     "xhtml2pdf",
     "file_resubmit",
+    "django_extensions",
 
 ]
 

@@ -1,6 +1,5 @@
 from django import forms
 import requests
-from django.core.exceptions import ObjectDoesNotExist
 from .validators import UniqueNameValidator, UniqueSailboatLinkValidator
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm, AuthenticationForm
@@ -9,11 +8,10 @@ from django_countries.widgets import CountrySelectWidget
 from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField, CaptchaTextInput
-from django.core.validators import MinValueValidator
 import datetime
 from. widgets import *
 from .utilities import currency_converter_original
-from currency_converter import RateNotFoundError
+
 
 """ форма лодки"""
 
@@ -141,6 +139,9 @@ boat_image_inline_formset = inlineformset_factory(BoatModel, BoatImage,  fields=
 extra=3, can_delete=True, max_num=10, widgets={"boat_photo": CustomKeepImageWidget()}, labels={"boat_photo": None},)
 
 
+"""Форма корректировки данных пользователя"""
+
+
 class CorrectUserInfoForm(forms.ModelForm):
     email = forms.EmailField(required=True, label='Your email address')
 
@@ -222,7 +223,8 @@ class PRForm(PasswordResetForm):
             msg = "This account had been deactivated or wasn't activated at all."
             self.add_error('email', msg)
         else:
-            current_user = ExtraUser.objects.get(email__iexact=email, is_active=True, is_activated=True)
+            current_user = ExtraUser.objects.get(email__iexact=email, is_active=True,
+                                                 is_activated=True)
             if current_user:
                 self.cleaned_data["username"] = current_user
         return email

@@ -14,8 +14,6 @@ import os
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 
-
-
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
 
@@ -245,6 +243,9 @@ class BoatModel(models.Model):
             # согласно имени лодки
             articles.models.SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,                          foreignkey_id=articles.models.UpperHeading.objects.get
                 (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
+            #  удаляем модуль из памяти для исключения циклического импорта(на всякий случай)
+        import sys
+        del sys.modules["articles.models"]
 
 
 """Расширенная модель юзера """

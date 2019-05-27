@@ -29,6 +29,7 @@ celery = {extras = ["redis"],version = "*"}
 django-redis = "*"
 folium = "*"
 geocoder = "*"
+django-extensions = "*"
 
 [requires]
 python_version = "3.7"

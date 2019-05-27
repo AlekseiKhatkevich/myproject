@@ -32,7 +32,7 @@ def files_list():
 def send_activation_notofication(user):
     """ функция отправки писем"""
     if ALLOWED_HOSTS:
-        host = "http://" + ALLOWED_HOSTS[0]
+        host = "http://" + ALLOWED_HOSTS[0] + ":8000"
     else:
         host = "http://localhost:8000"
     context = {"user": user, "host": host, "sign": signer.sign(user.username)}

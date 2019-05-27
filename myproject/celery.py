@@ -37,7 +37,7 @@ def debug_task(self):
 
 app.conf.beat_schedule = {
 
-    "clean cache every 15 seconds": {
+    "clean cache  ": {
         "task": "boats.tasks.clean_cache",
         'schedule': 20000,
         },

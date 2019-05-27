@@ -30,10 +30,10 @@ from django.utils.safestring import mark_safe
 from django.utils.decorators import method_decorator
 from reversion.models import Version
 import os
+from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 from django.conf import settings
-from django.core.cache import cache
 from django.views.decorators.gzip import gzip_page
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
@@ -400,16 +400,15 @@ class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordCh
                       "via email you will have received shortly "
     form_class = PwdChgForm
 
-    def post(self, request, *args, **kwargs):
-        PasswordChangeView.post(self, request, *args, **kwargs)
-        logout(request)
-        return HttpResponseRedirect(reverse_lazy("boats:user_profile"))
+    #def post(self, request, *args, **kwargs):
+       # PasswordChangeView.post(self, request, *args, **kwargs)
+        #logout(request)
+       # return HttpResponseRedirect(reverse_lazy("boats:user_profile"))
 
 
 """ добавление нового пользователя"""
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class AddNewUserView(CreateView):
     model = ExtraUser
     template_name = "admin/add_new_user.html"
@@ -602,8 +601,18 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
                 revision__user_id__isnull=True)).exclude(
             object_id__in=existing_boats_pk).order_by("object_id").distinct("object_id")
         context["versions"] = versions
+        #  ограничиваев кол-во выдаваемых фоток 3-мя штуками
+        memory_limiter = set(BoatImage.objects.filter(boat_id__isnull=True).exclude(
+            memory__in=existing_boats_pk).values_list("memory", "pk"))
+        cnt = []
+        superfluous_images = set()
+        for memory in memory_limiter:
+            cnt.append(memory[0])
+            if cnt.count(memory[0]) > 3:
+                superfluous_images.add(memory)
         # фото всех удаленных лодок
-        images = BoatImage.objects.filter(boat_id__isnull=True).exclude(memory__in=existing_boats_pk)
+        images = BoatImage.objects.filter(boat_id__isnull=True, pk__in=[pk for memory, pk in
+                    (memory_limiter - superfluous_images)]).exclude(memory__in=existing_boats_pk)
         # список рк всех фоток не привязанных к лодкам
         images.memory_list = str(images.values_list("memory", flat=True))
         for image in images:

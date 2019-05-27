@@ -5,6 +5,7 @@
 {% load cache %}
 
 {% block title %}
+    {{ block.super }}
     Show announcements for {{ object.boat_name  }}
 {% endblock title %}
 
@@ -48,7 +49,7 @@
 
         <p class="text-muted ml-3 mt-4">Currency rates are provided by  <a href="http://www.ecb.int/">European Central Bank</a> , effective on date {% now "SHORT_DATE_FORMAT"%}</p>
 
-    </div>
+    </div> {# container #}
 
 
 

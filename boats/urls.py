@@ -4,8 +4,7 @@ from .views import *
 app_name = 'boats'
 urlpatterns = [
 
-    path("accounts/reset/<uidb64>/<token>/", PassResConfView.as_view(),
-         name='password_reset_confirm'),
+    path("accounts/reset/<uidb64>/<token>/", PassResConfView.as_view(), name='password_reset_confirm'),
     path("accounts/password_reset/", PassResView.as_view(), name="password_reset"),
     path("accounts/register/activate/<str:sign>/", user_activate_view, name="register_activate"),
     path('account/password/change', PasswordCorrectionView.as_view(), name="password_change"),

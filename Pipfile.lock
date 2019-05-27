@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ab7f013ad2547fc8eacdb5d9f228712bb16b863557857774fcaffe1d8c164cf5"
+            "sha256": "53944b86463cfba771eb6e85ffdb931104c7526126218e047ce5af816d70b0a4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -148,6 +148,14 @@
             "index": "pypi",
             "version": "==0.1.11"
         },
+        "django-extensions": {
+            "hashes": [
+                "sha256:6766c573ffe63693cd485512a02f3b59622c884cbfeca241d1278ffdf0ac39ae",
+                "sha256:c43e46cc95985c278afda645480b79f9a85cfe5a82c957accd08b8045793b707"
+            ],
+            "index": "pypi",
+            "version": "==2.1.7"
+        },
         "django-extra-views": {
             "hashes": [
                 "sha256:27e0ad5ce349abe455504badee837060e8508032fcfe1dfaee115d21b775a383"
@@ -187,11 +195,11 @@
         },
         "django-reversion": {
             "hashes": [
-                "sha256:830cd9127ff3cda98254526e1b30519da98ce4094bdf25e7c5aabb9207405a76",
-                "sha256:fd910774f2dabb65ac9d4fec2b032f1c0560f870c4923ce0b1e2f4d4430fc04a"
+                "sha256:1aeed0b723b5be14c4dc7e7c7e03f9538e7ef29c997585e2e8fb414cf38818f4",
+                "sha256:ed46722389fb2441860d471c7538967dee545bcee891d3d907b04f4baa98f5fa"
             ],
             "index": "pypi",
-            "version": "==3.0.3"
+            "version": "==3.0.4"
         },
         "django-simple-captcha": {
             "hashes": [
@@ -209,11 +217,11 @@
         },
         "folium": {
             "hashes": [
-                "sha256:02054c7a5f898f2593979540b389414c8672d43289991b343511121f3448073a",
-                "sha256:163ad77e5621aafc4ac5ebff07da521d57b1497f5122013c6a961dd568b4fed7"
+                "sha256:10390e325e14c79bd41879dce0a3c3110e771c4b01cd3ed3ff3fc28389702d44",
+                "sha256:66901483808839ed895a685ca7bc4731379f4a627d73a83b77f0df1847b14892"
             ],
             "index": "pypi",
-            "version": "==0.9.0"
+            "version": "==0.9.1"
         },
         "future": {
             "hashes": [
@@ -511,10 +519,10 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:a53063d8b9210a7bdec15e7b272776b9d42b2fd6816401a0d43006ad2f9902db",
-                "sha256:d363e3607d8de0c220d31950a8f38b18d5ba7c0830facd71a1c6b1036b7ce06c"
+                "sha256:b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1",
+                "sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"
             ],
-            "version": "==1.25.2"
+            "version": "==1.25.3"
         },
         "vine": {
             "hashes": [
