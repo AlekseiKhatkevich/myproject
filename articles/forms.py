@@ -57,14 +57,9 @@ class ArticleForm(forms.ModelForm):
 class ArticleCommentForm(forms.ModelForm):
     captcha = CaptchaField(label=" Captcha", help_text="Please type in captcha", error_messages={"invalid": "wrong captcha"})
 
-    def __init__(self, key, *args, **kwargs):
+    def __init__(self,  *args, **kwargs):
+        self.author = kwargs.pop("author", None)
         forms.ModelForm.__init__(self, *args, **kwargs)
-        """
-        if key == "article":
-            self.fields["foreignkey_to_boat"].widget = forms.HiddenInput()
-        else:
-            self.fields["foreignkey_to_article"].widget = forms.HiddenInput()
-            """
         # подключение Popover в форме
         for field in self.fields:   # нужен javascript
             help_text = self.fields[field].help_text
@@ -73,6 +68,9 @@ class ArticleCommentForm(forms.ModelForm):
                 self.fields[field].widget.attrs.update(
                     {'class': 'has-popover', 'data-content': help_text, 'data-placement': 'right',
                      'data-container': 'body'})
+        #  у активированного пользователя отключаем возможность редактирования поля имени
+        if self.author:
+            self.fields["author"].disabled = True
 
     class Meta:
         model = Comment

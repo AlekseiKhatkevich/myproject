@@ -12,7 +12,7 @@ from currency_converter import CurrencyConverter, RateNotFoundError
 import folium
 from folium.plugins import MarkerCluster
 import geocoder
-
+import time
 import random
 
 signer = Signer()
@@ -181,7 +181,21 @@ def map_folium(places: dict, pk: int):
 #map_folium(cache.get(52), 52)
 
 
+def set_last_access_time(path):
+    """Метод изменяет время последнего изменения и время последнего доступа к файлу
+    https://nitratine.net/blog/post/change-file-modification-time-in-python/"""
+    fileLocation = r"%s" % path
+    year = 2017
+    month = 11
+    day = 5
+    hour = 19
+    minute = 50
+    second = 0
 
+    date = datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
+    modTime = time.mktime(date.timetuple())
+
+    os.utime(fileLocation, (modTime, modTime))
 
 
 

@@ -9,7 +9,7 @@ from .forms import *
 import unidecode
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, Http404
 from django.db.transaction import atomic
@@ -63,13 +63,15 @@ class ContentListView(DetailView):
         if self.request.user.is_authenticated:
             context['user'] = ExtraUser.objects.get(pk=self.request.user.pk)
         context["comments"] = Comment.objects.filter(foreignkey_to_article_id=self.kwargs["pk"])
+        context["allowed_comments"] = \
+           (self.request.get_signed_cookie('allowed_comments', default=None))
         return context
 
 
 """контроллер добавления новой статьи"""
 
 
-class AddArticleView( SuccessMessageMixin, MessageLoginRequiredMixin, CreateView):
+class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView):
     model = Article
     template_name = "articles/create_article.html"
     form_class = ArticleForm
@@ -155,7 +157,42 @@ class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
         return DeleteView.post(self, request, *args, **kwargs)
 
 
-"""контроллер комментов"""
+"""Контроллер редактирования комментов"""
+
+
+class EditCommentsView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
+    model = Comment
+    template_name = 'comment/comment_form.html'
+    success_message = "Dear %(author)s, you have successfully edited your comment "
+    form_class = ArticleCommentForm
+    permission_denied_message = "You can edit only comments left by yourself"
+    raise_exception = False
+
+    def get_success_url(self):
+        if self.object.foreignkey_to_article:
+            return reverse('articles:detail', args=(Article.objects.get(
+                pk=self.object.foreignkey_to_article_id).foreignkey_to_subheading_id,
+                                                    self.object.foreignkey_to_article_id))
+        else:
+            return reverse("boats:boat_detail",
+                args=(BoatModel.objects.get(pk=self.object.foreignkey_to_boat_id).pk, ))
+
+    def get_form_kwargs(self):
+        """Передаем маркер в формы, чтобы у зарегестрированного пользователя отключить возможность
+         редактирования поля имени. """
+        kwargs = UpdateView.get_form_kwargs(self)
+        if self.request.user.is_authenticated:
+            kwargs["author"] = "authenticated"
+        return kwargs
+
+    def test_func(self):
+        return self.request.user.username == self.get_object().author and \
+                self.request.user.is_authenticated or str(self.get_object().pk) in \
+                self.request.get_signed_cookie('allowed_comments', default=None) and not \
+                self.request.user.is_authenticated
+
+
+"""контроллер добавления комментов"""
 
 
 class DoubleCommentView(SuccessMessageMixin, CreateView):
@@ -163,15 +200,6 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
     template_name = 'comment/comment_form.html'
     success_message = "Dear %(author)s, thank you for your valuable comment"
     form_class = ArticleCommentForm
-
-    """
-    def get_form(self, form_class=None):
-        if self.kwargs["key"] == "article":
-            form_class = ArticleCommentForm
-        else:
-            form_class = BoatCommentForm
-        return form_class(**self.get_form_kwargs()) 
-        """
 
     def get_initial(self):
         self.initial = CreateView.get_initial(self)
@@ -194,9 +222,35 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
                            args=(BoatModel.objects.get(pk=self.kwargs["pk"]).pk, ))
 
     def get_form_kwargs(self):
+        """Передаем маркер в формы, чтобы у зарегестрированного пользователя отключить возможность
+         редактирования поля имени. """
         kwargs = CreateView.get_form_kwargs(self)
-        kwargs["key"] = self.kwargs.get('key')
+        if self.request.user.is_authenticated:
+            kwargs["author"] = "authenticated"
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        """Передаем либо объект лодки либо статьи"""
+        context_data = CreateView.get_context_data(self, **kwargs)
+        context_data["instance"] = self.initial.get("foreignkey_to_article",
+                                                    self.initial.get("foreignkey_to_boat"))
+        return context_data
+
+    def form_valid(self, form):
+        """Устанавливаем  куки для незарегестрированных пользователей. заносим значения пк
+        созданного объекта комментов в куки для того, чтобы данные пользователи обладающие данными
+        куками в последствии могли редактировать  свои комменты.
+        пример кук:
+        '42, 43, 1, 9, 50, 51:1hVs8G:lL7LoWgvybCofo06FTwJcJa6G1w'"""
+        response = super().form_valid(form)
+        existing_allowed_comments = self.request.get_signed_cookie('allowed_comments', default=None)
+        if not self.request.user.is_authenticated:
+            if existing_allowed_comments and str(self.object.pk) not in existing_allowed_comments:
+                response.set_signed_cookie('allowed_comments',
+                                        ", ".join([existing_allowed_comments, str(self.object.pk)]))
+            elif not existing_allowed_comments:
+                response.set_signed_cookie('allowed_comments', str(self.object.pk))
+        return response
 
 
 """ Контроллер добавления ап-категории и субкатегории"""

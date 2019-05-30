@@ -1,10 +1,11 @@
 from django.test import TestCase, SimpleTestCase
-from boats.forms import BoatForm, NewUserForm, ExtraUser, PRForm, PwdChgForm
+from boats.forms import BoatForm, NewUserForm, ExtraUser, PRForm, PwdChgForm, AuthCustomForm
 import requests
 from boats.utilities import currency_converter_original
 from django import forms
 from unittest.mock import MagicMock
 from boats.models import user_registrated
+from django.core.exceptions import NON_FIELD_ERRORS
 
 
 class BoatFormTest(TestCase):
@@ -218,3 +219,35 @@ class PwdChgFormTestCase(TestCase):
         handler.assert_called_once_with(signal=user_registrated, instance=self.user, sender=PwdChgForm)
         self.tearDown()
 
+
+class AuthCustomFormTestCase(TestCase):
+    """Проверка формы лог-ин"""
+
+    def setUp(self):
+        self.user = ExtraUser.objects.create(
+            email="kkkk@inbox.ru",
+            password="NUio7derT",
+            username="Vasya",
+            first_name="Vasya",
+            last_name="Ivanov",)
+
+        self.form_data = {"username": "Vasya", "password": "NUio7derT"}
+
+    def test_user_is_active_false(self):
+        """Тестируем случай когда пользователь не активирован и пытается зайти на сайт"""
+        form = AuthCustomForm(data=self.form_data)
+        self.user.is_active = False
+        self.user.save()
+        message = "Account '%(value)s' has been deactivated or wasn't activated at all" % \
+                  {"value": self.user.username}
+        self.assertIn(message, form.errors.get('__all__'))
+        self.tearDown()
+
+    def test_invalid_login(self):
+        """Тестируем случай когда пользователь ввел неправильный логин и(или) пароль"""
+        form = AuthCustomForm({"username": "XXXX", "password": "YYYY"})
+        self.assertFalse(form.is_valid())
+        message = "Please enter a correct %(username)s and password. Note that both fields may be" \
+                  " case-sensitive." % {"username": "XXXX"}
+        self.assertRaisesMessage(expected_message=message, expected_exception=forms.ValidationError)
+        self.tearDown()

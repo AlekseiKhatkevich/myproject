@@ -11,6 +11,7 @@ from django.db.models.fields import Field
 from .lookups import NotEqual
 from myproject.settings import CACHES, MEDIA_ROOT
 import os
+import sys
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 
@@ -34,7 +35,7 @@ user_registrated.connect(user_registrated_dispatcher)
 
 class BoatImage(models.Model):
 
-    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True,
+    boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, null=True,
                                    verbose_name='Boat photo', )
     boat = models.ForeignKey("BoatModel",  on_delete=models.SET_NULL, verbose_name="Boat ForeignKey",
                              null=True)
@@ -47,17 +48,21 @@ class BoatImage(models.Model):
         # месяцев
         useless_old_images = BoatImage.objects.filter(boat_id__isnull=True, memory__isnull=False)
         for image in useless_old_images:
-                if datetime.now().timestamp() - os.path.getatime(image.boat_photo.path) > 5184000:
+                if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
                     image.true_delete(self)  # удаляем по настоящему
 
-        if self.boat and not self.memory:  # сохраняем
+        if self.boat_id and not self.memory:  # сохраняем
             self.memory = self.boat_id
-        elif not self.boat and self.memory:  # восстанавливаем
+        elif not self.boat_id and self.memory:  # восстанавливаем
             self.boat_id = self.memory
-        elif self.boat and self.memory and self.boat_id != self.memory:  # корректируем на крайняк
+        elif self.boat_id and self.memory and self.boat_id != self.memory:  # корректируем на крайняк
             self.memory = self.boat_id
 
         models.Model.save(self, force_insert=False, force_update=False, using=None,
+                          update_fields=None)
+
+    def true_save(self):
+        return models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
 
     def delete(self, using=None, keep_parents=False):  # удаляем thumbnails ассоциированные
@@ -65,6 +70,8 @@ class BoatImage(models.Model):
         thumbnailer.delete_thumbnails()
         # вместо удаления фоток мы устанавкливаем их ФК в <null>
         self.boat.boatimage_set.remove(self)
+        #  Устанавливаем время последнего доступа и последнего изменения файла на текущее время
+        os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp()))
         #  models.Model.delete(self, using=None, keep_parents=False)
 
     def true_delete(self, using=None, keep_parents=False):
@@ -80,15 +87,18 @@ class BoatImage(models.Model):
         return os.path.basename(self.boat_photo.name)
 
     @staticmethod
-    def clean_media_root():
+    def clean_media_root():  # Не использовать в тестах!!!! Даже и не думай!!!
         """метод очистки лишних изображений в медиа рут"""
-        files_in_db = {image.filename() for image in BoatImage.objects.all().only("boat_photo")}
-        useless_files = files_list() - files_in_db
-        counter = 0
-        for file in useless_files:
-            os.remove(os.path.join(MEDIA_ROOT, file))
-            counter += 1
-        print(counter, "\xa0\\files were removed from MEDIA_ROOT")
+        if 'test' in sys.argv or 'test_coverage' in sys.argv:
+            print("Dont use this method in tests. It is dangerous for your db")
+        else:
+            files_in_db = {image.filename() for image in BoatImage.objects.all().only("boat_photo")}
+            useless_files = files_list() - files_in_db
+            counter = 0
+            for file in useless_files:
+                os.remove(os.path.join(MEDIA_ROOT, file))
+                counter += 1
+            print(counter, "\xa0\\files were removed from MEDIA_ROOT")
 
     class Meta:
         verbose_name = "Boat photo"
@@ -117,7 +127,8 @@ class BoatModel(models.Model):
                                null=True, blank=True,
                                verbose_name="Author of the entry")
 
-    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat model",
+    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat "
+                                                                                         "model",
                                  help_text="Please input boat model")
 
     boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
@@ -252,7 +263,8 @@ class BoatModel(models.Model):
 
 
 class ExtraUser(AbstractUser):
-    is_activated = models.BooleanField(default=True, db_index=True, verbose_name="Is user activated?", help_text="Specifies whether user has been activated or not")
+    is_activated = models.BooleanField(default=True, db_index=True, verbose_name=
+    "Is user activated?", help_text="Specifies whether user has been activated or not")
     email = models.EmailField(unique=True, blank=False, verbose_name="user's email",
                               help_text='Please type in your email address')
 

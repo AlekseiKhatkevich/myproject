@@ -3,47 +3,77 @@
 {% load bootstrap4 %}
 {% bootstrap_jquery "full" %}
 {% block title %}
-Comment
+    Comment
 {% endblock title%}
 
 {% block content %}
 
-<div class="container col-5 mt-4 border border-secondary rounded">
+    <div class="container col-5 mt-4 border border-secondary rounded">
     <div class="row">
     <div class="col justify-content-center">
-    <h5 class = "text-center">Comments on the entry</h5>
+    <h5 class = "text-center">
+
+
+        {% if  instance.title or instance.boat_name %}
+            Leave
+        {% else %}
+            Edit
+        {% endif %}
+
+
+
+        your comment on
+
+        {% if  instance.title or object.foreignkey_to_article.title %}
+            article
+        {% else %}
+            boat
+
+        {% endif %}
+
+        {# вывод названия редактируемого объекта 2 вьюхи/2 модели #}
+        "{% firstof instance.title instance.boat_name  object.foreignkey_to_boat.boat_name object.foreignkey_to_article.title %}"
+
+    </h5>
     <form method="post" >
     {%  csrf_token %}
-{% bootstrap_form form layout="inline"%}
+    {% bootstrap_form form layout="inline"%}
 
-<div class="row  ">
-<div class="col justify-content-center text-center">
-
-
-
-<script>
-   $(function(){
-  $('[data-toggle="tooltip"]').tooltip();
-});
+    <div class="row  ">
+        <div class="col justify-content-center text-center">
 
 
-   $(document).ready(function() {
-    $('.has-popover').popover({'trigger':'hover'});
-});
-</script>
+
+            <script>
+                $(function(){
+                    $('[data-toggle="tooltip"]').tooltip();
+                });
 
 
-      {% buttons %}
-                    <button type="submit"  name="submit"   class="form-button btn btn-light rounded font-weight-bold text-muted shadow "  data-toggle="tooltip"
-        data-placement="top" title="Submit your comment">
-                        Submit
-                    </button>
-                    <button type="reset" class="form-button btn btn-light rounded font-weight-bold text-muted shadow " data-toggle="tooltip"
-        data-placement="top" title="Reset if you like so">
-                        Reset
-                    </button>
-                {% endbuttons %}
-</div>
+                $(document).ready(function() {
+                    $('.has-popover').popover({'trigger':'hover'});
+                });
+            </script>
+
+
+            {% buttons %}
+                <button type="submit"  name="submit"   class="form-button btn btn-light rounded font-weight-bold text-muted shadow "  data-toggle="tooltip"
+                        data-placement="top" title="Submit your comment">
+                    Submit
+                </button>
+                <button type="reset" class="form-button btn btn-light rounded font-weight-bold text-muted shadow " data-toggle="tooltip"
+                        data-placement="top" title="Reset if you like so">
+                    Reset
+                </button>
+
+                <a href="{{ request.META.HTTP_REFERER }}"><button type="button" class="form-button btn btn-light rounded font-weight-bold text-muted shadow " data-toggle="tooltip"
+                                                                  data-placement="top" title="Back to a previous page">
+                    Back
+                </button></a>
+
+
+            {% endbuttons %}
+        </div>
     </div>
 
 {% endblock content %}

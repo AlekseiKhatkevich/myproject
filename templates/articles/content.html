@@ -2,6 +2,7 @@
 {% extends "base.html" %}
 {%  load bootstrap4 %}
 {%  bootstrap_jquery "full" %}
+{% load filtersandtags %}
 {%  block title %}
     {{ object.title }} -{{ object.foreignkey_to_subheading.name }}
 {% endblock title %}
@@ -116,8 +117,20 @@
 
 
       <Ul style="list-style: none" class="mt-3 mr-3">
-            <li> <strong>{{ comment.author }} </strong> <i> {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }} </i></li>
+            <li> <strong>{{ comment.author }} </strong> <i> {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }}
+
+                {%  if request.user.username  == comment.author  %}
+
+            <a href="{% url "articles:edit_comment" pk=comment.pk %}"><span class="badge badge-info">Edit comment</span></a>
+
+
+                    {% elif  comment.pk|int_to_str  in allowed_comments  and not request.user.is_authenticated %}
+<a href="{% url "articles:edit_comment" pk=comment.pk %}"><span class="badge badge-info">Edit comment</span></a>
+                {% endif  %}
+
+            </i></li>
             <li> {{ comment.content }} </li>
+
         </Ul>
         <hr>
 
@@ -126,8 +139,6 @@
 
         </div>
     </div>
-
-
 
 
 {% endblock content%}

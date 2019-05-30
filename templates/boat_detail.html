@@ -4,6 +4,7 @@
 {% load static %}
 {%  load thumbnail %}
 {% load i18n %}
+{% load filtersandtags %}
 
 {% block title %}
     {{ current_boat.boat_name }}
@@ -137,14 +138,34 @@
 </div>
 
 
-    {%  for comment in comments %}
+    {% for comment in comments %}
 
-        <Ul style="list-style: none" class="mt-3 mr-3">
-            <li> <strong>{{ comment.author }} </strong> <i> {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }} </i></li>
+
+      <Ul style="list-style: none" class="mt-3 mr-3">
+            <li> <strong>{{ comment.author }} </strong> <i> {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }}
+
+
+
+                {%  if request.user.username  == comment.author  %}
+
+            <a href="{% url "articles:edit_comment" pk=comment.pk %}"><span class="badge badge-info">Edit comment</span></a>
+
+
+                    {% elif  comment.pk|int_to_str  in allowed_comments  and not request.user.is_authenticated %}
+<a href="{% url "articles:edit_comment" pk=comment.pk %}"><span class="badge badge-info">Edit comment</span></a>
+                {% endif  %}
+
+            </i></li>
             <li> {{ comment.content }} </li>
+
         </Ul>
         <hr>
-    {%  endfor %}
+
+
+            {% endfor %}
+
+
+
 
 
 

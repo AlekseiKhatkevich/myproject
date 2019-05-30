@@ -6,9 +6,9 @@ correction of the user's info
 {% endblock title%}
 {% block content %}
 <div class="form-container container col-md-6 bg-light">
-        <div class="row">
-            <div class="col-md-12">
-                <h1 class="form__section-title">{{ title }}</h1>
+        <div class="row mt-2">
+            <div class="col-md-12 text-center">
+                <h4 class="form__section-title mb-2 text-muted">Correct your profile information</h4>
             </div>
             <div class="col-md-12">
                 {% bootstrap_messages %}
@@ -22,9 +22,12 @@ correction of the user's info
                                 <button type="submit" class="form-button btn btn-light">
                                     Submit
                                 </button>
-                                <button type="reset" class="form-button btn btn-light">
-                                    Reset
-                                </button>
+
+                               <a href="{% url 'boats:user_profile' %}"> <button type="button" class="form-button btn btn-light">Back</button></a>
+
+
+
+
                             {% endbuttons %}
                         </div>
                     </div>

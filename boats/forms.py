@@ -9,7 +9,7 @@ from .models import *
 from django.forms import inlineformset_factory
 from captcha.fields import CaptchaField, CaptchaTextInput
 import datetime
-from. widgets import *
+from .widgets import *
 from .utilities import currency_converter_original
 
 
@@ -38,7 +38,7 @@ class BoatForm(forms.ModelForm):
             self.fields["currency"].required = False
 
     boat_name = forms.CharField(validators=[UniqueNameValidator()], label="Boat model name",
-                                help_text="Please type in boat model  name")
+                                help_text="Please type in boat model  name",  )
     boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line"
                                                            " length",)
     first_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
@@ -267,11 +267,11 @@ class AuthCustomForm(AuthenticationForm):
                     "Account '%(value)s' has been deactivated or wasn't activated at all",
                     code='inactive',
                     params={'value': user})
-        else:
-            return forms.ValidationError(
-                self.error_messages['invalid_login'],
-                code='invalid_login',
-                params={'username': self.username_field.verbose_name, },
-            )
+            else:
+                return forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                    params={'username': self.username_field.verbose_name, },
+                )
 
 

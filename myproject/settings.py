@@ -105,9 +105,15 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "1q2w3e",
         "NAME": "postgres_work_1"},
-    "test": {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')},
+    " test_test": {  #  new
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": "localhost",
+        "USER": "postgres",
+        "PASSWORD": "1q2w3e",
+        "NAME": "testdb",
+        'TEST': {
+        'NAME': 'auto_tests', }
+    },
 }
 
 #if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
@@ -172,7 +178,7 @@ MEDIA_URL = "/media/"
 AUTH_USER_MODEL = "boats.ExtraUser"
 
 # система разграничения доступа
-LOGIN_URL = "boats:login"  # works
+LOGIN_URL = "boats:login"
 LOGIN_REDIRECT_URL = "boats:user_profile"  # works
 LOGOUT_REDIRECT_URL = None  # см. стр 289
 PASSWORD_RESET_TIMEOUT_DAYS = 1

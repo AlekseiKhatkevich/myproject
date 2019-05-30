@@ -22,3 +22,10 @@ def currency_converter(price, curr1="SEK", curr2="EUR"):
         return c.convert(price, curr1, curr2)
     except ValueError or RateNotFoundError as err:
         return str(err)
+
+
+@register.filter
+def int_to_str(value):
+    """ Конвертирует int в str"""
+    return str(value)
+

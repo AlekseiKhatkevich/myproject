@@ -8,8 +8,8 @@ Register new account
 {% block content %}
 <div class="form-container container col-md-8 bg-light">
         <div class="row">
-            <div class="col-md-12">
-                <h1 class="form__section-title">{{ title }}</h1>
+            <div class="col-md-12 text-center">
+                <h4 class="form__section-title mt-2 mb-4 text-muted"> Register yourself here</h4>
             </div>
             <div class="col-md-12">
 
@@ -25,6 +25,7 @@ Register new account
                                 <button type="reset" class="form-button btn btn-light">
                                     Reset
                                 </button>
+                                <a href="{% url 'boats:user_profile' %}"> <button type="button" class="form-button btn btn-light">Back</button></a>
                             {% endbuttons %}
                         </div>
                     </div>
