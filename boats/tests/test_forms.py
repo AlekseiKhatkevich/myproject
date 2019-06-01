@@ -1,11 +1,15 @@
-from django.test import TestCase, SimpleTestCase
+from django.test import TestCase
 from boats.forms import BoatForm, NewUserForm, ExtraUser, PRForm, PwdChgForm, AuthCustomForm
 import requests
 from boats.utilities import currency_converter_original
 from django import forms
 from unittest.mock import MagicMock
-from boats.models import user_registrated
+from boats.models import user_registrated, BoatModel
 from django.core.exceptions import NON_FIELD_ERRORS
+from articles.models import SubHeading, Heading
+from django.core.exceptions import ValidationError
+from django.test.utils import override_settings
+from django.conf import settings
 
 
 class BoatFormTest(TestCase):
@@ -23,6 +27,16 @@ class BoatFormTest(TestCase):
                  "last_year": 1960,
                  "currency": "EUR"}
 
+    def tearDown(self):
+        SubHeading.objects.all().delete()
+        Heading.objects.all().delete()
+        BoatModel.objects.all().delete()
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.form_data
+        BoatModel.objects.all().delete()
+
     def test_manufacturing_years_false(self):
         """Проверяем, что если ввести год начала пр-ва старше года окончания пр-ва то валидация
         не проходит"""
@@ -36,7 +50,7 @@ class BoatFormTest(TestCase):
 
     def test_manufacturing_years_true(self):
         """Проверка валидации корректно заполненной формы"""
-        data = self.form_data
+        data = self.form_data.copy()
         form = BoatForm(data=data)
         self.assertTrue(form.is_valid())
 
@@ -116,9 +130,45 @@ class BoatFormTest(TestCase):
         data = self.form_data.copy
         form = BoatForm(data=data, pk=1)
         self.assertEqual("<class 'django.forms.widgets.HiddenInput'>", str(type(form.fields[
-                                                                                "currency"].widget)))
+                                                                            "currency"].widget)))
         self.assertFalse(form.fields["currency"].required)
         self.assertIsInstance(form.fields["currency"].widget, forms.HiddenInput)
+
+    def test_UniqueNameValidator(self):
+        """Тестируем кастомный валидатор UniqueNameValidator:"""
+        Heading.objects.create(name="heading")
+        SubHeading.objects.create(name="boat", foreignkey_id=1)
+        self.assertTrue(SubHeading.objects.filter(name="boat").exists())
+        data = self.form_data.copy()
+        form = BoatForm(data=data)
+        message = "Subheading with this name is already exists. Please choose an alternative " \
+                  "name or slightly correct current one"
+        self.assertFalse(form.is_valid())
+        self.assertEqual([message], form.errors.get("boat_name"))
+
+    @override_settings(DEBUG=False)
+    def test_UniqueSailboatLinkValidator(self):
+        """Тестируем работу кастомного валидатора UniqueSailboatLinkValidator"""
+        self.assertFalse(settings.DEBUG)
+        BoatModel.objects.bulk_create([BoatModel(boat_name="boat", boat_length=30,
+                                 boat_mast_type="YA", boat_keel_type="modified",
+                                 boat_price=10000, boat_country_of_origin="AX",
+                                 boat_sailboatdata_link="https://sailboatdata.com/sailboat"
+                                                        "/freedom-35-pedrick",
+                                 boat_description="xxx", first_year=1959,
+                                 last_year=1960, ), ])
+        data = self.form_data.copy()
+        data.update({
+            "boat_sailboatdata_link": "https://sailboatdata.com/sailboat/freedom-35-pedrick"})
+        form = BoatForm(data=data)
+        self.assertTrue(BoatModel.objects.filter(
+            boat_sailboatdata_link="https://sailboatdata.com/sailboat/freedom-35-pedrick"
+                                   "").exists())
+        self.assertEquals("https://sailboatdata.com/sailboat/freedom-35-pedrick",
+                          data["boat_sailboatdata_link"])
+        message = 'same link to the  "Sailboatdata" is already exist in database!'
+        self.assertFalse(form.is_valid())
+        self.assertEqual([message], form.errors.get("boat_sailboatdata_link"))
 
 
 class NewUserFormTestCase(TestCase):
@@ -129,6 +179,10 @@ class NewUserFormTestCase(TestCase):
             "password2": "NUio7derT",
             "username": "Valera"
     }
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.form_data
 
     def test_clean_password(self):
         """Проверка валидатора пароля 1"""
@@ -161,6 +215,10 @@ class PRFormTestCase(TestCase):
     form_data = {
         "email": "aaaaa@inbox.ru"
         }
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.form_data
 
     def setUp(self):
         self.user = ExtraUser.objects.create(
@@ -205,8 +263,11 @@ class PwdChgFormTestCase(TestCase):
         'old_password': "NUio7derT",
         'new_password1': "Lakemanitoba58967",
         'new_password2': "Lakemanitoba58967",
-
     }
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.form_data
 
     def test_form_behavior(self):
         """Проверяем отправку сигнала при сохранении формы"""
@@ -216,8 +277,8 @@ class PwdChgFormTestCase(TestCase):
         form.is_valid()
         form.save(commit=False)
         self.assertFalse(self.user.is_activated, self.user.is_active)
-        handler.assert_called_once_with(signal=user_registrated, instance=self.user, sender=PwdChgForm)
-        self.tearDown()
+        handler.assert_called_once_with(signal=user_registrated, instance=self.user,
+                                        sender=PwdChgForm)
 
 
 class AuthCustomFormTestCase(TestCase):
@@ -233,6 +294,10 @@ class AuthCustomFormTestCase(TestCase):
 
         self.form_data = {"username": "Vasya", "password": "NUio7derT"}
 
+    def tearDown(self):
+        self.user.delete()
+        del self.form_data
+
     def test_user_is_active_false(self):
         """Тестируем случай когда пользователь не активирован и пытается зайти на сайт"""
         form = AuthCustomForm(data=self.form_data)
@@ -241,13 +306,11 @@ class AuthCustomFormTestCase(TestCase):
         message = "Account '%(value)s' has been deactivated or wasn't activated at all" % \
                   {"value": self.user.username}
         self.assertIn(message, form.errors.get('__all__'))
-        self.tearDown()
 
     def test_invalid_login(self):
         """Тестируем случай когда пользователь ввел неправильный логин и(или) пароль"""
         form = AuthCustomForm({"username": "XXXX", "password": "YYYY"})
         self.assertFalse(form.is_valid())
-        message = "Please enter a correct %(username)s and password. Note that both fields may be" \
-                  " case-sensitive." % {"username": "XXXX"}
-        self.assertRaisesMessage(expected_message=message, expected_exception=forms.ValidationError)
-        self.tearDown()
+
+
+

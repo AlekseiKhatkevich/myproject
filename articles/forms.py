@@ -3,6 +3,7 @@ from django import forms
 from django.shortcuts import get_object_or_404
 import requests
 from django.db.models import Q, F
+from django.core.validators import  MinLengthValidator
 
 """search form"""
 
@@ -15,17 +16,22 @@ class SearchForm(forms.Form):
 
 
 class ArticleForm(forms.ModelForm):
+    title = forms.CharField(help_text="Please add a title", label="Article title",
+                            validators=[MinLengthValidator(message="Title must contain at least 6 "
+                                                                   "symbols", limit_value=6)])
 
     def clean_foreignkey_to_boat(self):
-        # в случае, если мы сохраняем статью  в категории "Articles on boats" то проверяется была ли выбрана связанная со статьей лодка.
+        # в случае, если мы сохраняем статью  в категории "Articles on boats" то проверяется была
+        # ли выбрана связанная со статьей лодка.
         foreignkey_to_boat = self.cleaned_data["foreignkey_to_boat"]
         foreignkey_to_subheading = int(self.cleaned_data["foreignkey_to_subheading"].pk)
         current_subheading = get_object_or_404(SubHeading, pk=foreignkey_to_subheading)
         if current_subheading.foreignkey.name == "Articles on boats" and not foreignkey_to_boat:
-            msg1 = 'You must choose the boat if you want to save this article inside upper heading' \
-                  ' "Articles on boats"'
+            msg1 = 'You must choose the boat if you want to save this article inside upper' \
+                   ' heading"Articles on boats"'
             self.add_error("foreignkey_to_boat", msg1)
-        # проверяем совпадают ли имена подкатегории и название лодки, если мы пытаемся сохранитьстатью в категории "Articles on boats"
+        # проверяем совпадают ли имена подкатегории и название лодки, если мы пытаемся
+        # сохранитьстатью в категории "Articles on boats"
         if current_subheading.foreignkey.name == "Articles on boats" and foreignkey_to_boat and\
                 foreignkey_to_boat.boat_name != current_subheading.name:
             msg2 = 'Name of the boat should coincide to the sub-heading name '
@@ -37,12 +43,14 @@ class ArticleForm(forms.ModelForm):
         msg3 = "This URL does not work!"
         msg4 = "Connection error"
         url = self.cleaned_data["url_to_article"]
-        try:
-            request = requests.head(url)
-            if request.status_code // 100 != 2:
-                self.add_error("url_to_article", msg3)
-        except requests.exceptions.ConnectionError:
-            self.add_error("url_to_article", msg4)
+        #  блок ниже работает только в случае, елси урл редактировался или создавался с нуля
+        if "url_to_article" in self.changed_data:
+            try:
+                request = requests.head(url)
+                if request.status_code // 100 != 2:
+                    self.add_error("url_to_article", msg3)
+            except requests.exceptions.ConnectionError:
+                self.add_error("url_to_article", msg4)
         return url
 
     class Meta:
@@ -75,13 +83,17 @@ class ArticleCommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         exclude = ("is_active", )
-        widgets = {"foreignkey_to_boat": forms.HiddenInput, "foreignkey_to_article": forms.HiddenInput}
+        widgets = {"foreignkey_to_boat": forms.HiddenInput, "foreignkey_to_article":
+            forms.HiddenInput}
 
 
 """форма ап-категории для добавления"""
 
 
 class UpperHeadingForm(forms.ModelForm):
+
+    name = forms.CharField(min_length=5, label="New upper heading", help_text="Please type in name of the new upper heading")
+
     def __init__(self, *args, **kwargs):
         self.pk = kwargs.pop("pk", None)
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -98,14 +110,15 @@ class UpperHeadingForm(forms.ModelForm):
     class Meta:
         model = UpperHeading
         fields = ("name", )
-        labels = {"name": "New upper heading", }
-        help_texts = {"name": "Please type in name of the new upper heading"}
 
 
 """форма суб категории для добавления"""
 
 
 class SubHeadingForm(forms.ModelForm):
+
+    name = forms.CharField(min_length=5, label="Sub heading name",
+                           help_text="Please type in name of the new sub-heading")
 
     def __init__(self, *args, **kwargs):
         self.pk = kwargs.pop("pk", None)
@@ -142,8 +155,8 @@ class CustomM2MChoiceFiled(forms.ModelMultipleChoiceField):
 class ArticleResurrectionForm(forms.ModelForm):
 
     pk = CustomM2MChoiceFiled(label="Deleted articles:", queryset=Article.default.none(),
-    help_text="Please select the articles to recover (you can select multiple articles by using shift "
-              "or crtl )")
+    help_text="Please select the articles to recover (you can select multiple articles by using "
+              "shift or crtl )")
     #  https://stackoverflow.com/questions/56099703/pass-request-user-into-form-with
     #  -modelmultiplechoicefield-django/56099757#56099757
 

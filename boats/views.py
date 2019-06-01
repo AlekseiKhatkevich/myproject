@@ -153,8 +153,8 @@ class BoatListView(SearchableListMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = ListView.get_context_data(self, **kwargs)
-        context["images"] = BoatImage.objects.all().distinct('boat')  # выбирает только 1 уникальный
-        # объект из группы объектов с  одинаковым фк, остальные отсеивает
+        context["images"] = BoatImage.objects.all().distinct('boat')  # выбирает только 1
+        # уникальный объект из группы объектов с  одинаковым фк, остальные отсеивает
         if self.field and self.mark:
             context["verbose_name"] = self.verbose_name
         return context
@@ -401,11 +401,6 @@ class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordCh
                       "via email you will have received shortly "
     form_class = PwdChgForm
 
-    #def post(self, request, *args, **kwargs):
-       # PasswordChangeView.post(self, request, *args, **kwargs)
-        #logout(request)
-       # return HttpResponseRedirect(reverse_lazy("boats:user_profile"))
-
 
 """ добавление нового пользователя"""
 
@@ -507,8 +502,9 @@ def feedback_view(request):
 
     else:
         if request.user.is_authenticated:
+            #  mark передается в инит формы
             form = ContactForm(initial={"sender": auth.get_user(request).email,
-                                        "name": auth.get_user(request).username})
+            "name": auth.get_user(request).username}, mark=request.user.is_authenticated)
         else:
             form = ContactForm()
         context = {"form": form, "username": auth.get_user(request).username}

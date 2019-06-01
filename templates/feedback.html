@@ -15,7 +15,8 @@
                 <form  method="post" class="form mr-5">
                     {% csrf_token %}
                     {% bootstrap_form form  layout="horizontal"  label_class="form-label col-md-3" %}
-                    {% bootstrap_form_errors form layout="horizontal"  label_class="form-label col-md-3" %}
+                {% comment %}
+                    {% bootstrap_form_errors form layout="horizontal"  label_class="form-label col-md-3" %} {% endcomment %}
                  <div class="row">
                         <div class="col-12 text-center">
                     {% buttons %}

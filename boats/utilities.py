@@ -1,6 +1,6 @@
 from django.template.loader import render_to_string
 from django.core.signing import Signer
-from myproject.settings import ALLOWED_HOSTS, MEDIA_ROOT, BASE_DIR
+#from myproject.settings import ALLOWED_HOSTS, MEDIA_ROOT, BASE_DIR
 from datetime import datetime
 from os.path import splitext
 import os
@@ -14,6 +14,7 @@ from folium.plugins import MarkerCluster
 import geocoder
 import time
 import random
+from django.conf import settings
 
 signer = Signer()
 
@@ -22,17 +23,17 @@ def files_list():
     """ список графических файлов в media"""
     spisok = set()
     allowed_extensions = ("jpg", "png", "gif", "tiff", "bmp", "psd")
-    for (dirpath, dirnames, filenames) in os.walk(MEDIA_ROOT):
+    for (dirpath, dirnames, filenames) in os.walk(settings.MEDIA_ROOT):
         for file in filenames:
-            if dirpath == MEDIA_ROOT and file.split(".")[-1] in allowed_extensions:
+            if dirpath == settings.MEDIA_ROOT and file.split(".")[-1] in allowed_extensions:
                 spisok.add(file)
     return spisok
 
 
 def send_activation_notofication(user):
     """ функция отправки писем"""
-    if ALLOWED_HOSTS:
-        host = "http://" + ALLOWED_HOSTS[0] + ":8000"
+    if settings.ALLOWED_HOSTS:
+        host = "http://" + settings.ALLOWED_HOSTS[0] + ":8000"
     else:
         host = "http://localhost:8000"
     context = {"user": user, "host": host, "sign": signer.sign(user.username)}
@@ -59,7 +60,7 @@ def clean_cache(path, time_interval):  # https://pastebin.com/0SPBLJfD
 
 def clean_map(pk):
     """Удаляет карту при удалении лодки"""
-    root = os.path.join(BASE_DIR, "templates", "maps")
+    root = os.path.join(settings.BASE_DIR, "templates", "maps")
     file = str(pk) + ".html"
     full_path = os.path.join(root, file)
     for (dirpath, dirnames, filenames) in os.walk(root):
@@ -168,14 +169,12 @@ def map_folium(places: dict, pk: int):
                 langalt = coords(place)  # Широта, долгота определяем
                 known_coordinates.update({place: langalt})
             location = known_coordinates.get(place)
-
         try:
             folium.Marker(location=location, radius=1, popup=" %s, location - %s " %
-                        (boat_name, place), icon=folium.Icon(color='gray')).\
-                add_to(marker_cluster)
+            (boat_name, place), icon=folium.Icon(color='gray')).add_to(marker_cluster)
         except TypeError:
             pass
-    map.save(os.path.join(BASE_DIR, "templates", "maps",  str(pk) + ".html"))
+    map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
 
 #from django.core.cache import cache
 #map_folium(cache.get(52), 52)
@@ -191,10 +190,8 @@ def set_last_access_time(path):
     hour = 19
     minute = 50
     second = 0
-
     date = datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
     modTime = time.mktime(date.timetuple())
-
     os.utime(fileLocation, (modTime, modTime))
 
 

@@ -1,6 +1,7 @@
 from django import forms
 import requests
 from .validators import UniqueNameValidator, UniqueSailboatLinkValidator
+from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm, AuthenticationForm
 from django.core.exceptions import ValidationError
@@ -37,8 +38,9 @@ class BoatForm(forms.ModelForm):
             self.fields["currency"].widget = forms.HiddenInput()
             self.fields["currency"].required = False
 
-    boat_name = forms.CharField(validators=[UniqueNameValidator()], label="Boat model name",
-                                help_text="Please type in boat model  name",  )
+    boat_name = forms.CharField(validators=[UniqueNameValidator(), RegexValidator
+    (regex='^.{4,}$')], error_messages={"invalid": "Name is to short"}, label="Boat model name",
+                                help_text="Please type in boat model  name")
     boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line"
                                                            " length",)
     first_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
@@ -97,14 +99,16 @@ class BoatForm(forms.ModelForm):
         msg4 = "Please provide url exactly to 'sailboatdata.com' "
         msg5 = "Connection error"
         url = self.cleaned_data["boat_sailboatdata_link"]
-        try:
-            request = requests.head(url)
-            if request.status_code // 100 != 2:
-                self.add_error("boat_sailboatdata_link", msg3)
-            elif "sailboatdata.com" not in url:
-                self.add_error("boat_sailboatdata_link", msg4)
-        except requests.exceptions.ConnectionError:
-            self.add_error("boat_sailboatdata_link", msg5)
+        #  блок ниже работает только в случае, елси урл редактировался или создавался с нуля
+        if "boat_sailboatdata_link" in self.changed_data:
+            try:
+                request = requests.head(url)
+                if request.status_code // 100 != 2:
+                    self.add_error("boat_sailboatdata_link", msg3)
+                elif "sailboatdata.com" not in url:
+                    self.add_error("boat_sailboatdata_link", msg4)
+            except requests.exceptions.ConnectionError:
+                self.add_error("boat_sailboatdata_link", msg5)
         return url
 
 
@@ -144,6 +148,7 @@ extra=3, can_delete=True, max_num=10, widgets={"boat_photo": CustomKeepImageWidg
 
 class CorrectUserInfoForm(forms.ModelForm):
     email = forms.EmailField(required=True, label='Your email address')
+    username = forms.CharField(min_length=3, label="Username",)
 
     class Meta:
         model = ExtraUser
@@ -161,6 +166,9 @@ class NewUserForm(forms.ModelForm):
     password2 = forms.CharField(label="Confirm your password", widget=forms.PasswordInput(
         render_value=True), help_text="Please input password again", )
     captcha = CaptchaField()
+    username = forms.CharField(required=True, label="Please input username",
+                            help_text="Please input username", validators=[MinLengthValidator(
+                            message="Username must contain at least 3 symbols", limit_value=3)])
 
     def clean_password1(self):
         password1 = self.cleaned_data["password1"]
@@ -173,7 +181,8 @@ class NewUserForm(forms.ModelForm):
         password1 = self.cleaned_data["password1"]
         password2 = self.cleaned_data["password2"]
         if password1 and password2 and password1 != password2:
-            errors = {"password2": ValidationError("Passwords aren't coincide!",                                                                                                    code="password_mismatch")}
+            errors = {"password2": ValidationError("Passwords aren't coincide!",
+                                                   code="password_mismatch")}
             raise ValidationError(errors)
 
     def save(self, commit=True):
@@ -195,12 +204,22 @@ class NewUserForm(forms.ModelForm):
 
 
 class ContactForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        self.mark = kwargs.pop("mark", None)
+        forms.Form.__init__(self, *args, **kwargs)
+        #  Поле Name становится недоступным для редактирования для аутентифицированных пользователей
+        if self.mark:
+            self.fields["name"].disabled = True
+
     attrs_dict = {'size': 40, "class": "form-control  border border-secondary"}
 
     name = forms.CharField(max_length=20, help_text="Enter your name",
                            widget=forms.TextInput(attrs=attrs_dict))
     subject = forms.CharField(max_length=999, help_text="Enter  a subject of the message",
-                              widget=forms.TextInput(attrs=attrs_dict))
+            widget=forms.TextInput(attrs=attrs_dict), validators=[MinLengthValidator(
+            message="Subject is way to short. Please do conjure up something meaningful",
+            limit_value=10)])
     sender = forms.EmailField(help_text="Enter your email address",
                               widget=forms.TextInput(attrs=attrs_dict))
     message = forms.CharField(help_text="please type in your message",
@@ -260,18 +279,16 @@ class PwdChgForm(PasswordChangeForm):
 class AuthCustomForm(AuthenticationForm):
 
     def get_invalid_login_error(self):
-        users = ExtraUser.objects.filter(username=self.cleaned_data.get('username'))
-        for user in users:
-            if not user.is_active and user:
-                raise forms.ValidationError(
+        try:  # проверяем существует ли пользователь с таким логином
+            user = ExtraUser.objects.get(username=self.cleaned_data.get('username'))
+        except ExtraUser.DoesNotExist or ObjectDoesNotExist:
+            #  если нет, то возвращаем стандарный блок get_invalid_login_error()
+            return AuthenticationForm.get_invalid_login_error(self)
+        else:
+            if not user.is_active and user:  # если пользователь сущ. но деактивированн
+                return forms.ValidationError(
                     "Account '%(value)s' has been deactivated or wasn't activated at all",
                     code='inactive',
                     params={'value': user})
-            else:
-                return forms.ValidationError(
-                    self.error_messages['invalid_login'],
-                    code='invalid_login',
-                    params={'username': self.username_field.verbose_name, },
-                )
-
-
+            else:  # если нет, то возвращаем стандарный блок get_invalid_login_error()
+                return AuthenticationForm.get_invalid_login_error(self)

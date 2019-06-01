@@ -9,7 +9,8 @@ from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
 from django.db.models.fields import Field
 from .lookups import NotEqual
-from myproject.settings import CACHES, MEDIA_ROOT
+#from myproject.settings import CACHES, MEDIA_ROOT
+from django.conf import settings
 import os
 import sys
 from datetime import datetime
@@ -90,13 +91,13 @@ class BoatImage(models.Model):
     def clean_media_root():  # Не использовать в тестах!!!! Даже и не думай!!!
         """метод очистки лишних изображений в медиа рут"""
         if 'test' in sys.argv or 'test_coverage' in sys.argv:
-            print("Dont use this method in tests. It is dangerous for your db")
+            print("Do not use this method in tests. It is dangerous for your db!!!")
         else:
             files_in_db = {image.filename() for image in BoatImage.objects.all().only("boat_photo")}
             useless_files = files_list() - files_in_db
             counter = 0
             for file in useless_files:
-                os.remove(os.path.join(MEDIA_ROOT, file))
+                os.remove(os.path.join(settings.MEDIA_ROOT, file))
                 counter += 1
             print(counter, "\xa0\\files were removed from MEDIA_ROOT")
 
@@ -127,8 +128,8 @@ class BoatModel(models.Model):
                                null=True, blank=True,
                                verbose_name="Author of the entry")
 
-    boat_name = models.CharField(max_length=20, unique=True, db_index=True, verbose_name="Boat "
-                                                                                         "model",
+    boat_name = models.CharField(max_length=20, unique=True, db_index=True,
+                                 verbose_name="Boat model",
                                  help_text="Please input boat model")
 
     boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
@@ -203,9 +204,13 @@ class BoatModel(models.Model):
                 self.heading.delete()  # удаляем, если не содержит статей
         except articles.models.SubHeading.DoesNotExist or ObjectDoesNotExist:
             pass
-        for image in self.boatimage_set.all():  # удаляем ассоциированные тумбнейлы
-            thumbnailer = get_thumbnailer(image.boat_photo)
-            thumbnailer.delete_thumbnails()
+        for image in self.boatimage_set.all():  # удаляем (не по настоящему) ассоциированные
+            # изображения чтобы задействавать метод delete() модели BoatImage, для того, чтобы
+            # прошла логика работы при удалении фото. Если использоваеть on_delete=SETNULL, то
+            # delete() не будет задействаован
+            #thumbnailer = get_thumbnailer(image.boat_photo)
+            #thumbnailer.delete_thumbnails()
+            image.delete()
         # удаляем карту, если она есть
         clean_map(pk=self.id)
         models.Model.delete(self, using=None, keep_parents=False)
@@ -215,7 +220,7 @@ class BoatModel(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-        clean_cache(path=CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)
+        clean_cache(path=settings.CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)
         # очишаем#  кэш  ресубмита (интервал -сутки)
         import articles.models  # to avoid circular import with articles
         # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой

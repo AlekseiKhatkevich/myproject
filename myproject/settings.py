@@ -105,7 +105,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "1q2w3e",
         "NAME": "postgres_work_1"},
-    " test_test": {  #  new
+    " test_test": {  # тестовая БД
         "ENGINE": "django.db.backends.postgresql",
         "HOST": "localhost",
         "USER": "postgres",
@@ -115,6 +115,10 @@ DATABASES = {
         'NAME': 'auto_tests', }
     },
 }
+
+#Postgree:   по ходу это юзернейм
+#password - 1q2w3e
+#port- 5432
 
 #if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
     #DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
@@ -283,7 +287,6 @@ if DEBUG: INTERNAL_IPS = "127.0.0.1"
 
 
 CACHES = {
-
     #'default': {
         #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', },
     "default": {
@@ -293,7 +296,6 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
-
     "file_resubmit": {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         "LOCATION": os.path.join(BASE_DIR, 'data/cache/file_resubmit')},
