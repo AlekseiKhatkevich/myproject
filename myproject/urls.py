@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.urls import path
-from django.urls import include
+from django.urls import path, include
 from django.conf.urls.static import static
-from .settings import DEBUG, MEDIA_URL, MEDIA_ROOT, INSTALLED_APPS
+from django.conf import settings
 from django.contrib. staticfiles.views import serve
 from django.views.decorators.cache import never_cache
 from django.views.defaults import permission_denied, page_not_found
@@ -31,10 +30,10 @@ urlpatterns = [
     path("", include("boats.urls")),
 ]
 # для отдачи статики в дебаг = фалс ---manage.py runserver --insecure
-if DEBUG:
+if settings.DEBUG:
     urlpatterns.append(path("static/<path:path>", never_cache(serve)))  # если не загр. картинки то смотреть сюда
-    urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
-    if "debug_toolbar" in INSTALLED_APPS:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
         urlpatterns.append(path('__debug__/', include(debug_toolbar.urls)))
 

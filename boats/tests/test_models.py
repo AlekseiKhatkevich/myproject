@@ -12,6 +12,7 @@ from easy_thumbnails.files import get_thumbnailer
 #from myproject.settings import THUMBNAIL_ALIASES, MEDIA_ROOT, BASE_DIR, CACHES
 from django.conf import settings
 from django.db import models
+import sys
 
 
 #  https://developer.mozilla.org/ru/docs/Learn/Server-side/Django/Testing
@@ -219,9 +220,6 @@ class BoatModelTest(TestCase):
                                               author=ExtraUser.objects.first(),
                             url_to_article="https://pythonworld.ru/moduli/modul-unittest.html",)
 
-    def tearDown(self):
-        pass
-
     def test_delete_empty_subheadings(self):
         """Тестируем удаление пустых подзаголовков в методе delete()"""
         # 1 находится в папке Articles on boats
@@ -265,7 +263,7 @@ class BoatModelTest(TestCase):
 
     def test_images_deletion(self):
         """ Проверяем хук метода delete() BoatImage при срабатывании метода delete() BoatModel"""
-        image2 = BoatImage.objects.get(pk=2)
+        image2 = BoatImage.objects.last()
         #  создаем тумбнейлы
         thumbnailer = get_thumbnailer(image2.boat_photo)
         thumbnailer.get_thumbnail(settings.THUMBNAIL_ALIASES[""]["default"])
@@ -318,3 +316,66 @@ class BoatModelTest(TestCase):
             self.assertNotEqual(num_files, sum(os.path.isfile(os.path.join(path, f))
                                                   for f in os.listdir(path)))
 
+    def test_save_new_boat_collide_with_the_subheading(self):
+        """Проверяем будет ли связана подкатегория с создаваемой лодкой если имена оных
+         совпадают"""
+        self.assertTrue(SubHeading.objects.filter(one_to_one_to_boat_id__isnull=True,
+            foreignkey_id=UpperHeading.objects.get(name__exact="Articles on boats").pk).exists())
+        self.boat_object.boat_name = "subheading"
+        self.boat_object.true_save()
+        self.assertEqual(self.boat_object.boat_name, self.subheading.name)
+        self.assertTrue(SubHeading.objects.filter(one_to_one_to_boat_id__isnull=True,
+                                                  foreignkey_id=UpperHeading.objects.get(
+                                                      name__exact="Articles on boats").pk,
+                                        name__iexact=self.boat_object.boat_name).exists())
+        self.boat_object.save()
+        self.assertEqual(self.boat_object.heading.pk, self.subheading.pk)
+        with self.assertRaises(KeyError):
+            # noinspection PyStatementEffect
+            sys.modules["articles.models"]
+        self.boat_object.delete()
+
+    def test_save_same_as_above_but_boat_has_a_subheading_already(self):
+        """Проверяем будет ли категория со статьями внутри прикреплятся к
+         редактируемой лодке если имя этой лодки совпадает с именем категории """
+        #  Имя лодки совпадает с подкатегорией
+        self.boat_object.boat_name = "subheading"
+        self.boat_object.pk = 10
+        self.boat_object.true_save()
+        #  Создаем подзаголовок уже прикрепленный к лодке
+        self.old_subheading = SubHeading.objects.create(foreignkey_id=UpperHeading.objects.get(
+            name="Articles on boats").pk, name="old_subheading",
+                                                      one_to_one_to_boat=self.boat_object)
+        self.assertEqual(self.boat_object.pk, self.old_subheading.one_to_one_to_boat_id)
+        #  Создаем статью внутри данного подзаголовка
+        self.article.foreignkey_to_subheading = self.old_subheading
+        self.article.save()
+        self.assertEqual(self.article.foreignkey_to_subheading_id, self.old_subheading.pk)
+        self.assertTrue(SubHeading.objects.filter(
+            one_to_one_to_boat_id=self.boat_object.id).exists())
+        self.assertTrue(self.old_subheading.article_set.all())
+        #  тестируем работу метода сейв в данном аспекте
+        self.boat_object.save()
+        # noinspection PyTypeChecker
+        with self.assertRaises(SubHeading.DoesNotExist):
+            self.old_subheading.refresh_from_db()  # старая подкатегория удалена
+        self.article.refresh_from_db()
+        #  статьи из старой подкатегории перенесены в новую
+        self.assertEqual(self.article.foreignkey_to_subheading_id, self.subheading.pk)
+        self.old_subheading.delete()
+
+    def test_save_create_article_when_boat_has_created(self):
+        """Тестируем создается ли подзаогловок при создании лодки"""
+        new_boat = BoatModel.objects.create(boat_name="new_boat", boat_length=30,
+                                                    boat_mast_type="YA", boat_keel_type="modified",
+                                                    boat_price=10000, boat_country_of_origin="AX",
+                                    boat_sailboatdata_link="https://sailboatdata.com/sailboat"
+                                                           "/bavaria-cruiser-30",
+                                                    boat_description="xxx", first_year=1959,
+                                                    last_year=1960, )
+        self.assertEqual(new_boat.heading.one_to_one_to_boat_id, new_boat.pk)
+        self.assertTrue(SubHeading.objects.filter(name=new_boat.boat_name).exists())
+        new_boat.boat_name = 'updated_boat'
+        new_boat.save()
+        self.assertTrue(SubHeading.objects.filter(name=new_boat.boat_name).exists())
+        new_boat.delete()

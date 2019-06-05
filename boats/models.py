@@ -208,8 +208,6 @@ class BoatModel(models.Model):
             # изображения чтобы задействавать метод delete() модели BoatImage, для того, чтобы
             # прошла логика работы при удалении фото. Если использоваеть on_delete=SETNULL, то
             # delete() не будет задействаован
-            #thumbnailer = get_thumbnailer(image.boat_photo)
-            #thumbnailer.delete_thumbnails()
             image.delete()
         # удаляем карту, если она есть
         clean_map(pk=self.id)
@@ -233,8 +231,7 @@ class BoatModel(models.Model):
                 foreignkey_id=articles.models.UpperHeading.objects.get(name__exact="Articles on"
                                                                                    " boats").pk)
             # есть ли у текущей лодки есть подзаголовок? Т.е мы не создаем лодку а изменяем имя
-            # текущей
-            # лодки и ее имя совпадает с категорией (смотри описание возле try)
+            # текущей лодки и ее имя совпадает с категорией (смотри описание возле try)
             if articles.models.SubHeading.objects.filter(one_to_one_to_boat_id=self.id).exists():
                 # получаем   подзаголовок текущей лодки
                 current_subheading = articles.models.SubHeading.objects.prefetch_related(
@@ -260,8 +257,18 @@ class BoatModel(models.Model):
             articles.models.SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,                          foreignkey_id=articles.models.UpperHeading.objects.get
                 (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
             #  удаляем модуль из памяти для исключения циклического импорта(на всякий случай)
-        import sys
         del sys.modules["articles.models"]
+
+    def true_save(self):
+        """оригинальное сохранение"""
+        return models.Model.save(self, force_insert=False, force_update=False, using=None,
+                          update_fields=None)
+
+
+class BoatQuerySet(models.QuerySet):
+    """Фильтруеи записи по кол-ву коментов"""
+    def order_by_comment_count(self):
+        return self.annotate(cnt=models.Count("comment")).order_by("-cnt")
 
 
 """Расширенная модель юзера """

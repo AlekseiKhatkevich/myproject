@@ -36,6 +36,7 @@ from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.views.decorators.gzip import gzip_page
 
+
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 
@@ -200,6 +201,7 @@ def boat_detail_view(request, pk):
     allowed_comments = request.get_signed_cookie('allowed_comments', default=None)
     context = {"images": images, "current_boat": current_boat, "comments": comments,
                "articles": articles, "versions": versions, "allowed_comments": allowed_comments}
+
     if request.method == "GET":
         return render(request, "boat_detail.html", context)
     else:
