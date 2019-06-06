@@ -17,7 +17,7 @@ SECRET_KEY = 'y-qmn=e5t89m7t4=^%hv+1x&21y)c2mjibrx!xsma9&(#7@duv'
 DEBUG = False
 
 ALLOWED_HOSTS = ["boatsproject.herokuapp.com", '127.0.0.1']  # new, old = []
-#TEST2
+
 
 # Application definition
 
