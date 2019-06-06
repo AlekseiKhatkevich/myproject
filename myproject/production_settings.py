@@ -16,7 +16,7 @@ SECRET_KEY = 'y-qmn=e5t89m7t4=^%hv+1x&21y)c2mjibrx!xsma9&(#7@duv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]  # new, old = []
+ALLOWED_HOSTS = ["boatsproject.herokuapp.com", '127.0.0.1']  # new, old = []
 
 
 # Application definition
@@ -173,7 +173,7 @@ SHORT_DATE_FORMAT = "j.m.Y"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATIC_URL = '/static/'
 
 
@@ -337,3 +337,8 @@ ADMINS = ("hardcase@inbox.ru", )
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
+
+# Heroku: Update database configuration from $DATABASE_URL.
+import dj_database_url
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
