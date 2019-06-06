@@ -1,6 +1,12 @@
+from .production_settings import *
+
+
+
+"""
 import sys
 import os
 from reversion.middleware import RevisionMiddleware
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,8 +18,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'y-qmn=e5t89m7t4=^%hv+1x&21y)c2mjibrx!xsma9&(#7@duv'
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 
 ALLOWED_HOSTS = ["127.0.0.1", 'localhost', 'testserver']  # new, old = []
 
@@ -21,6 +29,7 @@ ALLOWED_HOSTS = ["127.0.0.1", 'localhost', 'testserver']  # new, old = []
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',  # new http://whitenoise.evans.io/en/stable/django.html
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,17 +63,19 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms
 
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # new
+    'debug_toolbar.middleware.DebugToolbarMiddleware',  # перенесенос первой позиции на третью
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # new
+    'django.middleware.locale.LocaleMiddleware',  # new (для переводчика)
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'reversion.middleware.RevisionMiddleware',  # for django reversion # new
+    'reversion.middleware.RevisionMiddleware',  # for django reversion
 ]
 
 RevisionMiddleware.atomic = True  # new  Для reversion middleware https://django-reversion.readthedocs.io/en/stable/middleware.html
@@ -320,4 +331,15 @@ CELERY_TIMEZONE = TIME_ZONE
 #celery -A myproject beat -для запуска задач по рассписанию
 
 
+#  whitenoise
+#  http://whitenoise.evans.io/en/stable/index.html
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+#  https://devcenter.heroku.com/articles/django-app-configuration
+django_heroku.settings(locals())  # new
+
+#  https://webdevblog.ru/uluchshenie-bezopasnosti-sajta-django-s-pomoshhju-zagolovkov-zaprosov/
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY" """

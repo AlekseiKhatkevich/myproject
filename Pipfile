@@ -30,6 +30,10 @@ django-redis = "*"
 folium = "*"
 geocoder = "*"
 django-extensions = "*"
+honcho = "*"
+whitenoise = "*"
+gunicorn = "*"
+django-heroku = "*"
 
 [requires]
 python_version = "3.7"
