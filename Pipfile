@@ -34,6 +34,7 @@ whitenoise = "*"
 gunicorn = "*"
 django-heroku = "*"
 dj-database-url = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.7"
