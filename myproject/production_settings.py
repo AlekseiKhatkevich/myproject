@@ -16,13 +16,13 @@ SECRET_KEY = 'y-qmn=e5t89m7t4=^%hv+1x&21y)c2mjibrx!xsma9&(#7@duv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["boatsproject.herokuapp.com", '127.0.0.1']  # new, old = []
+ALLOWED_HOSTS = ["boatsproject.herokuapp.com", '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'whitenoise.runserver_nostatic',  # new http://whitenoise.evans.io/en/stable/django.html
+    #'whitenoise.runserver_nostatic',  # new http://whitenoise.evans.io/en/stable/django.html
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -334,9 +334,9 @@ django_heroku.settings(locals()) #  new
 ADMINS = ("hardcase@inbox.ru", )
 
 #  https://webdevblog.ru/uluchshenie-bezopasnosti-sajta-django-s-pomoshhju-zagolovkov-zaprosov/
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
-X_FRAME_OPTIONS = "DENY"
+#SECURE_CONTENT_TYPE_NOSNIFF = True
+#SECURE_BROWSER_XSS_FILTER = True
+#X_FRAME_OPTIONS = "DENY"
 
 # Heroku: Update database configuration from $DATABASE_URL.
 import dj_database_url
