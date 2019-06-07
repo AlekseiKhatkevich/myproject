@@ -1,4 +1,5 @@
-from .production_settings import *
+#from .production_settings import *
+from .development_settings import *
 
 
 
