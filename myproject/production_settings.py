@@ -320,7 +320,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 # celery -A myproject worker --pool=solo -l info для запуска воркера под винду
-#celery -A myproject beat -для запуска задач по рассписанию
+# celery -A myproject beat -для запуска задач по рассписанию
 
 
 #  whitenoise

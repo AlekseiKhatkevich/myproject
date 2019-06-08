@@ -17,7 +17,7 @@ from .forms import *
 import boats.utilities
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db.transaction import atomic
-from django.db.models import Prefetch,  Min, Q, Count, F, Subquery, OuterRef
+from django.db.models import Prefetch,  Min, Q, Count, F
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -144,8 +144,8 @@ class BoatListView(SearchableListMixin, ListView):
             self.verbose_name = BoatModel._meta.get_field(self.field).verbose_name
             message = 'Boats are ordered by:\xa0\"' + self.verbose_name + "\"\xa0in\xa0" + \
                       self.mark + "\xa0order"
-            if self.field != self.request.COOKIES["ordering"] or \
-                    self.mark != self.request.COOKIES["mark"]:
+            if self.field != self.request.COOKIES.get("ordering") or \
+                    self.mark != self.request.COOKIES.get("mark"):
                 messages.add_message(self.request, messages.SUCCESS, message=message,
                                      fail_silently=True)
             if self.mark == "descending":
