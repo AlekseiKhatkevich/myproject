@@ -1,6 +1,4 @@
 
-
-
 import sys
 import os
 from reversion.middleware import RevisionMiddleware
@@ -66,7 +64,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware', # new
     'debug_toolbar.middleware.DebugToolbarMiddleware',  # перенесенос первой позиции на третью
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # new (для переводчика)
+    'django.middleware.locale.LocaleMiddleware',  #  для переводчика)
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
@@ -180,8 +178,6 @@ SHORT_DATE_FORMAT = "j.m.Y"
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, "static")  # new
 STATIC_URL = '/static/'
-#STATICFILES_DIRS = [
-    #os.path.join(BASE_DIR, "static"), ]
 
 #  Настройка подсистемы обработки выгруженных файлов
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -342,3 +338,15 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 
+
+#  настройки AWS s3
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = 'boatsprojectbucket'
+
+#STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+#STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
+#ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
+MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'

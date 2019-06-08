@@ -35,6 +35,9 @@ gunicorn = "*"
 django-heroku = "*"
 dj-database-url = "*"
 lxml = "*"
+awscli = "*"
+django-boto = "*"
+django-storages = "*"
 
 [requires]
 python_version = "3.7"

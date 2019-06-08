@@ -9,12 +9,12 @@ from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
 from django.db.models.fields import Field
 from .lookups import NotEqual
-#from myproject.settings import CACHES, MEDIA_ROOT
 from django.conf import settings
 import os
 import sys
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
+
 
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
@@ -48,9 +48,9 @@ class BoatImage(models.Model):
         # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2
         # месяцев
         useless_old_images = BoatImage.objects.filter(boat_id__isnull=True, memory__isnull=False)
-        for image in useless_old_images:
-                if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
-                    image.true_delete(self)  # удаляем по настоящему
+       # for image in useless_old_images:
+               # if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
+                   # image.true_delete(self)  # удаляем по настоящему
 
         if self.boat_id and not self.memory:  # сохраняем
             self.memory = self.boat_id
