@@ -1,5 +1,10 @@
-from .production_settings import *
-#from .development_settings import *
+import os
+
+if "windows" in os.environ.get("OS").lower():
+    from .development_settings import *
+else:
+    from .production_settings import *
+
 
 
 

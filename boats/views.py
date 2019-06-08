@@ -116,7 +116,7 @@ class BoatDeleteView(DeleteView):
 """ Индекс"""
 
 
-#method_decorator(cache_page(CACHE_TTL), name="dispatch")
+@method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class IndexPageView(TemplateView):
     template_name = "index.html"
 
