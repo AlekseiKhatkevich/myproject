@@ -38,6 +38,7 @@ lxml = "*"
 awscli = "*"
 django-boto = "*"
 django-storages = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.7"

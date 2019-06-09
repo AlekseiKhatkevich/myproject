@@ -230,11 +230,8 @@ THUMBNAIL_ALIASES = {
 
     },
 }
-THUMBNAIL_BASEDIR = "thumbnails"
-THUMBNAIL_MEDIA_URL = MEDIA_URL
+
 # аутентификация через соц. сети
-
-
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookOAuth2',
     "social_core.backends.vk.VKOAuth2",
@@ -361,3 +358,22 @@ LOGGING = {
         },
     },
 }
+
+
+
+
+AWS_STORAGE_BUCKET_NAME = 'hadcasetest'
+
+
+#STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+#STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
+#ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
+MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
+#MEDIA_URL = "https://%s.s3.eu-central-1.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME # new
+
+#  настройки easy thumbnails для  работы с heroku
+THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE
+THUMBNAIL_BASEDIR = "thumbnails"
+THUMBNAIL_MEDIA_URL = MEDIA_URL

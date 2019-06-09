@@ -48,9 +48,12 @@ class BoatImage(models.Model):
         # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2
         # месяцев
         useless_old_images = BoatImage.objects.filter(boat_id__isnull=True, memory__isnull=False)
-       # for image in useless_old_images:
-               # if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
-                   # image.true_delete(self)  # удаляем по настоящему
+        for image in useless_old_images:
+            try:
+                if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
+                    image.true_delete(self)  # удаляем по настоящему
+            except NotImplementedError:  # на случай работы сайта на Heroku
+                pass
 
         if self.boat_id and not self.memory:  # сохраняем
             self.memory = self.boat_id
@@ -63,6 +66,7 @@ class BoatImage(models.Model):
                           update_fields=None)
 
     def true_save(self):
+        """сохраняем по настоящему"""
         return models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
 

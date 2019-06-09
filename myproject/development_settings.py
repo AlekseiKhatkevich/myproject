@@ -159,7 +159,6 @@ LANGUAGES = (
 )
 LOCALE_PATHS = (
     'locale',
-    #os.path.join(BASE_DIR, 'locale'),
 )
 
 
@@ -181,7 +180,7 @@ STATIC_URL = '/static/'
 
 #  Настройка подсистемы обработки выгруженных файлов
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/media/"
+#MEDIA_URL = "/media/"
 
 # кастомная модель пользователя
 AUTH_USER_MODEL = "boats.ExtraUser"
@@ -232,10 +231,10 @@ THUMBNAIL_ALIASES = {
 
     },
 }
-THUMBNAIL_BASEDIR = "thumbnails"
-THUMBNAIL_MEDIA_URL = MEDIA_URL
-# аутентификация через соц. сети
 
+
+
+# аутентификация через соц. сети
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookOAuth2',
@@ -280,9 +279,6 @@ SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
 #   всплывающие сообщения django messaging framework
 if DEBUG: MESSAGE_LEVEL = 0
 else: MESSAGE_LEVEL = 20
-
-# crispy forms
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # настройки для дебагера
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
@@ -339,10 +335,11 @@ SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 
 
-#  настройки AWS s3
+#  настройки AWS s3 девелопмент
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = 'boatsprojectbucket'
+AWS_STORAGE_BUCKET_NAME = 'hadcasetest'
+
 
 #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -350,3 +347,10 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 #STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
 #ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
 MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
+#MEDIA_URL = "https://%s.s3.eu-central-1.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME # new
+
+#  настройки easy thumbnails для  работы с heroku
+THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE
+THUMBNAIL_BASEDIR = "thumbnails"
+THUMBNAIL_MEDIA_URL = MEDIA_URL
+
