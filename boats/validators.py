@@ -16,9 +16,12 @@ class UniqueNameValidator:
 
 class UniqueSailboatLinkValidator:
     """ проверяет есть ли в БД урл на  sailboatdata совпадающий с заносиммы в базу"""
+    def __init__(self, pk=0):
+        self.pk = pk
+
     def __call__(self, val):
-        if BoatModel.objects.filter(boat_sailboatdata_link__exact=val).exists() and not\
-                settings.DEBUG:
-            raise ValidationError('same link to the  "Sailboatdata" is already exist in'
+        if BoatModel.objects.filter(boat_sailboatdata_link__exact=val).exclude(pk=self.pk).exists() and \
+                not settings.DEBUG:
+            raise ValidationError('Same link to the  "Sailboatdata" is already exist in'
                                   ' database!', code="unique")
 

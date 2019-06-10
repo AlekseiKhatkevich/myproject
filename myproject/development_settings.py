@@ -61,16 +61,18 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms
 MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # new
-    'debug_toolbar.middleware.DebugToolbarMiddleware',  # перенесенос первой позиции на третью
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  #  для переводчика)
+    'django.middleware.locale.LocaleMiddleware',  # для переводчика
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+#https://docs.djangoproject.com/en/2.1/ref/middleware/#django.middleware.http.ConditionalGetMiddleware
+    "django.middleware.http.ConditionalGetMiddleware",  # new
     'reversion.middleware.RevisionMiddleware',  # for django reversion
 ]
 
@@ -284,8 +286,6 @@ else: MESSAGE_LEVEL = 20
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
 if DEBUG: INTERNAL_IPS = "127.0.0.1"
 
-# for file resubmit
-
 
 CACHES = {
     #'default': {
@@ -297,7 +297,7 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
-    "file_resubmit": {
+    "file_resubmit": {  # for file resubmit
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         "LOCATION": os.path.join(BASE_DIR, 'data/cache/file_resubmit')},
 }
@@ -309,7 +309,7 @@ BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 # время жизни кеша (15 минут)
-CACHE_TTL = 60*15
+#CACHE_TTL = 60*15
 
 # CELERY related settings
 CELERY_BROKER_URL = 'redis://localhost:6379'
@@ -338,16 +338,18 @@ X_FRAME_OPTIONS = "DENY"
 #  настройки AWS s3 девелопмент
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = 'hadcasetest'
-
+AWS_STORAGE_BUCKET_NAME = 'boatsprojectdevelopmentbucket'
+AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+S3_USE_SIGV4 = True
+AWS_S3_REGION_NAME = "eu-central-1"
 
 #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 #STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
 #ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
-MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
-#MEDIA_URL = "https://%s.s3.eu-central-1.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME # new
+MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + AWS_S3_HOST + "/"
+
 
 #  настройки easy thumbnails для  работы с heroku
 THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE

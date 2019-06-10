@@ -31,13 +31,10 @@ from django.utils.decorators import method_decorator
 from reversion.models import Version
 import os
 from django.core.cache import cache
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.views.decorators.vary import vary_on_cookie
 from django.views.decorators.cache import cache_page
 from django.conf import settings
 from django.views.decorators.gzip import gzip_page
-
-
-CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 
 """Контроллер редактирования данных о лодке"""
@@ -116,7 +113,7 @@ class BoatDeleteView(DeleteView):
 """ Индекс"""
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
+#  кэширование в шаблоне
 class IndexPageView(TemplateView):
     template_name = "index.html"
 
@@ -124,6 +121,7 @@ class IndexPageView(TemplateView):
 """ список всех лодок"""
 
 
+@method_decorator([cache_page(60*60, key_prefix="BoatListView"), vary_on_cookie], name="dispatch")
 class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"
@@ -331,7 +329,7 @@ def viewname(request):
 """ контроллер LOGIN"""
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
+@method_decorator(cache_page(None), name="dispatch")
 class AdminLoginView(SuccessMessageMixin, LoginView):
     template_name = "admin/login.html"
     success_message = "You have logged in, %(username)s"
@@ -341,7 +339,7 @@ class AdminLoginView(SuccessMessageMixin, LoginView):
 """ контроллер LOGOUT"""
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
+@method_decorator(cache_page(None), name="dispatch")
 class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
 
@@ -547,7 +545,7 @@ class PassResConfView(SuccessMessageMixin, PasswordResetConfirmView):
 """контроллер рендеринга в PDF  в поток"""
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
+@method_decorator(cache_page(60*60*24), name="dispatch")
 class Pdf(TemplateView):
     def get(self, request, *args, **kwargs):
         pr = Prefetch("boatimage_set", to_attr="images")
@@ -559,7 +557,7 @@ class Pdf(TemplateView):
 """контроллер рендеринга в PDF  в файл"""
 
 
-@cache_page(CACHE_TTL)
+@cache_page(60*60*24)
 def render_pdf_view(request, pk):
     template_path = "pdf/pdf.html"
     pr = Prefetch("boatimage_set", to_attr="images")
@@ -703,7 +701,7 @@ def reversion_confirm_view(request, pk):
 """Контроллер показа объявлений о лодке на https://www.blocket.se """
 
 
-@method_decorator(cache_page(CACHE_TTL), name="dispatch")
+@method_decorator(cache_page(60*60*3), name="dispatch")
 class BlocketView(DetailView):
     model = BoatModel
     template_name = 'blocket.html'

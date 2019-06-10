@@ -1,7 +1,12 @@
 <!-- templates/errors/404.html  -->
 {% extends "base.html" %}
-{% block title %} error 404   {%  endblock %}
 {% load static %}
+{% load cache %}
+
+{% cache None 404.html %}
+
+{% block title %} error 404   {%  endblock %}
+
 {% block content %}
 
 
@@ -19,9 +24,5 @@
     {% endcomment %}
 
 {% endblock content %}
-{% comment %}
-background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-attachment: fixed;
-{% endcomment %}
+
+{% endcache %}

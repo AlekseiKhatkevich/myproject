@@ -1,6 +1,11 @@
 <!-- templates/errors/403.html  -->
 {% extends "base.html" %}
+{% load cache %}
+{% cache None 403.html %}
+
 {% block title %} error 403 forbidden {%  endblock %}
+
+
 {% block content %}
     <div class="jumbotron">
   <h1 class="display-3">Access denied !!!</h1>
@@ -14,5 +19,6 @@
   </p>
 </div>
 
-
 {% endblock content %}
+
+{% endcache %}

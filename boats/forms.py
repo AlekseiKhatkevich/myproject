@@ -37,6 +37,11 @@ class BoatForm(forms.ModelForm):
         if self.pk:
             self.fields["currency"].widget = forms.HiddenInput()
             self.fields["currency"].required = False
+            #  передаем пк в валидатор для изключения редактируемого объекта из проверки уникальности
+            #  урлов (чтобы не проверял сам себя)
+            self.fields["boat_sailboatdata_link"].validators = [UniqueSailboatLinkValidator(pk=self.pk), ]
+        else:
+            self.fields["boat_sailboatdata_link"].validators = [UniqueSailboatLinkValidator(), ]
 
     boat_name = forms.CharField(validators=[UniqueNameValidator(), RegexValidator
     (regex='^.{4,}$')], error_messages={"invalid": "Name is to short"}, label="Boat model name",
@@ -49,8 +54,7 @@ class BoatForm(forms.ModelForm):
     last_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
                                     help_text="Please enter last manufacturing year of the "
                                               "model")
-    boat_sailboatdata_link = forms.URLField(validators=[UniqueSailboatLinkValidator(), ],
-                                            help_text="Please type in URL to Sailboatdata "
+    boat_sailboatdata_link = forms.URLField(help_text="Please type in URL to Sailboatdata "
                                                       "page for this boat ")
     currency = forms.ChoiceField(choices=currency_choices, initial=None,
                                  help_text="Please choice desirable currency",

@@ -19,7 +19,12 @@
 
             <div class="col-2 text-right">
 
+
+                {% if blocket %}
+
                 <a href="{% url "boats:map" object.id %}" target="_blank"><button type="button" class="btn btn-warning mt-3 mr-5 rounded boarder">Show all on map</button></a>
+
+                {% endif %}
             </div>
 
         </div>
@@ -54,10 +59,5 @@
 
 
 
-    {% comment %}
-{%  cache 43200 objects.id   %}
-{{ cities }}
-    {%  endcache %}
-{% endcomment %}
 
 {% endblock content %}

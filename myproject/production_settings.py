@@ -68,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.http.ConditionalGetMiddleware",  # new
     'reversion.middleware.RevisionMiddleware',  # for django reversion
 ]
 
@@ -361,17 +362,18 @@ LOGGING = {
 
 
 
-
-AWS_STORAGE_BUCKET_NAME = 'hadcasetest'
-
+AWS_STORAGE_BUCKET_NAME = 'boatsprojectdevelopmentbucket'
+AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+S3_USE_SIGV4 = True
+AWS_S3_REGION_NAME = "eu-central-1"
 
 #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 #STATIC_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
 #ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
-MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + '.s3.amazonaws.com/'
-#MEDIA_URL = "https://%s.s3.eu-central-1.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME # new
+MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + AWS_S3_HOST + "/"
+
 
 #  настройки easy thumbnails для  работы с heroku
 THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE

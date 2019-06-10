@@ -76,8 +76,10 @@ class BoatImage(models.Model):
         # вместо удаления фоток мы устанавкливаем их ФК в <null>
         self.boat.boatimage_set.remove(self)
         #  Устанавливаем время последнего доступа и последнего изменения файла на текущее время
-        os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp()))
-        #  models.Model.delete(self, using=None, keep_parents=False)
+        try:
+            os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp()))
+        except NotImplementedError:  # на случай работы сайта на Heroku
+            pass
 
     def true_delete(self, using=None, keep_parents=False):
         """ Удаляем по настоящему"""
