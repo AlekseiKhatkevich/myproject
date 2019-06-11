@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "00bcddf37c2c3b609decc8323d6494f19e75bd53ba40fabfd52b6fce6bab916d"
+            "sha256": "049c3a1b9e079808a0afef2fac1e360a010dfc0ad0b79f8c5038e862626960f5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -25,11 +25,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:41fe18e204f103168b9288846e8f2b6874aa66602f73272c667a058de337e678",
-                "sha256:48062352a0b50533f25194664da7eb75465a942f9f52a8deda8a159b9b1b76e4"
+                "sha256:09fc351d4695facef972156645b9dbc560946c73c1e097d80aa83b9a01ac0002",
+                "sha256:39b89d6f9c165d25d0c9406ee33162ba2077aeadfb641b72a995f9973debfd61"
             ],
             "index": "pypi",
-            "version": "==1.16.174"
+            "version": "==1.16.175"
         },
         "beautifulsoup4": {
             "hashes": [
@@ -55,10 +55,10 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:0c36d4b9bff79f1338e204de5fa1e2cd9f8c30fbc3b8ca35e5bfec7e88af7bad",
-                "sha256:19eaccb6704996ed86482c2d88a2871322e98fa3ad6c7db19e12f9cfb516a518"
+                "sha256:d60fde28b199e588fa2e8ccae899b59b271f66c479af2b3a5951df3ea26cb73e",
+                "sha256:f9556deba345a8cb5fa040342101dff2bbf95e53424c5e7002560c8fb29dac2d"
             ],
-            "version": "==1.12.164"
+            "version": "==1.12.165"
         },
         "branca": {
             "hashes": [
@@ -194,11 +194,11 @@
         },
         "django-extensions": {
             "hashes": [
-                "sha256:6766c573ffe63693cd485512a02f3b59622c884cbfeca241d1278ffdf0ac39ae",
-                "sha256:c43e46cc95985c278afda645480b79f9a85cfe5a82c957accd08b8045793b707"
+                "sha256:097450a56fcfdef36bb4dd731b113d1b3e9a9de715fc8775e5e84ab3be50dd96",
+                "sha256:a1799a7eb4cf0f7aa0d111bac79047227b55a74d11741f387708023a012662f9"
             ],
             "index": "pypi",
-            "version": "==2.1.7"
+            "version": "==2.1.9"
         },
         "django-extra-views": {
             "hashes": [
@@ -522,6 +522,14 @@
             ],
             "markers": "python_version >= '2.7'",
             "version": "==2.8.0"
+        },
+        "python-dotenv": {
+            "hashes": [
+                "sha256:debd928b49dbc2bf68040566f55cdb3252458036464806f4094487244e2a4093",
+                "sha256:f157d71d5fec9d4bd5f51c82746b6344dffa680ee85217c123f4a0c8117c4544"
+            ],
+            "index": "pypi",
+            "version": "==0.10.3"
         },
         "python3-openid": {
             "hashes": [

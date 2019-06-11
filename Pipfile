@@ -39,6 +39,7 @@ awscli = "*"
 django-boto = "*"
 django-storages = "*"
 pyyaml = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.7"

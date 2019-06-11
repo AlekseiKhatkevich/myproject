@@ -591,6 +591,7 @@ def render_pdf_view(request, pk):
 """ Список лодок для восстановкления"""
 
 
+#  кеширование в шаблоне
 class ReversionView(MessageLoginRequiredMixin, TemplateView):
     template_name = "reversion.html"
     redirect_message = "You need to be authenticated to recover boat's data"
@@ -623,8 +624,9 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
             image.memory = str(image.memory)
         context["images"] = images
         #  передаем имена лодок в следующий контроллер ReversionDeleteView
-        for version in versions:
-            self.request.session[version.object_id] = version.field_dict["boat_name"]
+        version_objects = {version.object_id: version.field_dict.get("boat_name")
+                           for version in versions}
+        self.request.session["versions"] = version_objects
         return context
 
 
@@ -645,7 +647,10 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
             version.delete()
         for image in images:
             image.true_delete()
-        del self.request.session[str(self.kwargs.get("pk"))]
+        try:
+            del self.request.session["versions"]
+        except KeyError:
+            self.request.session.get("versions").clean()
         return redirect("boats:reversion")
 
     def get_context_data(self, **kwargs):

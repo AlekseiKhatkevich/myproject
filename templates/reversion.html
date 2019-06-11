@@ -4,17 +4,22 @@
 {% load thumbnail %}
 {%  load static %}
 {% bootstrap_jquery "full" %}
+{% load cache %}
+{% load filtersandtags %}
 {% block title %}
     Reversions
 {% endblock %}
 {% block content %}
 
+    {% cache "60*60*24"|multiplier reversion  request.user.username versions %}
+
     <style>
         body {
             background-image: url({% static "boats/SCS-logo3-e1463360121342.jpg" %});
             background-repeat: no-repeat, repeat;
-            background-position: center;
+            background-position: center, center;
             background-size: 60%;
+            background-attachment: fixed;
         }
     </style>
 
@@ -42,7 +47,8 @@
 
 
         <Ul >
-            {% for instance in versions %}
+
+            {% for instance in versions|dictsort:"object_repr" %}
                 <div class="row">
                     <div class="col-2 offset-4 ">
                         <li><h6 class="text-center mb-3  " style="font-size: 20">{{ instance.object_repr }}</h6></li>
@@ -87,4 +93,5 @@
 
     </div> <!--container
 
+{% endcache %}
 {% endblock content %}
