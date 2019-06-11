@@ -5,10 +5,13 @@
 {% bootstrap_jquery "full" %}
 {% load thumbnail %}
 {% load i18n %}
+{% load cache %}
+{% load  filtersandtags%}
 
 {% block title %} List of the boats{% endblock title %}
 {% block content %}
 
+{% cache "60*10"|multiplier boats_list request.user.is_authenticated  object_list %}
 
 
     <script>
@@ -36,6 +39,7 @@
                         <option value="boat_keel_type">--by keel type</option>
                         <option value="first_year">--by first year of model manufacturing time range </option>
                         <option value="last_year">--by last year of model manufacturing time range </option>
+                        <option value="order_by_comment_count">--by comment count</option>
                     </select>
             </div>
 
@@ -152,6 +156,7 @@
         </div>
     {% endif %}
 {% endcomment %}
+{% endcache %}
 
 {% endblock content%}
 

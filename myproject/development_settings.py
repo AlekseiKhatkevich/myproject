@@ -60,19 +60,19 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'  # for django.forms
 
 MIDDLEWARE = [
 
+
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # для переводчика
+    "django.middleware.http.ConditionalGetMiddleware",  # new
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#https://docs.djangoproject.com/en/2.1/ref/middleware/#django.middleware.http.ConditionalGetMiddleware
-    "django.middleware.http.ConditionalGetMiddleware",  # new
     'reversion.middleware.RevisionMiddleware',  # for django reversion
 ]
 
@@ -310,6 +310,7 @@ BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 # время жизни кеша (15 минут)
 #CACHE_TTL = 60*15
+
 
 # CELERY related settings
 CELERY_BROKER_URL = 'redis://localhost:6379'

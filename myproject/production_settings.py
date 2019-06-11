@@ -62,13 +62,13 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',  # перенесенос первой позиции на третью
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # new (для переводчика)
+    "django.middleware.http.ConditionalGetMiddleware",  # new
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django.middleware.http.ConditionalGetMiddleware",  # new
     'reversion.middleware.RevisionMiddleware',  # for django reversion
 ]
 

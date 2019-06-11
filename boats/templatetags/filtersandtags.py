@@ -32,7 +32,7 @@ def int_to_str(value):
 
 @register.filter
 def multiplier(line):
-    """Перемножает все члены последовательности друг на друга"""
+    """Перемножает все члены последовательности друг на друга. Формат записи "60*60*24*7"|multiplier """
     result = reduce((lambda x, y: int(x) * int(y)), line.split("*"))
     return result
 

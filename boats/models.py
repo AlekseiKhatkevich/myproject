@@ -115,7 +115,31 @@ class BoatImage(models.Model):
 """ Первичная модель информации о лодке"""
 
 
+class BoatQuerySet(models.QuerySet):  # стр 331
+    """Упорядочевывает записи по кол-ву коментов"""
+    def order_by_comment_count_desc(self):
+        return self.annotate(cnt=models.Count("comment")).order_by("-cnt")
+
+    def order_by_comment_count_asc(self):
+        return self.annotate(cnt=models.Count("comment")).order_by("cnt")
+
+
+class BoatModelManager(models.Manager):  # стр 331
+    """Кастомный менеджер прямой связи для модели BoatModel"""
+
+    def get_queryset(self):
+        return BoatQuerySet(self.model, using=self._db)
+
+    def order_by_comment_count_desc(self):
+        return self.get_queryset().order_by_comment_count_desc()
+
+    def order_by_comment_count_asc(self):
+        return self.get_queryset().order_by_comment_count_asc()
+
+
 class BoatModel(models.Model):
+
+    objects = BoatModelManager()
 
     SLOOP = "SL"
     KETCH = "KE"
@@ -269,12 +293,6 @@ class BoatModel(models.Model):
         """оригинальное сохранение"""
         return models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-
-
-class BoatQuerySet(models.QuerySet):
-    """Фильтруеи записи по кол-ву коментов"""
-    def order_by_comment_count(self):
-        return self.annotate(cnt=models.Count("comment")).order_by("-cnt")
 
 
 """Расширенная модель юзера """

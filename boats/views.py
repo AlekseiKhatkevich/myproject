@@ -13,7 +13,7 @@ from django.core.signing import BadSignature
 from .models import *
 from articles.models import Article, Comment
 from .forms import *
-#from .utilities import map_folium, signer, spider, currency_converter
+from .utilities import map_folium, signer, spider, currency_converter
 import boats.utilities
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db.transaction import atomic
@@ -31,10 +31,11 @@ from django.utils.decorators import method_decorator
 from reversion.models import Version
 import os
 from django.core.cache import cache
-from django.views.decorators.vary import vary_on_cookie
-from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie, vary_on_headers
+from django.views.decorators.cache import cache_page, cache_control
 from django.conf import settings
 from django.views.decorators.gzip import gzip_page
+from django.core.exceptions import FieldDoesNotExist
 
 
 """Контроллер редактирования данных о лодке"""
@@ -121,7 +122,7 @@ class IndexPageView(TemplateView):
 """ список всех лодок"""
 
 
-@method_decorator([cache_page(60*60, key_prefix="BoatListView"), vary_on_cookie], name="dispatch")
+#@method_decorator([cache_page(60*3, key_prefix="BoatListView"), vary_on_headers("Cookie")], name="dispatch")
 class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"
@@ -132,23 +133,25 @@ class BoatListView(SearchableListMixin, ListView):
         """метод возвращает поле по которому идет сортировка"""
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
-        # if self.field not in [f.name for f in BoatModel._meta.get_fields(include_parents=False)]
-        # and self.mark:
         if self.field == '' or self.mark == "":
             messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
                                                                 "pattern", fail_silently=True)
             return None
         if all([self.field, self.mark]):
-            self.verbose_name = BoatModel._meta.get_field(self.field).verbose_name
+            try:
+                self.verbose_name = BoatModel._meta.get_field(self.field).verbose_name
+            except FieldDoesNotExist:  # на случай сортировки по "Comments count" так как это
+                # все таки вычисляемое поле
+                self.verbose_name = "Comments count"
             message = 'Boats are ordered by:\xa0\"' + self.verbose_name + "\"\xa0in\xa0" + \
                       self.mark + "\xa0order"
             if self.field != self.request.COOKIES.get("ordering") or \
                     self.mark != self.request.COOKIES.get("mark"):
                 messages.add_message(self.request, messages.SUCCESS, message=message,
                                      fail_silently=True)
-            if self.mark == "descending":
+            if self.mark == "descending" and self.field != "order_by_comment_count":
                 self.field = "-" + self.field
-            return self.field
+            return self.field if self.field != "order_by_comment_count" else None
 
     def get_context_data(self, **kwargs):
         context = ListView.get_context_data(self, **kwargs)
@@ -182,6 +185,10 @@ class BoatListView(SearchableListMixin, ListView):
             messages.add_message(self.request, messages.SUCCESS, message=message,
                                  fail_silently=True)
             return qs.filter(boat_country_of_origin=country)
+        #  фильтрация по кол-ву комментов
+        if self.field == "order_by_comment_count" and all([self.field, self.mark]):
+            return qs.order_by_comment_count_desc() if self.mark == "descending" else \
+                qs.order_by_comment_count_asc()
         return qs
 
 

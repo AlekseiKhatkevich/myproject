@@ -6,9 +6,10 @@
 {% load cache %}
 {% load filtersandtags %}
 
-{% cache "60*60*24*7"|multiplier index  %}
+
 
 {% block content %}
+    {% cache "60*60*24*7"|multiplier index  %}
     <style>
         #bg{
             background-size: cover;
@@ -44,7 +45,7 @@ $(function(){
 
 
 
-
+{% endcache %}
 {% endblock content %}
 
-{% endcache %}
+
