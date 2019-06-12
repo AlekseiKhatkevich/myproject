@@ -30,7 +30,7 @@
 
                     <select class="custom-select" name="ordering">
                         <option selected value=
-                                "{{ request.get_full_path_info|acces_to_querystring:0 }}">{% firstof   verbose_name 'Select ordering pattern' %} </option>
+                                "{{ request.GET.ordering}}">{% firstof   verbose_name 'Select ordering pattern' %} </option>
                         <option value="boat_publish_date">--by publish date</option>
                         <option value="author">--by author</option>
                         <option value="boat_length">--by boat length</option>
@@ -50,7 +50,7 @@
             <div class="col-3 ">
                 <div class="input-group ">
                     <select class="custom-select" name="mark" aria-label="Recipient's username" aria-describedby="button-addon2">
-                         <option selected value="{{ request.get_full_path_info|acces_to_querystring:1 }}">
+                         <option selected value="{{ request.GET.mark}}">
                              {% if  request.GET.mark %}
                           {% trans "in" %}   {{ request.GET.mark}} {% trans "order" %}
                                  {% else %}
