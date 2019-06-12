@@ -122,7 +122,7 @@ class IndexPageView(TemplateView):
 """ список всех лодок"""
 
 
-#@method_decorator([cache_page(60*3, key_prefix="BoatListView"), vary_on_headers("Cookie")], name="dispatch")
+#  кеширование в шаблоне
 class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"

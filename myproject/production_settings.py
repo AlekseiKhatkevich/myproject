@@ -346,8 +346,7 @@ db_from_env = dj_database_url.config(conn_max_age=500, ssl_require=True)  # new 
 DATABASES['default'].update(db_from_env)
 
 
-
-# logging
+#  logging  heroku logs --source app --tail логи джанги в heroku
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
