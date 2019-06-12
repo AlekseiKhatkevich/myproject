@@ -9,7 +9,9 @@ data = process.communicate()
 for line in data:
     print(line)
 """
-line  = "60*60*24*7"
-result = reduce((lambda x, y: int(x) * int(y)), line.split("*"))
-print(result)
-print(type(result))
+line  = "-/boats/?ordering=boat_length&mark=descending"
+a = line.split("=")
+del a[0]
+a[0] = a[0][ : -5]
+print(a)
+#  ['boat_length', 'descending']

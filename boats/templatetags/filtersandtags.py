@@ -43,3 +43,14 @@ def order_by(queryset, args):
     {% for item in your_list|order_by:"field1,-field2,other_class__field_name" """
     args = [x.strip() for x in args.split(',')]
     return queryset.order_by(*args)
+
+
+@register.filter
+def acces_to_querystring(string, index):
+    split_string = string.split("=")
+    del split_string[0]
+    try:
+        split_string[0] = split_string[0][: -5]
+        return split_string[index]
+    except IndexError:
+        pass
