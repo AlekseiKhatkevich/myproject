@@ -11,7 +11,7 @@
 {% block title %} List of the boats{% endblock title %}
 {% block content %}
 
-{% cache "60*10"|multiplier boats_list  get_full_path_info   object_list %}
+
 
 
     <script>
@@ -148,8 +148,6 @@
         </div>
     </div> <!--container-->
 
-
-    {% endcache %}
 
 
 
