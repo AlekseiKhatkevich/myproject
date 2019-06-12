@@ -25,11 +25,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:09fc351d4695facef972156645b9dbc560946c73c1e097d80aa83b9a01ac0002",
-                "sha256:39b89d6f9c165d25d0c9406ee33162ba2077aeadfb641b72a995f9973debfd61"
+                "sha256:b094b3211861e65638f1e08dc208e189d184de19d9e64b9f6325457ee309f01d",
+                "sha256:d6aba50db2eec91b8cce3b7bad7665cd3b838e755ed561d350d79508b1e48888"
             ],
             "index": "pypi",
-            "version": "==1.16.175"
+            "version": "==1.16.176"
         },
         "beautifulsoup4": {
             "hashes": [
@@ -55,10 +55,10 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:d60fde28b199e588fa2e8ccae899b59b271f66c479af2b3a5951df3ea26cb73e",
-                "sha256:f9556deba345a8cb5fa040342101dff2bbf95e53424c5e7002560c8fb29dac2d"
+                "sha256:594ab91e7f06857476cee6139cb97c88df40c6adc7867976cb17669929da70e1",
+                "sha256:603cb288468f6b4212ee31aca39e313106c45df31349b269b15426fed3f8e787"
             ],
-            "version": "==1.12.165"
+            "version": "==1.12.166"
         },
         "branca": {
             "hashes": [

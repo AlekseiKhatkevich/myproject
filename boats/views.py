@@ -484,7 +484,7 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
 
 def feedback_view(request):
     if request.method == "POST":
-        form = ContactForm(request.POST)
+        form = ContactForm(request.POST, mark=request.user.is_authenticated)
         if form.is_valid():
             name = form.cleaned_data["name"]
             subject = form.cleaned_data["subject"] + " from " + name

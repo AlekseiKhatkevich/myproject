@@ -78,7 +78,7 @@ class ArticleCommentForm(forms.ModelForm):
                      'data-container': 'body'})
         #  у активированного пользователя отключаем возможность редактирования поля имени
         if self.author:
-            self.fields["author"].disabled = True
+            self.fields["author"].widget.attrs["readonly"] = True
 
     class Meta:
         model = Comment

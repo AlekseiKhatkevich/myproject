@@ -236,7 +236,8 @@ THUMBNAIL_ALIASES = {
 
     },
 }
-
+# https://easy-thumbnails.readthedocs.io/en/2.1/ref/settings/#easy_thumbnails.conf.Settings.THUMBNAIL_CACHE_DIMENSIONS
+THUMBNAIL_CACHE_DIMENSIONS = True
 
 
 # аутентификация через соц. сети
@@ -260,20 +261,20 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'  # new
-SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'  # new
+SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
+SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
 
 # в контактике
-SOCIAL_AUTH_VK_OAUTH2_KEY = "6925818"
-SOCIAL_AUTH_VK_OAUTH2_SECRET = "8Nw5zHZmFk8hwEFWwRDP"
+SOCIAL_AUTH_VK_OAUTH2_KEY = os.getenv("SOCIAL_AUTH_VK_OAUTH2_KEY")
+SOCIAL_AUTH_VK_OAUTH2_SECRET = os.getenv("SOCIAL_AUTH_VK_OAUTH2_SECRET")
 SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
 SOCIAL_AUTH_VK_APP_USER_MODE = 2
 
 # facebook
-FACEBOOK_APP_ID = '2404075233157649'
-FACEBOOK_API_SECRET = '2497d23a765f90fed8fab81c13ad2f9a'
-SOCIAL_AUTH_FACEBOOK_KEY = '2404075233157649'  # new
-SOCIAL_AUTH_FACEBOOK_SECRET = '2497d23a765f90fed8fab81c13ad2f9a' # new
+FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
+FACEBOOK_API_SECRET = os.getenv("FACEBOOK_API_SECRET")
+SOCIAL_AUTH_FACEBOOK_KEY = os.getenv("SOCIAL_AUTH_FACEBOOK_KEY")
+SOCIAL_AUTH_FACEBOOK_SECRET = os.getenv("SOCIAL_AUTH_FACEBOOK_SECRET")
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
             'fields': 'id,name,email',
@@ -340,8 +341,8 @@ X_FRAME_OPTIONS = "DENY"
 
 
 #  настройки AWS s3 девелопмент
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = 'boatsprojectdevelopmentbucket'
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 S3_USE_SIGV4 = True

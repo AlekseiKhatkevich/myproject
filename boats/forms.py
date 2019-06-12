@@ -212,9 +212,11 @@ class ContactForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.mark = kwargs.pop("mark", None)
         forms.Form.__init__(self, *args, **kwargs)
-        #  Поле Name становится недоступным для редактирования для аутентифицированных пользователей
+        #  Поле Name & sender становится недоступным для редактирования для аутентифицированных
+        #  пользователей
         if self.mark:
-            self.fields["name"].disabled = True
+            self.fields['name'].widget.attrs['readonly'] = True
+            self.fields['sender'].widget.attrs['readonly'] = True
 
     attrs_dict = {'size': 40, "class": "form-control  border border-secondary"}
 

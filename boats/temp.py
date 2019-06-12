@@ -353,4 +353,53 @@ def reversion_confirm_view(request, pk):
         return render(request, "reversion_confirmation.html", context)
 
 
+
+
+
+
+def feedback_view(request):
+
+    def pitfall():
+        if request.user.is_authenticated:
+            #  mark передается в инит формы
+            form = ContactForm(request.POST or None, initial={"sender": auth.get_user(request).email,
+            "name": auth.get_user(request).username}, mark=request.user.is_authenticated)
+        else:
+            form = ContactForm(request.POST or None)
+        context = {"form": form, "username": auth.get_user(request).username}
+        return context
+
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["name"]
+            subject = form.cleaned_data["subject"] + " from " + name
+            sender = form.cleaned_data["sender"]
+            message = form.cleaned_data['message']
+            copy = form.cleaned_data['copy']
+            recipients = ["hardcase@inbox.ru", ]
+            if copy:
+                recipients.append(sender)
+            try:
+                from myproject.settings import EMAIL_HOST_USER
+                send_mail(subject, message, EMAIL_HOST_USER, recipients, fail_silently=False)
+            except BadHeaderError:
+                return HttpResponse("Invalid header found")
+            else:
+                messages.add_message(request, messages.SUCCESS,
+                                     "You have successfully sent your  message to the                                                       administration", fail_silently=True)
+                return HttpResponseRedirect(reverse_lazy("boats:index"))
+        else:
+            context = pitfall()
+            return render(request, "feedback.html", context)
+
+    else:
+        context = pitfall()
+        return render(request, "feedback.html", context)
+
+
+
+
+
+
 """

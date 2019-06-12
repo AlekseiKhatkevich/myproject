@@ -2,6 +2,8 @@ import sys
 import os
 from reversion.middleware import RevisionMiddleware
 import django_heroku
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -11,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'y-qmn=e5t89m7t4=^%hv+1x&21y)c2mjibrx!xsma9&(#7@duv'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -196,7 +198,7 @@ EMAIL_HOST = 'smtp.mail.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'hardcase@inbox.ru'
-EMAIL_HOST_PASSWORD = 'sosihui56842'
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 #  https://vivazzi.pro/it/sender-address-must-match-authenticated-user/
 # Error: SMTPRecipientsRefused 501  решение вопроса
@@ -231,6 +233,8 @@ THUMBNAIL_ALIASES = {
 
     },
 }
+# https://easy-thumbnails.readthedocs.io/en/2.1/ref/settings/#easy_thumbnails.conf.Settings.THUMBNAIL_CACHE_DIMENSIONS
+THUMBNAIL_CACHE_DIMENSIONS = True
 
 # аутентификация через соц. сети
 AUTHENTICATION_BACKENDS = (
@@ -253,20 +257,20 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
 )
 
-SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'  # new
-SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'  # new
+SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
+SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
 
 # в контактике
-SOCIAL_AUTH_VK_OAUTH2_KEY = "6925818"
-SOCIAL_AUTH_VK_OAUTH2_SECRET = "8Nw5zHZmFk8hwEFWwRDP"
+SOCIAL_AUTH_VK_OAUTH2_KEY = os.getenv("SOCIAL_AUTH_VK_OAUTH2_KEY")
+SOCIAL_AUTH_VK_OAUTH2_SECRET = os.getenv("SOCIAL_AUTH_VK_OAUTH2_SECRET")
 SOCIAL_AUTH_VK_OAUTH2_SCOPE = ["email"]
 SOCIAL_AUTH_VK_APP_USER_MODE = 2
 
 # facebook
-FACEBOOK_APP_ID = '2404075233157649'
-FACEBOOK_API_SECRET = '2497d23a765f90fed8fab81c13ad2f9a'
-SOCIAL_AUTH_FACEBOOK_KEY = '2404075233157649'  # new
-SOCIAL_AUTH_FACEBOOK_SECRET = '2497d23a765f90fed8fab81c13ad2f9a' # new
+FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
+FACEBOOK_API_SECRET = os.getenv("FACEBOOK_API_SECRET")
+SOCIAL_AUTH_FACEBOOK_KEY = os.getenv("SOCIAL_AUTH_FACEBOOK_KEY")
+SOCIAL_AUTH_FACEBOOK_SECRET = os.getenv("SOCIAL_AUTH_FACEBOOK_SECRET")
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
             'fields': 'id,name,email',
@@ -332,9 +336,9 @@ django_heroku.settings(locals()) #  new
 ADMINS = ("hardcase@inbox.ru", )
 
 #  https://webdevblog.ru/uluchshenie-bezopasnosti-sajta-django-s-pomoshhju-zagolovkov-zaprosov/
-#SECURE_CONTENT_TYPE_NOSNIFF = True
-#SECURE_BROWSER_XSS_FILTER = True
-#X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
 
 # Heroku: Update database configuration from $DATABASE_URL.
 import dj_database_url
