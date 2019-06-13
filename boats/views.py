@@ -130,7 +130,7 @@ class BoatListView(SearchableListMixin, ListView):
     search_fields = ["boat_name", ]
 
     def get_ordering(self):
-        """метод возвращает поле по которому идет сортировка"""
+        """метод возвращает поле по которому идет сортировка!"""
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
         if self.field == '' or self.mark == "":
