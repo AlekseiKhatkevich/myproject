@@ -198,5 +198,5 @@ def set_last_access_time(path):
 
 #  http://michael-borisov.com/2014/12/30/django-template-caching/
 def template_cache_key(name, *args):
-    """Возврашает объект кеша по ключу и параметрам"""
+    """Возврашает объект кеша по ключу и параметрам!"""
     return make_template_fragment_key(name, args)
