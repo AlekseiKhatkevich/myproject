@@ -19,6 +19,7 @@ class Heading(models.Model):
     one_to_one_to_boat = models.OneToOneField(BoatModel, on_delete=models.SET_NULL, null=True,
                                               blank=True, verbose_name="correspondent boat"
                                                                        " for the category", )
+    change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
 
 """ менеджер ап-группы"""
@@ -111,7 +112,7 @@ class Article(models.Model):
     show = models.BooleanField(default=True, blank=False, null=False, verbose_name="deleted mark",
                                help_text='Marked articles are shown everywhere, unmarked considered '
                                          'as deleted ones')
-    change_date = models.DateTimeField(blank=True, null=True)
+    change_date = models.DateTimeField(blank=True, null=True, auto_now=True)
 
     def __str__(self):
         return self.title
@@ -154,6 +155,7 @@ class Comment(ModelFieldRequiredMixin, models.Model):
     is_active = models.BooleanField(default=True, db_index=True,
                                     verbose_name="Published", help_text="publish?")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Publish date")
+    change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
     REQUIRED_TOGGLE_FIELDS = [["foreignkey_to_article", "foreignkey_to_boat"], ]
 

@@ -6,8 +6,9 @@
 
 {% block title %} Correction of a boats data{% endblock title %}
 
+
 {% block content %}
-    <div class="form-container container col-md-6 bg-light mt-2">
+    <div class="form-container container col-md-6 bg-light mt-2   ">
         <div class="row">
             <div class="col-md-12 text-center text-muted mb-2">
                 <h4>   Edit "{{ form1.boat_name.value|capfirst  }}"  data </h4>
@@ -45,12 +46,6 @@
 
 
                     </div>
-
-
-
-                    {% comment %}
-                {%   bootstrap_form form1 exclude="boat_name, boat_length, boat_mast_type, boat_keel_type,boat_country_of_origin, boat_sailboatdata_link, boat_price, boat_description" layout='horizontal' size="small" label_class="form-label col-md-3"%}
-{% endcomment %}
 
 
 

@@ -13,7 +13,7 @@ from django.core.signing import BadSignature
 from .models import *
 from articles.models import Article, Comment
 from .forms import *
-from .utilities import map_folium, signer, spider, currency_converter
+from .utilities import map_folium, signer, spider, currency_converter, template_cache_key
 import boats.utilities
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db.transaction import atomic
@@ -122,7 +122,7 @@ class IndexPageView(TemplateView):
 """ список всех лодок"""
 
 
-@method_decorator([cache_page(60*10, key_prefix="BoatListView"), vary_on_cookie], name="dispatch")
+@method_decorator([cache_page(60*60, key_prefix="BoatListView")], name="dispatch")
 class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"
@@ -195,6 +195,7 @@ class BoatListView(SearchableListMixin, ListView):
 """ просмотр  детальной информации о лодке"""
 
 
+#  кэширование в шаблоне
 def boat_detail_view(request, pk):
     current_boat = BoatModel.objects.prefetch_related("boatimage_set", "comment_set",
                                                       "article_set").get(pk=pk)
@@ -204,9 +205,13 @@ def boat_detail_view(request, pk):
     versions = Version.objects.select_related("revision").\
         get_for_object_reference(BoatModel, pk).only("id", "revision")
     allowed_comments = request.get_signed_cookie('allowed_comments', default=None)
+    EQ = comments.values_list("change_date", flat=True).union(articles.values_list("change_date",
+            flat=True), images.values_list("change_date", flat=True), versions.values_list(
+        "revision__date_created", flat=True), BoatModel.objects.filter(pk=pk).values_list(
+        "change_date", flat=True))
     context = {"images": images, "current_boat": current_boat, "comments": comments,
-               "articles": articles, "versions": versions, "allowed_comments": allowed_comments}
-
+               "articles": articles, "versions": versions, "allowed_comments": allowed_comments,
+               "EQ": EQ}
     if request.method == "GET":
         return render(request, "boat_detail.html", context)
     else:
@@ -601,9 +606,12 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
         # pk всех существующих  в базе лодок
         existing_boats_pk = BoatModel.objects.all().values_list("pk", flat=True).iterator()
         #  Выбираем все удаленные лодки текущим пользователем
-        versions = Version.objects.get_for_model(BoatModel).filter(
-            Q(revision__user_id=self.request.user.id) | Q(
-                revision__user_id__isnull=True)).exclude(
+        if self.request.user.is_superuser:
+            #  показываем лодки без автора для суперюзера
+            q = Q(revision__user_id=self.request.user.id) | Q(revision__user_id__isnull=True)
+        else:
+            q = Q(revision__user_id=self.request.user.id)
+        versions = Version.objects.get_for_model(BoatModel).filter(q).exclude(
             object_id__in=existing_boats_pk).order_by("object_id").distinct("object_id")
         context["versions"] = versions
         #  ограничиваев кол-во выдаваемых фоток 3-мя штуками

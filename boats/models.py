@@ -15,7 +15,6 @@ import sys
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 
-
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
 
@@ -41,6 +40,7 @@ class BoatImage(models.Model):
     boat = models.ForeignKey("BoatModel",  on_delete=models.SET_NULL, verbose_name="Boat ForeignKey",
                              null=True)
     memory = models.PositiveSmallIntegerField(blank=True, null=True)
+    change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
     #  запоминаем значение ФК на случай  срабатывания on_delete = SET_NULL (для последующего
     #  восстановления)
@@ -124,22 +124,9 @@ class BoatQuerySet(models.QuerySet):  # стр 331
         return self.annotate(cnt=models.Count("comment")).order_by("cnt")
 
 
-class BoatModelManager(models.Manager):  # стр 331
-    """Кастомный менеджер прямой связи для модели BoatModel"""
-
-    def get_queryset(self):
-        return BoatQuerySet(self.model, using=self._db)
-
-    def order_by_comment_count_desc(self):
-        return self.get_queryset().order_by_comment_count_desc()
-
-    def order_by_comment_count_asc(self):
-        return self.get_queryset().order_by_comment_count_asc()
-
-
 class BoatModel(models.Model):
 
-    objects = BoatModelManager()
+    objects = BoatQuerySet.as_manager()
 
     SLOOP = "SL"
     KETCH = "KE"
@@ -197,6 +184,7 @@ class BoatModel(models.Model):
                                     verbose_name="first manufacturing year of the model")
     last_year = models.PositiveSmallIntegerField(blank=True, null=True,
                                     verbose_name="Last manufacturing year of the model")
+    change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
     class Meta:
         verbose_name = "Boats primary data"

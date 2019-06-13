@@ -45,12 +45,4 @@ def order_by(queryset, args):
     return queryset.order_by(*args)
 
 
-@register.filter
-def acces_to_querystring(string, index):
-    split_string = string.split("=")
-    del split_string[0]
-    try:
-        split_string[0] = split_string[0][: -5]
-        return split_string[index]
-    except IndexError:
-        pass
+

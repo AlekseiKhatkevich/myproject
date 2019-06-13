@@ -5,11 +5,18 @@
 {%  load thumbnail %}
 {% load i18n %}
 {% load filtersandtags %}
+{% load cache %}
 
 {% block title %}
     {{ current_boat.boat_name }}
 {% endblock title %}
+
 {% block content %}
+
+
+
+    {% cache "60*60*12"|multiplier boat_detail   EQ  request.user.is_authenticated %}
+
     <div class="container-fluid">
         <div class="row mt-3">
             <div class = "col-md-3 text-left">
@@ -34,7 +41,7 @@
 
                     <li><a href="https://www.blocket.se/hela_sverige?q={{ current_boat.boat_name }}&cg=1060&w=3&st=s&ps=&pe=&c=1062&ca=11&is=1&l=0&md=li" target="_blank">Check it on www.blocket.se</a></li>
 
-                    <li><a href="{% url "boats:blocket" pk=current_boat.id name=current_boat.boat_name  %}" target="_blank">Open list of BLOCKET announcements on a separate page</a></li>
+                    <li><a href="{% url "boats:blocket" pk=current_boat.id name=current_boat.boat_name|slugify  %}" target="_blank">Open list of BLOCKET announcements on a separate page</a></li>
 
                 </ul>
 
@@ -169,7 +176,6 @@
 
 
 
-
-
+{% endcache %}
 {% endblock content %}
 
