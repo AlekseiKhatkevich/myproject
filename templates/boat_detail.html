@@ -15,7 +15,7 @@
 
 
 
-    {% cache "60*60*12"|multiplier boat_detail   EQ  request.user.is_authenticated %}
+    {% cache "60*60*24"|multiplier boat_detail_boat   EQ.eq_current_boat  request.user.is_authenticated %}
 
     <div class="container-fluid">
         <div class="row mt-3">
@@ -79,8 +79,9 @@
                     <a href="{%  url "articles:comment" key="boats" pk=current_boat.pk %}"><button type="button" class="btn btn-secondary rounded-0 ">Comment</button></a>
                 </div>
 
+{% endcache %}
 
-
+{% cache "60*60*24"|multiplier boat_detail_versions   EQ.eq_versions  request.user.is_authenticated %}
 
  <div class="row text-right mt-2">
  <div class="col">
@@ -101,10 +102,10 @@
  </div>
 </div>
 
+{% endcache %}
 
 
-
-
+{% cache "60*60*24"|multiplier boat_detail_articles   EQ.eq_articles  request.user.is_authenticated %}
 
                 <div class = row >
                     <div class="col mr-1">
@@ -134,9 +135,10 @@
 
 
 
+{% endcache %}
 
 
-
+{% cache "60*60*24"|multiplier boat_detail_images   EQ.eq_images  request.user.is_authenticated %}
 
 <div class="row mx-3 ">
     {% for instance in images %}
@@ -146,8 +148,10 @@
 
     {% endfor %}
 </div>
+{% endcache %}
 
 
+{% cache "60*60*24"|multiplier boat_detail_comments  EQ.eq_comments  request.user.is_authenticated %}
     {% for comment in comments %}
 
 
@@ -174,8 +178,8 @@
 
             {% endfor %}
 
-
-
 {% endcache %}
+
+
 {% endblock content %}
 

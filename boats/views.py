@@ -13,11 +13,11 @@ from django.core.signing import BadSignature
 from .models import *
 from articles.models import Article, Comment
 from .forms import *
-from .utilities import map_folium, signer, spider, currency_converter, template_cache_key
+from .utilities import map_folium, signer, spider, currency_converter
 import boats.utilities
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db.transaction import atomic
-from django.db.models import Prefetch,  Min, Q, Count, F
+from django.db.models import Prefetch,  Min, Q
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -32,7 +32,7 @@ from reversion.models import Version
 import os
 from django.core.cache import cache
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
-from django.views.decorators.cache import cache_page, cache_control
+from fancy_cache import cache_page
 from django.conf import settings
 from django.views.decorators.gzip import gzip_page
 from django.core.exceptions import FieldDoesNotExist
@@ -122,7 +122,21 @@ class IndexPageView(TemplateView):
 """ список всех лодок"""
 
 
-@method_decorator([cache_page(60*60, key_prefix="BoatListView")], name="dispatch")
+def vary_on_database(request):
+    cache_key = "BoatListView"
+    data_obj = cache.get(cache_key)
+    if not data_obj:
+        try:
+            data_obj = BoatModel.objects.all().values_list("change_date", flat=True).\
+                latest("change_date")
+        except ObjectDoesNotExist:
+            data_obj = None
+        cache.set(cache_key, data_obj, 60*60)
+    return data_obj
+
+
+@method_decorator(cache_page(60*60, key_prefix=vary_on_database), name="dispatch")
+#  https://stackoverflow.com/questions/2268417/expire-a-view-cache-in-django
 class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"
@@ -205,13 +219,24 @@ def boat_detail_view(request, pk):
     versions = Version.objects.select_related("revision").\
         get_for_object_reference(BoatModel, pk).only("id", "revision")
     allowed_comments = request.get_signed_cookie('allowed_comments', default=None)
-    EQ = comments.values_list("change_date", flat=True).union(articles.values_list("change_date",
-            flat=True), images.values_list("change_date", flat=True), versions.values_list(
-        "revision__date_created", flat=True), BoatModel.objects.filter(pk=pk).values_list(
-        "change_date", flat=True))
+
+    eq_images = images.values_list("change_date", flat=True).latest("change_date") \
+        if images else None
+    eq_current_boat = BoatModel.objects.filter(pk=pk).values_list("change_date", flat=True).\
+        latest("change_date")
+    eq_articles = articles.values_list("change_date", flat=True).latest("change_date") \
+        if articles else None
+    eq_versions = versions.values_list("revision__date_created", flat=True).\
+        latest("revision__date_created") if versions else None
+    eq_comments = comments.values_list("change_date", flat=True).latest("change_date")\
+        if comments else None
+    EQ = {"eq_images": eq_images, "eq_current_boat": eq_current_boat, "eq_articles": eq_articles,
+         "eq_versions": eq_versions, "eq_comments": eq_comments}
+
     context = {"images": images, "current_boat": current_boat, "comments": comments,
                "articles": articles, "versions": versions, "allowed_comments": allowed_comments,
                "EQ": EQ}
+
     if request.method == "GET":
         return render(request, "boat_detail.html", context)
     else:

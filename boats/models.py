@@ -15,6 +15,9 @@ import sys
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 
+
+
+
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
 
@@ -298,6 +301,12 @@ class ExtraUser(AbstractUser):
 
 
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.cache import cache
 
-
-
+@receiver(post_save, sender=BoatModel)
+def invalidate_cached_lookup(sender, instance, **kwargs):
+    pk = instance.pk
+    cache_key = 'BoatListView'
+    cache.delete(cache_key)

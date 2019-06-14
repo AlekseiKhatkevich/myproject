@@ -3,11 +3,9 @@ backup postgree
 
 _план_____________________________________________
 -Тесты
--апдейт кеша при изменении страницы
--посмотреть декоратор который бы делал кеш уникальным основываясь на кастомных  событиях (менять key prefix)
-
-
-
+-http://127.0.0.1:8000/articles/article_edit/38/
+-https://github.com/renskiy/django-cache
+-https://github.com/peterbe/django-fancy-cache
 HEROKU
 -------------------------
 -миграция

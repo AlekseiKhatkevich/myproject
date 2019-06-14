@@ -16,6 +16,7 @@ import time
 import random
 from django.conf import settings
 from django.core.cache.utils import make_template_fragment_key
+from itertools import chain
 
 signer = Signer()
 
@@ -177,9 +178,6 @@ def map_folium(places: dict, pk: int):
             pass
     map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
 
-#from django.core.cache import cache
-#map_folium(cache.get(52), 52)
-
 
 def set_last_access_time(path):
     """Метод изменяет время последнего изменения и время последнего доступа к файлу
@@ -200,3 +198,14 @@ def set_last_access_time(path):
 def template_cache_key(name, *args):
     """Возврашает объект кеша по ключу и параметрам"""
     return make_template_fragment_key(name, args)
+
+
+#  https://stackoverflow.com/questions/592746/how-can-you-print-a-variable-name-in-python
+def namestr(obj, namespace):
+    """Возврашает строковое имя переменной
+    a=2+2
+    b=3+3
+    ({namestr(x, globals()): x for x in (a, b)})
+    {'a': 4, 'b': 6}"""
+    return [name for name in namespace if namespace[name] is obj][0]
+
