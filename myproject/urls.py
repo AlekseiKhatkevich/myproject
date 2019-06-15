@@ -1,15 +1,12 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
-from django.conf import settings
 from django.contrib. staticfiles.views import serve
 from django.views.decorators.cache import never_cache
 from django.views.defaults import permission_denied, page_not_found
 from django.utils.functional import curry
 from django.conf import settings
-from django.conf.urls import  url
-from django.conf.urls.i18n import i18n_patterns
-from django.contrib import admin
+from django.conf.urls import url
 
 
 urlpatterns = [
@@ -19,7 +16,9 @@ urlpatterns = [
     path("articles/", include("articles.urls")),
     path("test/", include("testapp.urls")),
     path("", include("boats.urls")),
+    url(r'fancy-cache', include('fancy_cache.urls')),
 ]
+
 # для отдачи статики в дебаг = фалс ---manage.py runserver --insecure
 if settings.DEBUG:
     urlpatterns.append(path("static/<path:path>", never_cache(serve)))  # если не загр. картинки то смотреть сюда

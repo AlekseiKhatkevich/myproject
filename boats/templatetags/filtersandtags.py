@@ -49,3 +49,5 @@ def order_by(queryset, args):
 def get_dict_value(_dict, key):
     """Возвращает значение словаря по ключу"""
     return _dict.get(key, None)
+
+

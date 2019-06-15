@@ -207,5 +207,5 @@ def namestr(obj, namespace):
     b=3+3
     ({namestr(x, globals()): x for x in (a, b)})
     {'a': 4, 'b': 6}"""
-    return [name for name in namespace if namespace[name] is obj][0]
+    return next(name for name in namespace if namespace[name] is obj)
 

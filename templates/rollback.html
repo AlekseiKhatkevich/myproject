@@ -37,8 +37,9 @@
  </div>
 
 <div class="col-2 mt-4">
+    {%  if image %}
 <a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary ml-3 mb-2" src="{% thumbnail image.boat_photo "default"  %}"></a>
-
+{%  endif %}
 
     <div class="row text-center">
         <div class="col-2 text-center">

@@ -4,10 +4,12 @@ backup postgree
 _план_____________________________________________
 -Тесты
 -http://127.0.0.1:8000/articles/article_edit/38/
--https://github.com/renskiy/django-cache
--https://github.com/peterbe/django-fancy-cache
+-process = subprocess.Popen("aws s3 ls s3://boatsprojectdevelopmentbucket", stdout=subprocess.PIPE)
+-вставить пустое изображение при отсутсвии изображения в откат версий лодки
+
+
 HEROKU
 -------------------------
--миграция
+-подключить постгрес датаклип
 
 

@@ -1,9 +1,6 @@
 from django.db import models
-from django.dispatch import Signal, receiver
-from django.core import validators
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
-from .utilities import files_list, send_activation_notofication, get_timestamp_path, clean_cache, clean_map
+from .utilities import files_list, get_timestamp_path, clean_cache, clean_map
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
 from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
@@ -16,21 +13,8 @@ from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 
 
-
-
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
-
-
-user_registrated = Signal(providing_args=["instance"])
-"""Сигнал user_registrated #573  431  437"""
-
-
-def user_registrated_dispatcher(sender, **kwargs):
-    send_activation_notofication(kwargs["instance"])
-
-
-user_registrated.connect(user_registrated_dispatcher)
 
 
 """ вторичная модель изображений"""
@@ -301,12 +285,4 @@ class ExtraUser(AbstractUser):
 
 
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.core.cache import cache
 
-@receiver(post_save, sender=BoatModel)
-def invalidate_cached_lookup(sender, instance, **kwargs):
-    pk = instance.pk
-    cache_key = 'BoatListView'
-    cache.delete(cache_key)

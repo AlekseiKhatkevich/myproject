@@ -13,9 +13,8 @@ from django.core.signing import BadSignature
 from .models import *
 from articles.models import Article, Comment
 from .forms import *
-from .utilities import map_folium, signer, spider, currency_converter
 import boats.utilities
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import  HttpResponseRedirect, HttpResponse
 from django.db.transaction import atomic
 from django.db.models import Prefetch,  Min, Q
 from django.core.mail import send_mail, BadHeaderError
@@ -36,6 +35,7 @@ from fancy_cache import cache_page
 from django.conf import settings
 from django.views.decorators.gzip import gzip_page
 from django.core.exceptions import FieldDoesNotExist
+from django.contrib.contenttypes.models import ContentType
 
 
 """Контроллер редактирования данных о лодке"""
@@ -88,6 +88,7 @@ def viewname_edit(request, pk):
 """ Контроллер удаления лодки"""
 
 
+#  кеширование в шаблоне
 @method_decorator([login_required_message(message="You must be logged in in order to delete this boat entry"), login_required], name="dispatch")
 class BoatDeleteView(DeleteView):
     model = BoatModel
@@ -108,6 +109,7 @@ class BoatDeleteView(DeleteView):
         context = DeleteView.get_context_data(self, **kwargs)
         if self.user_id:
             context['user'] = ExtraUser.objects.get(pk=self.user_id)
+        context["bool"] = self.request.user == self.object.author
         return context
 
 
@@ -131,12 +133,11 @@ def vary_on_database(request):
                 latest("change_date")
         except ObjectDoesNotExist:
             data_obj = None
-        cache.set(cache_key, data_obj, 60*60)
-    return data_obj
+        cache.set(cache_key, data_obj, 60*60*24)
+    return str(data_obj) + "+" + str(request.user.is_authenticated)
 
 
-@method_decorator(cache_page(60*60, key_prefix=vary_on_database), name="dispatch")
-#  https://stackoverflow.com/questions/2268417/expire-a-view-cache-in-django
+@method_decorator(cache_page(60*60*24, key_prefix=vary_on_database), name="dispatch")
 class BoatListView(SearchableListMixin, ListView):
     model = BoatModel
     template_name = "boats.html"
@@ -220,18 +221,23 @@ def boat_detail_view(request, pk):
         get_for_object_reference(BoatModel, pk).only("id", "revision")
     allowed_comments = request.get_signed_cookie('allowed_comments', default=None)
 
-    eq_images = images.values_list("change_date", flat=True).latest("change_date") \
-        if images else None
-    eq_current_boat = BoatModel.objects.filter(pk=pk).values_list("change_date", flat=True).\
-        latest("change_date")
-    eq_articles = articles.values_list("change_date", flat=True).latest("change_date") \
-        if articles else None
-    eq_versions = versions.values_list("revision__date_created", flat=True).\
-        latest("revision__date_created") if versions else None
-    eq_comments = comments.values_list("change_date", flat=True).latest("change_date")\
-        if comments else None
-    EQ = {"eq_images": eq_images, "eq_current_boat": eq_current_boat, "eq_articles": eq_articles,
-         "eq_versions": eq_versions, "eq_comments": eq_comments}
+    data_obj = cache.get("boat_detail_view" + current_boat.boat_name)
+    if not data_obj:
+        eq_images = images.values_list("change_date", flat=True).latest("change_date") \
+            if images else None
+        eq_current_boat = BoatModel.objects.filter(pk=pk).values_list("change_date", flat=True).\
+            latest("change_date")
+        eq_articles = articles.values_list("change_date", flat=True).latest("change_date") \
+            if articles else None
+        eq_versions = versions.values_list("revision__date_created", flat=True).\
+            latest("revision__date_created") if versions else None
+        eq_comments = comments.values_list("change_date", flat=True).latest("change_date")\
+            if comments else None
+        EQ = {"eq_images": eq_images, "eq_current_boat": eq_current_boat, "eq_articles":
+            eq_articles, "eq_versions": eq_versions, "eq_comments": eq_comments}
+        cache.set("boat_detail_view" + current_boat.boat_name, EQ, 60 * 60 * 24)
+    else:
+        EQ = data_obj
 
     context = {"images": images, "current_boat": current_boat, "comments": comments,
                "articles": articles, "versions": versions, "allowed_comments": allowed_comments,
@@ -276,13 +282,19 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
                 boat[fld] = "DoesNotExists"
         boat.update({"author": version.revision.user})
         context.update({"boat": boat, "version": version})
-        # самая старая фотка
+        # самая старая фотка (пока не используется)
         minimal_id = BoatImage.objects.aggregate(min=Min('id', filter=Q(boat_id=self.kwargs[
             "pk"])))
         try:
-            context["image"] = BoatImage.objects.get(boat_id=self.kwargs["pk"],
-                                                     pk=minimal_id["min"])
-        except ObjectDoesNotExist:
+            #  получаем одну фотку из текущей (выбранной) версии. Объект сохраненной лодки и
+            #  объект сохраненного изображения имеют один и тот же revision_id но разный
+            #  content_type_id. Через это можно установить взаимосвязь
+            image_version = Version.objects.filter(revision_id=version.revision_id,
+            content_type_id=ContentType.objects.get(model="boatimage").id).\
+                only("object_id").order_by("?").first()
+            image = BoatImage.objects.get(pk=image_version.object_id)
+            context["image"] = image
+        except (ObjectDoesNotExist, AttributeError):
             pass
         return context
 
@@ -297,9 +309,12 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
         images = self.get_object().boatimage_set.all()
         score = 0
         for image in images:
-            if not os.path.exists(image.boat_photo.path):
-                image.true_delete(self)  # удаляем по настоящему
-                score += 1
+            try:
+                if not os.path.exists(image.boat_photo.path):
+                    image.true_delete(self)  # удаляем по настоящему
+                    score += 1
+            except NotImplementedError:
+                pass
         if score != 0:
             message = "%d broken image instances  has been deleted from DB" % score
             messages.add_message(request, messages.WARNING, message=message,
@@ -679,6 +694,11 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
             version.revision.delete()
             version.delete()
         for image in images:
+            try:
+                Version.objects.get(object_id=image.pk, content_type_id=ContentType.objects.get(
+                    model="boatimage").id).delete()
+            except ObjectDoesNotExist:
+                pass
             image.true_delete()
         try:
             del self.request.session["versions"]
@@ -721,9 +741,9 @@ def reversion_confirm_view(request, pk):
         #  Урл на существующую лодку с таким-же именем
         url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,)))) + \
               "'>%s</a>" % current_boat_name
-        message = 'Boat with the name "%s" is already exist on the site . You can not restore it! ' \
-                  % url
-    except IndexError or EmptyResultSet:
+        message = 'Boat with the name "%s" is already exist on the site .' \
+                  ' You can not restore it! ' % url
+    except (IndexError, EmptyResultSet):
         message = ""
     #  Если лодка с таким именем уже существует то не даем ее восстановить
     if request.method == "POST":

@@ -12,7 +12,7 @@ from captcha.fields import CaptchaField, CaptchaTextInput
 import datetime
 from .widgets import *
 from .utilities import currency_converter_original
-
+from .signals import user_registrated
 
 """ форма лодки"""
 
@@ -159,7 +159,7 @@ class CorrectUserInfoForm(forms.ModelForm):
         fields = ("username", "email", "first_name", "last_name", )
 
 
-""" Form for a new user registration"""
+""" Регистрация нового пользователя"""
 
 
 class NewUserForm(forms.ModelForm):

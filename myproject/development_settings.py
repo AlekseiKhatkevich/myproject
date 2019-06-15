@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "xhtml2pdf",
     "file_resubmit",
     "django_extensions",
+    'fancy_cache',
 
 ]
 
@@ -332,7 +333,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 #  https://devcenter.heroku.com/articles/django-app-configuration
-django_heroku.settings(locals())  # new
+#django_heroku.settings(locals())  # new
 
 #  https://webdevblog.ru/uluchshenie-bezopasnosti-sajta-django-s-pomoshhju-zagolovkov-zaprosov/
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -348,6 +349,10 @@ AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 S3_USE_SIGV4 = True
 AWS_S3_REGION_NAME = "eu-central-1"
 
+#  The number of seconds that a generated URL is valid for.
+AWS_QUERYSTRING_EXPIRE = 60*60*24  # new
+AWS_IS_GZIPPED = True
+
 #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
@@ -361,3 +366,6 @@ THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE
 THUMBNAIL_BASEDIR = "thumbnails"
 THUMBNAIL_MEDIA_URL = MEDIA_URL
 
+#  Django fancy cache
+FANCY_REMEMBER_ALL_URLS = True
+FANCY_REMEMBER_STATS_ALL_URLS = True
