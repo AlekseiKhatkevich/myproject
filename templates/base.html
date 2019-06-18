@@ -29,7 +29,7 @@
 
 <!-- если контент выползает за экран то смотри сюда -->
 {% comment %}<div class="row " style="width:100%"> {% endcomment %}
-{% cache None navbar  request.user.is_authenticated  debug %}
+{% cache None navbar  request.user.is_authenticated  debug request.LANGUAGE_CODE %}
 
     <nav class="navbar navbar-expand-lg navbar navbar-dark  navbar-fixed-top"
          style="background-color: rgba(41,41,41,0.8); width: 100% ;  ">

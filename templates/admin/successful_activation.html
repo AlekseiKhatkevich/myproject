@@ -1,11 +1,13 @@
 <!--templates/admin/successful_activation.html   -->
  {% extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
 {% block title %}
 Successful activation of a new user
 {% endblock title %}
 
 {% block content %}
+    {% cache None  successful_activation %}
 <div class="panel panel-success">
         <div class="panel-heading">
             <h2 class="panel-title"></h2>
@@ -17,5 +19,6 @@ Successful activation of a new user
             </div>
         </div>
     </div>
+    {% endcache %}
 {% endblock content %}
 

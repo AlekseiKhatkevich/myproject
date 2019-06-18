@@ -83,6 +83,7 @@
 
 {% cache "60*60*24"|multiplier boat_detail_versions   EQ.eq_versions  request.user.is_authenticated %}
 
+{% if request.user == current_boat.author %}
  <div class="row text-right mt-2">
  <div class="col">
      <form action="{{ request.get_full_path_info }}" method="post" name="form1" id="1">
@@ -101,6 +102,7 @@
    </form>
  </div>
 </div>
+{% endif %}
 
 {% endcache %}
 

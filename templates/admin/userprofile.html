@@ -45,6 +45,9 @@
                 <ul>
                     {% for boat in  boats_by_user %}
                         <li style="list-style-type: none"> <strong><a class="text-info" href="{% url "boats:boat_detail" boat.pk %}">{{ boat.boat_name }}</a> </strong></li>
+                        {% empty %}
+                        <p class="text-info  "  >You dont have ones yet  </p>
+
                     {% endfor %}
                 </ul>
             </div>
@@ -57,7 +60,10 @@
                 <h5>Your articles:</h5>
                 <ul>
                     {% for article in articles_by_user %}
-                        <li  style="list-style-type: none"><strong><a class="text-info" href="{%  url "articles:detail"  current_heading_pk=article.foreignkey_to_subheading.pk  pk=article.pk   %}{{ all }}">{{ article.title }}</a></strong></li>
+                        <li  style="list-style-type: none"><strong><a class="text-info" href="{%  url "articles:detail"  current_heading_pk=article.foreignkey_to_subheading_id  pk=article.pk   %}{{ all }}">{{ article.title }}</a></strong></li>
+                         {% empty %}
+                        <p class="text-info  "  >You dont have ones yet  </p>
+
                     {% endfor %}
                 </ul>
             </div>
@@ -95,10 +101,18 @@
                     <div id="{% cycle "collapseOne" "collapseTwo" "collapseTree" "collapsefour" "collapsefive" %}" class="collapse hide" role="tabpanel" aria-labelledby="{% cycle "headingOne"  "headingtwo"  "headingthree" "headingfour" "headingfive" %}">
                         <div class="card-body">
                             <Ul>
-                                <li>Your Entry - {%  firstof comment.foreignkey_to_article.title  comment.foreignkey_to_boat.boat_name %}</li>
-                                <li> Author - {{ comment.author }}</li>
+                                <li>Your Entry -
+                                {% if comment.foreignkey_to_boat %}
+                                <a href="{% url "boats:boat_detail" comment.foreignkey_to_boat_id %}">{{comment.foreignkey_to_boat.boat_name|slice:"0:15"  }}</a>
+
+                                  {% else %}
+<a href="{% url "articles:detail"  comment.foreignkey_to_article.foreignkey_to_subheading_id  comment.foreignkey_to_article_id %}">{{comment.foreignkey_to_article.title |slice:"0:15"  }}</a>
+
+                                {% endif %}
+                                </li>
+                                <li> Comment author - {{ comment.author }}</li>
                                 <li> Comment - {{ comment.content }}</li>
-                                <li> Publish date - {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }}</li>
+                                <li> Comment publish date - {{ comment.created_at|date:"SHORT_DATE_FORMAT"  }}</li>
                             </Ul>
 
                         </div>
@@ -109,5 +123,7 @@
     {% endif %}
     </div>
     </div>
+
+
 {% endblock content %}
 

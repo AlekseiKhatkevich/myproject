@@ -10,11 +10,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages, auth
 from django.core.signing import BadSignature
-from .models import *
 from articles.models import Article, Comment
 from .forms import *
 import boats.utilities
-from django.http import  HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.db.transaction import atomic
 from django.db.models import Prefetch,  Min, Q
 from django.core.mail import send_mail, BadHeaderError
@@ -28,10 +27,13 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.decorators import method_decorator
 from reversion.models import Version
+from reversion.views import RevisionMixin
+from reversion import RevertError
 import os
 from django.core.cache import cache
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 from fancy_cache import cache_page
+from django.core.cache.utils import make_template_fragment_key
 from django.conf import settings
 from django.views.decorators.gzip import gzip_page
 from django.core.exceptions import FieldDoesNotExist
@@ -88,7 +90,7 @@ def viewname_edit(request, pk):
 """ Контроллер удаления лодки"""
 
 
-#  кеширование в шаблоне
+#  кеширование в шаблоне  None
 @method_decorator([login_required_message(message="You must be logged in in order to delete this boat entry"), login_required], name="dispatch")
 class BoatDeleteView(DeleteView):
     model = BoatModel
@@ -116,7 +118,7 @@ class BoatDeleteView(DeleteView):
 """ Индекс"""
 
 
-#  кэширование в шаблоне
+#  кэширование в шаблоне 60*60*24*7
 class IndexPageView(TemplateView):
     template_name = "index.html"
 
@@ -134,7 +136,7 @@ def vary_on_database(request):
         except ObjectDoesNotExist:
             data_obj = None
         cache.set(cache_key, data_obj, 60*60*24)
-    return str(data_obj) + "+" + str(request.user.is_authenticated)
+    return "BoatListView" + "+" + str(data_obj) + "+" + str(request.user.is_authenticated)
 
 
 @method_decorator(cache_page(60*60*24, key_prefix=vary_on_database), name="dispatch")
@@ -261,10 +263,13 @@ def boat_detail_view(request, pk):
 """ Контроллер отката версий лодки"""
 
 
-class RollbackView(MessageLoginRequiredMixin, DetailView):
+# кеширование в шаблоне  60*60*24
+class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
     template_name = "rollback.html"
     model = BoatModel
     redirect_message = "You have to be authenticated to rollback boat's data"
+    revision_manage_manually = True  # не сохраняем новую версию при откате (при вызове
+    # self.get_object().save() в методе ПОСТ)
 
     def get_context_data(self, **kwargs):
         context = DetailView.get_context_data(self, **kwargs)
@@ -301,7 +306,12 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         # получаем необходимую версию записи и откатываемся до нее
         version = Version.objects.get(id=self.kwargs["version_id"])
-        version.revision.revert()
+        try:
+            version.revision.revert()
+        except RevertError as err:
+            messages.add_message(self.request, messages.ERROR, message=str(err),
+                                 fail_silently=True)
+            return redirect(request.META.get('HTTP_REFERER'))
         #  сайв нужен для привязки /перепривязки категорий статей
         self.get_object().save()
         # если файл  изображения был фактически удален и его путь в бд ведет в никуда то мы его
@@ -319,7 +329,7 @@ class RollbackView(MessageLoginRequiredMixin, DetailView):
             message = "%d broken image instances  has been deleted from DB" % score
             messages.add_message(request, messages.WARNING, message=message,
                                  fail_silently=True)
-        message = "You successfully rolled back %(name)s ` data. Rollback date is %(date)s " % \
+        message = "You successfully rolled back %(name)s  data. Rollback date is %(date)s " % \
                   ({"name": self.get_object().boat_name, "date": version.revision.date_created})
         messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
         return HttpResponseRedirect(reverse_lazy('boats:boat_detail',
@@ -381,7 +391,7 @@ def viewname(request):
 """ контроллер LOGIN"""
 
 
-@method_decorator(cache_page(None), name="dispatch")
+@method_decorator([cache_page(60*60*24*7), vary_on_cookie], name="dispatch")
 class AdminLoginView(SuccessMessageMixin, LoginView):
     template_name = "admin/login.html"
     success_message = "You have logged in, %(username)s"
@@ -391,6 +401,7 @@ class AdminLoginView(SuccessMessageMixin, LoginView):
 """ контроллер LOGOUT"""
 
 
+#  кешированеи в шаблоне None
 @method_decorator(cache_page(None), name="dispatch")
 class AdminLogoutView(LoginRequiredMixin, LogoutView):
     template_name = "admin/logout.html"
@@ -405,6 +416,38 @@ class AdminLogoutView(LoginRequiredMixin, LogoutView):
 """ контроллер страницы профиля пользователя"""
 
 
+def vary_on_user_profile(request):
+    try:
+        eq_boats_by_user = BoatModel.objects.filter(
+        author=request.user).order_by("-boat_publish_date")[:10].values_list("change_date",
+                                                                             flat=True)[0]
+    except IndexError:
+        eq_boats_by_user = None
+    try:
+        eq_articles_by_user = Article.objects.filter(author=request.user).exclude(
+        change_date__isnull=True).order_by("-created_at")[: 10].values_list("change_date",
+                                                                            flat=True)[0]
+    except IndexError:
+        eq_articles_by_user = None
+    try:
+        eq_comments_by_user = Comment.objects.filter(Q(foreignkey_to_article__author=request.user,
+        is_active=True) | Q(foreignkey_to_boat__author=request.user, is_active=True)).order_by(
+        "-created_at")[: 5].values_list("change_date", flat=True)[0]
+    except IndexError:
+        eq_comments_by_user = None
+    finally:
+        eq_user_change_data = ExtraUser.objects.filter(id=request.user.pk).values_list(
+            "change_date", flat=True).latest("change_date")
+    EQ = (eq_boats_by_user, eq_articles_by_user, eq_comments_by_user, eq_user_change_data)
+    #  для того, чтобы мессадж о успешном входе показывался только после успешного логина, а не
+    #  всегда
+    timedelta = (datetime.datetime.now() - request.user.last_login).seconds > 1
+    #  для того, чтобы мессадж о смене данных показывался только после смены данных , а не всегда
+    temedelta2 = (datetime.datetime.now() - request.user.change_date).seconds > 1
+    return "UserProfileView + %s + %s + %s " % (EQ,  timedelta, temedelta2)
+
+
+@method_decorator(cache_page(60*60*24*7, key_prefix=vary_on_user_profile), name="dispatch")
 class UserProfileView(LoginRequiredMixin,  TemplateView):
     template_name = "admin/userprofile.html"
 
@@ -412,13 +455,13 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
         context = TemplateView.get_context_data(self, **kwargs)
         context["boats_by_user"] = \
             BoatModel.objects.order_by("-boat_publish_date").\
-        filter(author=self.request.user)[:10]
-        context["articles_by_user"] = \
-            Article.objects.order_by("created_at").filter(author=self.request.user)[: 10]
+        filter(author=self.request.user)[:10].only("boat_name", "id")
+        context["articles_by_user"] = Article.objects.order_by("-created_at").filter(
+            author=self.request.user)[: 10].only("title", "id")
         filter1 = Comment.objects.filter(foreignkey_to_article__author=self.request.user,
-                                         is_active=True)
+                    is_active=True).select_related('foreignkey_to_article', "foreignkey_to_boat")
         filter2 = Comment.objects.filter(foreignkey_to_boat__author=self.request.user,
-                                         is_active=True)
+                    is_active=True).select_related('foreignkey_to_article', "foreignkey_to_boat")
         context["comments_by_user"] = filter1.union(filter2).order_by("-created_at")[: 5]
         return context
 
@@ -426,6 +469,7 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
 """ корректировка данных пользователя"""
 
 
+#  кеширование в шаблоне "60*60*24*30"
 class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = ExtraUser
     template_name = "admin/correct_user_info.html"
@@ -446,6 +490,7 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
 """ Изменение пароля"""
 
 
+#  кеширование в шаблоне None
 class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
     template_name = "admin/password_change.html"
     success_url = reverse_lazy("boats:user_profile")
@@ -457,6 +502,7 @@ class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordCh
 """ добавление нового пользователя"""
 
 
+#  кеширование отсутствует
 class AddNewUserView(CreateView):
     model = ExtraUser
     template_name = "admin/add_new_user.html"
@@ -467,6 +513,7 @@ class AddNewUserView(CreateView):
 """контроллер успешной регистрации"""
 
 
+# кеширование в шаблоне None
 class RegisterDoneView(TemplateView):
     template_name = "admin/register_done.html"
 
@@ -474,6 +521,7 @@ class RegisterDoneView(TemplateView):
 """ контроллер активации пользователя через емейл"""
 
 
+#  кеширование в шаблонах ( 3 штуки)
 def user_activate_view(request, sign):  # 575
     try:
         username = boats.utilities.signer.unsign(sign)
@@ -486,7 +534,7 @@ def user_activate_view(request, sign):  # 575
         template = "admin/successful_activation.html"
         user.is_active = True
         user.is_activated = True
-        user.save()
+        user.save(update_fields=["is_active", "is_activated"])
     return render(request, template)
 
 
@@ -691,12 +739,15 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
             filter(object_id=self.kwargs.get("pk"))
         images = BoatImage.objects.filter(memory=self.kwargs.get("pk"))
         for version in versions:
+            #  удаляем кеш версий роллбэка
+            cache_key = make_template_fragment_key('rollback', [version.id, ])
+            cache.delete(cache_key)
             version.revision.delete()
             version.delete()
         for image in images:
             try:
                 Version.objects.get(object_id=image.pk, content_type_id=ContentType.objects.get(
-                    model="boatimage").id).delete()
+                    model="boatimage").id).delete()  # удалаяем версии связанных изображений
             except ObjectDoesNotExist:
                 pass
             image.true_delete()

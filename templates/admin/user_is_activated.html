@@ -1,11 +1,13 @@
 <!-- templates/admin/user_is_activated.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
 {% block title %}
 User is activated already
 {% endblock title %}
 
 {% block content %}
+    {% cache None user_is_activated  %}
 <div class="panel panel-success">
         <div class="panel-heading">
             <h2 class="panel-title"></h2>
@@ -17,5 +19,6 @@ User is activated already
             </div>
         </div>
     </div>
+    {% endcache %}
 {% endblock content %}
 

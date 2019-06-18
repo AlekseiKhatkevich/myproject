@@ -2,6 +2,7 @@
 {% extends "base.html" %}
 {% load bootstrap4 %}
 {%  load static %}
+
 {% comment %}
 <script>
   window.fbAsyncInit = function() {
@@ -28,6 +29,7 @@
     Login
 {% endblock title %}
 {% block content %}
+
     <div class="form-container  ">
         <div class="row">
             <div class="col-md-5">
@@ -84,8 +86,10 @@
         <img height=165  width=190   src="{% static "boats/diagram-31693_960_720.png"%}" alt="boat image">
     </div>
     </div>
-
+{% comment %}
     <a href="{% url 'social:begin' 'facebook' %}">Login with Facebook</a>
+    {% endcomment %}
+
 {% endblock content %}
 
 

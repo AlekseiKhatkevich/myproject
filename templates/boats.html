@@ -135,8 +135,7 @@
 
                         {% empty %}
 
-                        <a  href=" {% url "boats:boat_detail" boat.pk %}"> <img class=" img-fluid ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip"
-                                                                                data-placement="right" title="Current boat doesn't have any photo">
+                        <a  href=" {% url "boats:boat_detail" boat.pk %}"> <img class=" img-fluid ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip" data-placement="right" title=" '{{ boat.boat_name}}'   doesn't have any photo">
 
                     {% endfor %}
                 </div>

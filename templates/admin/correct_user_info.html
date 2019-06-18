@@ -1,10 +1,15 @@
 <!-- templates/admin/correct_user_info.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
+{% load filtersandtags %}
 {% block title %}
 correction of the user's info
 {% endblock title%}
+
 {% block content %}
+    {% cache "60*60*24*30"|multiplier  correct_user_info  request.user.change_date  request.user.pk  %}
+
 <div class="form-container container col-md-6 bg-light">
         <div class="row mt-2">
             <div class="col-md-12 text-center">
@@ -36,5 +41,6 @@ correction of the user's info
         </div>
     </div>
 
-
+{% endcache %}
 {% endblock content %}
+

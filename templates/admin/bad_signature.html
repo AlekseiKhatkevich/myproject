@@ -1,11 +1,13 @@
 <!-- templates/admin/bad_signature.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
 {% block title %}
 Bad Signature
 {% endblock title %}
 
 {% block content %}
+    {% cache None bad_signature %}
 <div class="panel panel-success">
         <div class="panel-heading">
             <h2 class="panel-title"></h2>
@@ -17,4 +19,5 @@ Bad Signature
             </div>
         </div>
     </div>
+    {% endcache %}
 {% endblock content %}

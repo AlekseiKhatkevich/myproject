@@ -3,9 +3,10 @@
 {% load bootstrap4 %}
 {%  load static %}
 {% load staticfiles %}
+{% load cache %}
 {% block title %} Logging out page{% endblock title %}
 {% block content %}
-
+{%  cache None logout %}
     <div class="container-fluid">
 
         <div class="row">
@@ -22,5 +23,5 @@
         </div>
 
     </div>
-
+{% endcache %}
 {% endblock content %}

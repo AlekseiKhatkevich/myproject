@@ -2,8 +2,7 @@ from .models import *
 from django import forms
 from django.shortcuts import get_object_or_404
 import requests
-from django.db.models import Q, F
-from django.core.validators import  MinLengthValidator
+from django.core.validators import MinLengthValidator
 
 """search form"""
 
@@ -26,7 +25,8 @@ class ArticleForm(forms.ModelForm):
         foreignkey_to_boat = self.cleaned_data["foreignkey_to_boat"]
         foreignkey_to_subheading = int(self.cleaned_data["foreignkey_to_subheading"].pk)
         current_subheading = get_object_or_404(SubHeading, pk=foreignkey_to_subheading)
-        if current_subheading.foreignkey.name == "Articles on boats" and not foreignkey_to_boat:
+        if current_subheading.foreignkey.name == "Articles on boats" and not foreignkey_to_boat and\
+                current_subheading.one_to_one_to_boat:
             msg1 = 'You must choose the boat if you want to save this article inside upper' \
                    ' heading"Articles on boats"'
             self.add_error("foreignkey_to_boat", msg1)
@@ -55,7 +55,7 @@ class ArticleForm(forms.ModelForm):
 
     class Meta:
         model = Article
-        exclude = ("created_at", "show", "change_date" )
+        exclude = ("created_at", "show", "change_date")
         widgets = {"author": forms.HiddenInput, }
 
 

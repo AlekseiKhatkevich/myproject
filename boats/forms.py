@@ -39,7 +39,8 @@ class BoatForm(forms.ModelForm):
             self.fields["currency"].required = False
             #  передаем пк в валидатор для изключения редактируемого объекта из проверки уникальности
             #  урлов (чтобы не проверял сам себя)
-            self.fields["boat_sailboatdata_link"].validators = [UniqueSailboatLinkValidator(pk=self.pk), ]
+            self.fields["boat_sailboatdata_link"].validators = \
+                [UniqueSailboatLinkValidator(pk=self.pk), ]
         else:
             self.fields["boat_sailboatdata_link"].validators = [UniqueSailboatLinkValidator(), ]
 
@@ -182,8 +183,8 @@ class NewUserForm(forms.ModelForm):
 
     def clean(self):
         forms.ModelForm.clean(self)
-        password1 = self.cleaned_data["password1"]
-        password2 = self.cleaned_data["password2"]
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             errors = {"password2": ValidationError("Passwords aren't coincide!",
                                                    code="password_mismatch")}
@@ -231,8 +232,10 @@ class ContactForm(forms.Form):
     message = forms.CharField(help_text="please type in your message",
                               widget=forms.Textarea(attrs=attrs_dict))
     copy = forms.BooleanField(required=False, label="Send copy to your email")
-    captcha = CaptchaField(help_text="Please type in correct captcha",
-                           widget=CaptchaTextInput(attrs=attrs_dict))
+    captcha = CaptchaField(help_text="Please type in correct captcha", widget=CaptchaTextInput(
+        attrs={"style": "border-style: solid; border-color: #464451;"}), error_messages=
+    {'invalid': "Please type in correct captcha. I know it's not easy but please do concentrate on "
+                "this task"})
 
 
 """кастомная форма сброса пароля(первая часть)"""

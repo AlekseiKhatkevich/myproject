@@ -278,6 +278,7 @@ class ExtraUser(AbstractUser):
     "Is user activated?", help_text="Specifies whether user has been activated or not")
     email = models.EmailField(unique=True, blank=False, verbose_name="user's email",
                               help_text='Please type in your email address')
+    change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
     class Meta(AbstractUser.Meta):
         unique_together = ("first_name", "last_name", )

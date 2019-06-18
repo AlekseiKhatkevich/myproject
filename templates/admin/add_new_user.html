@@ -6,6 +6,7 @@ Register new account
 {% endblock title %}
 
 {% block content %}
+
 <div class="form-container container col-md-8 bg-light">
         <div class="row">
             <div class="col-md-12 text-center">
@@ -15,7 +16,12 @@ Register new account
 
                 <form method="post" enctype="multipart/form-data">
                     {%  csrf_token %}
-                    {%   bootstrap_form form layout='horizontal' size="small" label_class="form-label col-md-3"%}
+                    {%   bootstrap_form form  exclude="captcha"   layout='horizontal' size="small" label_class="form-label col-md-3"%}
+
+
+                {% bootstrap_field  form.captcha layout='horizontal' size="small" label_class="form-label col-md-3" %}
+
+
                     <div class="row">
                         <div class="col-12 text-center">
                             {% buttons %}

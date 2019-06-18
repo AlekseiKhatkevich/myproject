@@ -1,4 +1,4 @@
-<!-- templates/boat_delete.html  -->
+<!-- templates/edit_boat.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
 {% bootstrap_javascript jquery='full' %}
@@ -36,12 +36,25 @@
 
                         <div class = "col-4">
                             {% bootstrap_field form1.first_year layout='inline' size="small"   form_group_class="" label_class="form-label col-md-3" %}
-                            <small class="form-text text-muted">{{ form1.first_year.help_text }}</small>
+                            <small class="form-text text-muted">
+                                {% if form1.first_year.errors  %}
+                                <span class="text-danger">{{   form1.first_year.errors }} </span>
+                                {% else %}
+                                {{ form1.first_year.help_text }}
+                                {% endif %}
+                            </small>
                         </div>
 
                         <div class = "offset-1 col-4" >
                             {% bootstrap_field form1.last_year layout='inline' size="small" form_group_class="" label_class="form-label col-md-3"  %}
-                            <small class="form-text text-muted">{{ form1.last_year.help_text }}</small>
+                            <small class="form-text text-muted">
+                                {% if form1.last_year.errors  %}
+                                <span class="text-danger">{{   form1.last_year.errors }} </span>
+                                {% else %}
+                                {{ form1.last_year.help_text }}
+                                {% endif %}
+                            </small>
+
                         </div>
 
 

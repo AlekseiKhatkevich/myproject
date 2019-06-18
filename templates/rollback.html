@@ -3,10 +3,21 @@
 {% load bootstrap4 %}
 {% load static %}
 {% load thumbnail %}
+{% load cache %}
+{% load filtersandtags %}
 
  {% block title %} Rollback of the boat {% endblock title %}
 
 {% block content %}
+
+{%  cache "60*60*24"|multiplier rollback    version.id   %}
+
+
+     <script>
+        $(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 
 <div class="container-fluid">
 <div class="row mt-3">
@@ -38,7 +49,12 @@
 
 <div class="col-2 mt-4">
     {%  if image %}
-<a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary ml-3 mb-2" src="{% thumbnail image.boat_photo "default"  %}"></a>
+<a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary  mb-2" src="{% thumbnail image.boat_photo "default"  %}"></a>
+
+        {% else %}
+
+         <img class=" img-fluid  mb-2 border border-secondary rounded"  height=180 width=180 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip" data-placement="right" title=" '{{ boat.boat_name}}'   doesn't have any photo">
+
 {%  endif %}
 
     <div class="row text-center">
@@ -46,8 +62,16 @@
           <form action=" " method="post" name="form1" id="1">
     {% csrf_token %}
 
-<button type="submit" name="button" value="yes" class="btn btn-danger rounded border-success btn-lg mt-3 text-center ml-4">Apply rollback</button></a>
+
+
+
+
+<button type="submit" name="button" value="yes" class="btn btn-danger rounded border-success btn-lg mt-3 text-center   mr-2" >Apply rollback</button></a>
 </form>
+<a href="{% url "boats:boat_detail" boat.id %}"><button type="button" name="back" value="" class="btn   btn-dark rounded border-success btn-lg mt-1 text-center mr-2"  >Back to boat page </button></a>
+
+
+
         </div>
     </div>
 
@@ -61,5 +85,6 @@
 
 
 
+{% endcache %}
 
 {% endblock content %}

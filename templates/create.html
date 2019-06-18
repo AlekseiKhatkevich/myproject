@@ -3,10 +3,15 @@
 {% load bootstrap4 %}
 {%  bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
-
+{% load filtersandtags %}
+{% load cache %}
 
 {% block title %} Adding new boat{% endblock title %}
 {% block content %}
+
+ {% cache "60*60*24"|multiplier create  request.POST request.FILES %}
+
+
     <div class="form-container container col-md-6 bg-light" style="margin-top: 10px">
         <div class="row">
             <div class="col-md-12">
@@ -86,7 +91,7 @@
 
 
 
-
+{% endcache %}
 {% endblock content %}
 
 

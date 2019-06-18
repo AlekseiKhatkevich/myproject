@@ -194,12 +194,6 @@ def set_last_access_time(path):
     os.utime(fileLocation, (modTime, modTime))
 
 
-#  http://michael-borisov.com/2014/12/30/django-template-caching/
-def template_cache_key(name, *args):
-    """Возврашает объект кеша по ключу и параметрам"""
-    return make_template_fragment_key(name, args)
-
-
 #  https://stackoverflow.com/questions/592746/how-can-you-print-a-variable-name-in-python
 def namestr(obj, namespace):
     """Возврашает строковое имя переменной
