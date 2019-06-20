@@ -27,7 +27,7 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.decorators import method_decorator
 from reversion.models import Version
-from reversion.views import RevisionMixin
+from reversion.views import RevisionMixin, create_revision
 from reversion import RevertError
 import os
 from django.core.cache import cache
@@ -130,13 +130,12 @@ def vary_on_database(request):
     cache_key = "BoatListView"
     data_obj = cache.get(cache_key)
     if not data_obj:
-        try:
-            data_obj = BoatModel.objects.all().values_list("change_date", flat=True).\
-                latest("change_date")
-        except ObjectDoesNotExist:
-            data_obj = None
+        change_obj = BoatModel.objects.all().values_list("change_date", flat=True).latest(
+                "change_date").timestamp()
+        count_obj = BoatModel.objects.all().count()
+        data_obj = "%s+%s" % (change_obj, count_obj)
         cache.set(cache_key, data_obj, 60*60*24)
-    return "BoatListView" + "+" + str(data_obj) + "+" + str(request.user.is_authenticated)
+    return "BoatListView+%s+%s" % (str(data_obj), str(request.user.is_authenticated))
 
 
 @method_decorator(cache_page(60*60*24, key_prefix=vary_on_database), name="dispatch")
@@ -237,7 +236,7 @@ def boat_detail_view(request, pk):
             if comments else None
         EQ = {"eq_images": eq_images, "eq_current_boat": eq_current_boat, "eq_articles":
             eq_articles, "eq_versions": eq_versions, "eq_comments": eq_comments}
-        cache.set("boat_detail_view" + current_boat.boat_name, EQ, 60 * 60 * 24)
+        cache.set("boat_detail_view" + str(current_boat.pk), EQ, 60 * 60 * 24)
     else:
         EQ = data_obj
 
@@ -347,6 +346,7 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
 """ Контроллер добавления новой лодки"""
 
 
+#  кеширование в шаблоне "60*60*24"
 @atomic
 @login_required_message(message="You must be logged in in order to create new boat entry")
 @login_required
@@ -383,9 +383,9 @@ def viewname(request):
             context = {"form1": form1, "form2": form2}
             return render(request, "create.html", context)
     else:
-        form2 = boat_image_inline_formset(prefix="form2")
-        context = {"form1": form1, "form2": form2}
-        return render(request, "create.html", context)
+            form2 = boat_image_inline_formset(prefix="form2")
+            context = {"form1": form1, "form2": form2}
+            return render(request, "create.html", context)
 
 
 """ контроллер LOGIN"""
@@ -430,7 +430,8 @@ def vary_on_user_profile(request):
     except IndexError:
         eq_articles_by_user = None
     try:
-        eq_comments_by_user = Comment.objects.filter(Q(foreignkey_to_article__author=request.user,
+        eq_comments_by_user = Comment.objects.filter(Q(
+            foreignkey_to_article__author=request.user,
         is_active=True) | Q(foreignkey_to_boat__author=request.user, is_active=True)).order_by(
         "-created_at")[: 5].values_list("change_date", flat=True)[0]
     except IndexError:
@@ -541,6 +542,7 @@ def user_activate_view(request, sign):  # 575
 """Контроллер удаления зарегестрированного пользователя"""
 
 
+#  кеширование в шаблоне None
 class DeleteUserView(LoginRequiredMixin, DeleteView):
     model = ExtraUser
     template_name = 'admin/delete_user.html'
@@ -575,6 +577,7 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
 """Контроллер формы обратной связи"""
 
 
+#  без кеша
 def feedback_view(request):
     if request.method == "POST":
         form = ContactForm(request.POST, mark=request.user.is_authenticated)
@@ -614,6 +617,7 @@ def feedback_view(request):
 """ контроллер отправки письма для сброса пароля"""
 
 
+@method_decorator(cache_page(60*60*24*30), name="dispatch")
 class PassResView(RatelimitMixin, SuccessMessageMixin, PasswordResetView):
     success_url = reverse_lazy("boats:index")
     from_email = "hardcase@inbox.ru"
@@ -632,6 +636,7 @@ class PassResView(RatelimitMixin, SuccessMessageMixin, PasswordResetView):
 """ контроллер проверки UID , ключа и сброс пароля"""
 
 
+@method_decorator(cache_page(60*60*24*30), name="dispatch")
 class PassResConfView(SuccessMessageMixin, PasswordResetConfirmView):
     post_reset_login = True
     post_reset_login_backend = "django.contrib.auth.backends.ModelBackend"
@@ -645,18 +650,35 @@ class PassResConfView(SuccessMessageMixin, PasswordResetConfirmView):
 """контроллер рендеринга в PDF  в поток"""
 
 
-@method_decorator(cache_page(60*60*24), name="dispatch")
+def invalidate_pdf(request):
+    pk = request.get_full_path_info().split("/")[-2]
+    EQ = cache.get("Pdf+%s" % pk)
+    if not EQ:
+        current_boat = BoatModel.objects.prefetch_related("boatimage_set").filter(pk=int(pk))
+        eq_current_boat = current_boat.values_list("change_date", flat=True).latest(
+        "change_date").timestamp()
+        eq_images = current_boat[0].boatimage_set.values_list("change_date", flat=True).latest(
+        "change_date").timestamp() if current_boat[0].boatimage_set.exists() else None
+        images_count = current_boat[0].boatimage_set.count()
+        EQ = (eq_current_boat, eq_images, images_count)
+        cache.set("Pdf+%s" % pk, EQ, 60*60*24)
+    return EQ
+
+
+@method_decorator(cache_page(60*60*24, key_prefix=invalidate_pdf), name="dispatch")
 class Pdf(TemplateView):
+
     def get(self, request, *args, **kwargs):
         pr = Prefetch("boatimage_set", to_attr="images")
         current_boat = BoatModel.objects.prefetch_related(pr).get(pk=self.kwargs["pk"])
         params = {"current_boat": current_boat, "request": request}
-        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)  # см.                                                                                        .render.py
+        return Render.render("pdf/pdf.html", params, filename=current_boat.boat_name)
 
 
 """контроллер рендеринга в PDF  в файл"""
 
 
+#  инвалидация через урл в сигналах
 @cache_page(60*60*24)
 def render_pdf_view(request, pk):
     template_path = "pdf/pdf.html"
@@ -699,9 +721,11 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
             q = Q(revision__user_id=self.request.user.id) | Q(revision__user_id__isnull=True)
         else:
             q = Q(revision__user_id=self.request.user.id)
-        versions = Version.objects.get_for_model(BoatModel).filter(q).exclude(
-            object_id__in=existing_boats_pk).order_by("object_id").distinct("object_id")
+        versions = Version.objects.get_for_model(BoatModel).filter(
+            q).exclude(object_id__in=existing_boats_pk).order_by("object_id").distinct(
+            "object_id")
         context["versions"] = versions
+        context["id_eq"] = [version.id for version in versions]
         #  ограничиваев кол-во выдаваемых фоток 3-мя штуками
         memory_limiter = set(BoatImage.objects.filter(boat_id__isnull=True).exclude(
             memory__in=existing_boats_pk).values_list("memory", "pk"))
@@ -729,6 +753,7 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
 """Контроллер удаления версии"""
 
 
+#  кеширование в шаблоне
 class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
     template_name = "reversion_delete.html"
     redirect_message = "You have to be logged in to delete reversions"
@@ -759,8 +784,10 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = TemplateView.get_context_data(self, **kwargs)
-        context["boat_name"] = self.request.session.get(str(self.kwargs.get("pk")))
+        context["boat_name"] = self.request.session.get("versions").\
+            get(str(self.kwargs.get("pk")))
         context["images"] = BoatImage.objects.filter(memory=self.kwargs.get("pk"))
+        context["eq_images"] = context["images"].count() if context["images"] else None
         return context
 
     def dispatch(self, request, *args, **kwargs):
@@ -776,6 +803,8 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
 """ Контроллер восстановления конкретной лодки"""
 
 
+#  кеширование в шаблоне
+@create_revision(manage_manually=True)  # не создаем версию при восстановлении лодки
 @login_required_message(message="You need to be authenticated to recover boat's data")
 @login_required
 @atomic
@@ -788,17 +817,18 @@ def reversion_confirm_view(request, pk):
     current_boat_name = versions[0].field_dict["boat_name"]
     #  РК существующей лодки с таким - же именем, если есть
     try:
-        existing_boat_pk = BoatModel.objects.filter(boat_name=current_boat_name).only("pk")[0].pk
+        existing_boat_pk = BoatModel.objects.filter(boat_name__iexact=current_boat_name).only(
+            "pk")[0].pk
         #  Урл на существующую лодку с таким-же именем
-        url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,)))) + \
-              "'>%s</a>" % current_boat_name
+        url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,))))\
+              + "'>%s</a>" % current_boat_name
         message = 'Boat with the name "%s" is already exist on the site .' \
                   ' You can not restore it! ' % url
     except (IndexError, EmptyResultSet):
-        message = ""
+        message = "something went wrong"
     #  Если лодка с таким именем уже существует то не даем ее восстановить
     if request.method == "POST":
-        if current_boat_name in existing_boats_names:
+        if current_boat_name.lower() in map(lambda name: name.lower(), existing_boats_names):
             messages.add_message(request, messages.WARNING, message=mark_safe(message),
                                  fail_silently=True)
             return redirect("boats:reversion")
@@ -806,18 +836,19 @@ def reversion_confirm_view(request, pk):
             versions[0].revision.revert()
             restored_boat = BoatModel.objects.get(boat_name=versions[0].object_repr)
             restored_boat.save()
-            message = 'Boat "%(boat_name)s" is restored!' % {"boat_name": versions[0].object_repr}
+            message = 'Boat "%(boat_name)s" is restored!' % {"boat_name":
+                                                                 versions[0].object_repr}
             messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("boats:boat_detail",  args=(pk, )))
     else:
-        context = {"versions": versions}
+        context = {"versions": versions, "current_boat_name": current_boat_name}
         return render(request, "reversion_confirmation.html", context)
 
 
 """Контроллер показа объявлений о лодке на https://www.blocket.se """
 
 
-@method_decorator(cache_page(60*60*3), name="dispatch")
+@method_decorator(cache_page(60*60), name="dispatch")
 class BlocketView(DetailView):
     model = BoatModel
     template_name = 'blocket.html'
@@ -840,7 +871,8 @@ class BlocketView(DetailView):
 """ Контроллер просмотра кары с местами продажи лодок """
 
 
-@method_decorator([cache_page(60*60*24), gzip_page], name="dispatch")
+# кеширование в функции utilities.map_folium
+@method_decorator(gzip_page, name="dispatch")
 class MapView(TemplateView):
     template_name = ""
 
@@ -854,5 +886,10 @@ class MapView(TemplateView):
                                    pk=self.kwargs.get("pk"))
         return TemplateView.get(self, request, *args, **kwargs)
 
+
+from django.http import FileResponse
+def map_show(request):
+    fn = os.path.join(settings.BASE_DIR, "templates", "maps",  str(53) +".html")
+    return FileResponse(open(fn, "rb"), content_type="text/html")
 
 

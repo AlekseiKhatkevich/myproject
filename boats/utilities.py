@@ -1,6 +1,5 @@
 from django.template.loader import render_to_string
 from django.core.signing import Signer
-#from myproject.settings import ALLOWED_HOSTS, MEDIA_ROOT, BASE_DIR
 from datetime import datetime
 from os.path import splitext
 import os
@@ -15,8 +14,9 @@ import geocoder
 import time
 import random
 from django.conf import settings
-from django.core.cache.utils import make_template_fragment_key
-from itertools import chain
+from functools import lru_cache
+from django.core.cache import cache
+from django.core.files import File
 
 signer = Signer()
 
@@ -146,6 +146,7 @@ def spider(name):
         return result_dict, result_list, cities_dict
 
 
+@lru_cache(maxsize=100)
 def coords(city_name):
     """выдает координаты по имени города или названию места"""
     return geocoder.osm(city_name + ', Sweden').latlng
@@ -153,30 +154,39 @@ def coords(city_name):
 
 def map_folium(places: dict, pk: int):
     """Создает карту с маркерами позиций по координатам"""
-    map = folium.Map(location=[59.20, 18.04], zoom_start=7)
-    marker_cluster = MarkerCluster().add_to(map)
-    known_coordinates = {}  # место: координаты
-    for boat_name, place in places.items():
-        # если место повторяется более 1го раза
-        if list(known_coordinates.keys()).count(place) == 1:
-            location = known_coordinates.get(place)
-            if location:
-                # вносим корректировки в коорд. для лучшей визуализации на карте ( чтобы не
-                # кучковались метки)
-                location = [c + random.uniform(- 0.05, 0.05) for c in location]
-        else:
-            #  если координаты данного места еще не установленны то мы их получаем и записываем в
-            #  словарь. Если это место уже известно то мы используем сохраненные координаты.
-            if place not in known_coordinates.keys():
-                langalt = coords(place)  # Широта, долгота определяем
-                known_coordinates.update({place: langalt})
-            location = known_coordinates.get(place)
-        try:
-            folium.Marker(location=location, radius=1, popup=" %s, location - %s " %
-            (boat_name, place), icon=folium.Icon(color='gray')).add_to(marker_cluster)
-        except TypeError:
-            pass
-    map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
+    #  если у нас есть html с резульатом работы функции с теми же входными аргументами, то мы
+    #  пропускаем функцию и используем готовый html файл
+    if not cache.get("map_folium", version=pk) or cache.get("map_folium", version=pk) \
+            != (places, pk) or not os.path.exists(os.path.join(settings.BASE_DIR, "templates",
+                                                               "maps",  str(pk) +".html")):
+        map = folium.Map(location=[59.20, 18.04], zoom_start=7)
+        marker_cluster = MarkerCluster().add_to(map)
+        known_coordinates = {}  # место: координаты
+        for boat_name, place in places.items():
+            # если место повторяется более 1го раза
+            if list(known_coordinates.keys()).count(place) == 1:
+                location = known_coordinates.get(place)
+                if location:
+                    # вносим корректировки в коорд. для лучшей визуализации на карте ( чтобы не
+                    # кучковались метки)
+                    location = [c + random.uniform(- 0.05, 0.05) for c in location]
+            else:
+                #  если координаты данного места еще не установленны то мы их получаем и записываем
+                #  в словарь. Если это место уже известно то мы используем сохраненные координаты.
+                if place not in known_coordinates.keys():
+                    langalt = coords(place)  # Широта, долгота определяем
+                    known_coordinates.update({place: langalt})
+                location = known_coordinates.get(place)
+            try:
+                folium.Marker(location=location, radius=1, popup=" %s, location - %s " %
+                (boat_name, place), icon=folium.Icon(color='gray')).add_to(marker_cluster)
+            except TypeError:
+                pass
+        map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
+        #  Записываем в кеш входные аргументы функции (типа аналог lru_cache :))
+        cache.set("map_folium", (places, pk), 60 * 60 * 24 * 7, version=pk)
+    else:
+        pass  # ничего не делаем так как шаблон с актуальными  данными уже есть в папке темплейтс
 
 
 def set_last_access_time(path):

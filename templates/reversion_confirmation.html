@@ -1,14 +1,20 @@
 <!--templates/reversion_confirmation.html   -->
 {%  extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
+{% load filtersandtags %}
 {% block title %}
 Reversions confirmation
 {% endblock %}
 {% block content %}
 
+
+{% cache "60*60*24*7"|multiplier reversion_confirmation current_boat_name  %}
+
+
     <div class="container">
     {% for version in versions %}
-    <h4 class="text-center mt-4">Please confirm that you want to recover {{ version.object_repr }} </h4>
+    <h4 class="text-center mt-4">Please confirm that you want to recover <span class="font-weight-bold"> "{{ version.object_repr|capfirst }}"</span> </h4>
         {% endfor %}
     <div class="row ">
     <div class="col text-center ">
@@ -27,5 +33,7 @@ Reversions confirmation
 </div>
 </div>
 </div>
+
+{% endcache %}
 
 {% endblock content %}

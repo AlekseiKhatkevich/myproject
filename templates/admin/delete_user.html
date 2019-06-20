@@ -1,11 +1,12 @@
 <!-- templates/admin/delete_user.html  -->
 {% extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
 {% block title %}
     Deletion of the user's account
 {% endblock title %}
 {% block content %}
-
+{% cache None  delete_user %}
     <div class="form-container container col-md-6 bg-light">
         <div class="row">
             <div class="col-md-12">
@@ -40,5 +41,5 @@
             </div>
         </div>
     </div>
-
+{% endcache %}
 {% endblock content %}

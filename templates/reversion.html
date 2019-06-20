@@ -6,12 +6,13 @@
 {% bootstrap_jquery "full" %}
 {% load cache %}
 {% load filtersandtags %}
+
 {% block title %}
     Reversions
 {% endblock %}
 {% block content %}
+{% cache "60*60*24"|multiplier reversion id_eq %}
 
-    {% cache "60*60*24"|multiplier reversion  request.user.username versions %}
 
     <style>
         body {
@@ -92,6 +93,7 @@
 
 
     </div> <!--container
+
 
 {% endcache %}
 {% endblock content %}

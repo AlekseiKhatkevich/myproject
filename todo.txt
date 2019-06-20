@@ -4,8 +4,7 @@ backup postgree
 _план_____________________________________________
 -Тесты
 -process = subprocess.Popen("aws s3 ls s3://boatsprojectdevelopmentbucket", stdout=subprocess.PIPE)
-
-
+-хранение шаблонов карт на авс
 HEROKU
 -------------------------
 -подключить постгрес датаклип

@@ -2,13 +2,17 @@
 {%  extends "base.html" %}
 {% load bootstrap4 %}
 {%  load thumbnail %}
+{% load cache %}
+{% load filtersandtags %}
 {% load static %}
 {% block title %}
     Reversions delete confirmation
 {% endblock %}
 {% block content %}
 
-    <div class="container">
+    {% cache "60*60*24"|multiplier reversion_delete   boat_name   eq_images %}
+
+    <div class="container-fluid">
 
         <div class="row ">
             <div class="col text-center mt-3">
@@ -17,16 +21,22 @@
         </div>
 
 
-         <div class="row">
+         <div class="row  justify-content-center">
+
                     {% for image in images %}
-<div class="col text-center mt-5 mb-5">
+
+<div class="col-auto  mt-5 mb-5">
                             <a  href=" {{ image.boat_photo.url}}"> <img class=" border border-secondary rounded ml-3 mb-2" src="{% thumbnail image.boat_photo "medium"  %}"></a>
 </div>
+
                         {%  empty %}
-<div class="col text-center mt-5 mb-5">
+
+<div class="col-auto   mt-5 mb-5">
                         <img class="   ml-3 mb-2 border border-secondary rounded"  height=135 width=135 src="{% static "boats/sailing-boat-yacht-logo-vector-17317504.jpg" %}" alt="boat image" data-toggle="tooltip" data-placement="right" title="This boat doesn't have any photo">
 </div>
+
                     {% endfor %}
+
          </div>
 
 
@@ -57,6 +67,8 @@
 
 
     </div>
+
+{% endcache %}
 
 {% endblock content %}
 
