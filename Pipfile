@@ -41,6 +41,7 @@ django-storages = "*"
 pyyaml = "*"
 python-dotenv = "*"
 django-fancy-cache = "*"
+django-admin-caching = "*"
 
 [requires]
 python_version = "3.7"

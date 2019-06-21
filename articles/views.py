@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from fancy_cache import cache_page
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView, DetailView, FormView
+from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import *
 from .forms import *
@@ -16,11 +18,19 @@ from django.db.transaction import atomic
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from boats.decorators import login_required_message, MessageLoginRequiredMixin
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
+
+def vary_on_user_is_authenticated(request):
+    """Функция для key_prefix"""
+    return request.user.is_authenticated
 
 """контроллер гл. стр. артиклес"""
 
 
+#  инвалидация в сигналах по урлу
+@method_decorator(cache_page(60*60*24*7, key_prefix=vary_on_user_is_authenticated), name='dispatch')
 class ArticlesMainView(TemplateView):
     template_name = "articles/articles_index.html"
 
@@ -28,6 +38,23 @@ class ArticlesMainView(TemplateView):
 """ контроллер показывающий статьи по под-рубрикам + поиск + пагинатор """
 
 
+def vary_on_paginated_or_not(request):
+    pk = request.get_full_path_info().split("/")[-2]
+    # Смотрим есть ли на странице пагинация или нет по кол-ву выводимых объектов
+    count_eq = Article.objects.filter(foreignkey_to_subheading=int(pk)).count()
+    # время удаления последней статьи
+    try:
+        change_date_of_deleted_article = Article.default.filter(foreignkey_to_subheading=int(pk),
+        show=False).values_list("change_date", flat=True).latest("change_date")
+        timedelta = (datetime.datetime.now() - change_date_of_deleted_article).seconds > 1
+    except (ObjectDoesNotExist, TypeError):
+        timedelta = True
+    return "show_by_heading_view+%s+%s+%s" % (True if count_eq > 10 else False,
+                                           request.user.is_authenticated, timedelta)
+
+
+#  инвалидация в сигналах по урлу и по key_prefix
+@cache_page(60*60*24*7, key_prefix=vary_on_paginated_or_not)
 def show_by_heading_view(request, pk): #597
     current_heading = get_object_or_404(SubHeading, pk=pk)
     list_of_articles = Article.objects.filter(foreignkey_to_subheading=pk)
@@ -54,6 +81,26 @@ def show_by_heading_view(request, pk): #597
 """ контроллер просмотра конкретной статьи"""
 
 
+def contentlistview_key_prefix(request):
+    pk = int(request.get_full_path_info().split("/")[-2])
+    #  время последнего изменения статьи
+    last_change = Article.objects.filter(pk=pk).values("change_date")[0].get("change_date")
+    #  разница текущего времени и времени последнего изменения статьи. Нужна для того, чтобы
+    #  различать ситуации когда нужно или не нужно выводить сообщения. Т.е имеем 2 версии кеша
+    #  1) с сообщением 2) без сообщения
+    timedelta = (datetime.datetime.now() - last_change).seconds > 1 if last_change else True
+    try:
+        last_change_comments = Comment.objects.filter(foreignkey_to_article_id=pk).values_list(
+                                                "change_date", flat=True).latest("change_date")
+        timedelta2 = (datetime.datetime.now() - last_change_comments).seconds > 1
+    except ObjectDoesNotExist:
+        timedelta2 = True
+    return "ContentListView+%s+%s+%s" % (vary_on_user_is_authenticated(request), timedelta,
+                                         timedelta2)
+
+
+#  инвалидация по урлу в сигналах
+@method_decorator(cache_page(60*60*24*7, key_prefix=contentlistview_key_prefix), name="dispatch")
 class ContentListView(DetailView):
     template_name = "articles/content.html"
     model = Article
@@ -71,6 +118,7 @@ class ContentListView(DetailView):
 """контроллер добавления новой статьи"""
 
 
+#  без кеширования
 class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView):
     model = Article
     template_name = "articles/create_article.html"
@@ -92,9 +140,9 @@ class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView)
         return self.initial.copy()
 
     def get_success_url(self):
-        """ передача через гет параметры кода того, была ли создана статьия из boats:detail. Нужно
-        для корректной работы кнопки Back to Heading Или back to boat в зависимости откуда была
-        создана статья"""
+        """ передача через гет параметры кода того, была ли создана статьия из boats:detail.
+         Нужно для корректной работы кнопки Back to Heading Или back to boat в зависимости
+         откуда была создана статья"""
         referer = self.request.POST.get("button", None)
         if referer and "boats" in referer:
             code = "boats"
@@ -107,6 +155,7 @@ class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView)
 """ контроллер редактирования статьи"""
 
 
+#  без кеширования
 class ArticleEditView(SuccessMessageMixin, MessageLoginRequiredMixin, UpdateView):
     model = Article
     template_name = "articles/article_edit.html"
@@ -131,6 +180,7 @@ class ArticleEditView(SuccessMessageMixin, MessageLoginRequiredMixin, UpdateView
 """ контроллер удаления  статьи"""
 
 
+#  кеширование в шаблоне
 class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
     model = Article
     template_name = "articles/article_delete.html"
@@ -146,7 +196,7 @@ class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
         else:
             message = 'Dear %s, you can only delete your own articles. This article has been' \
                       ' created by %s' % (self.request.user, self.get_object().author)
-            messages.add_message(request, messages.WARNING, message=message, fail_silently=True, )
+            messages.add_message(request, messages.WARNING, message=message, fail_silently=True,)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     def post(self, request, *args, **kwargs):
@@ -160,6 +210,7 @@ class ArticleDeleteView(MessageLoginRequiredMixin, DeleteView):
 """Контроллер редактирования комментов"""
 
 
+#  без  кеша
 class EditCommentsView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     model = Comment
     template_name = 'comment/comment_form.html'
@@ -178,8 +229,8 @@ class EditCommentsView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
                 args=(BoatModel.objects.get(pk=self.object.foreignkey_to_boat_id).pk, ))
 
     def get_form_kwargs(self):
-        """Передаем маркер в формы, чтобы у зарегестрированного пользователя отключить возможность
-         редактирования поля имени. """
+        """Передаем маркер в формы, чтобы у зарегестрированного пользователя отключить
+         возможность редактирования поля имени. """
         kwargs = UpdateView.get_form_kwargs(self)
         if self.request.user.is_authenticated:
             kwargs["author"] = "authenticated"
@@ -195,6 +246,7 @@ class EditCommentsView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
 """контроллер добавления комментов"""
 
 
+# без кеша
 class DoubleCommentView(SuccessMessageMixin, CreateView):
     model = Comment
     template_name = 'comment/comment_form.html'
@@ -222,8 +274,8 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
                            args=(BoatModel.objects.get(pk=self.kwargs["pk"]).pk, ))
 
     def get_form_kwargs(self):
-        """Передаем маркер в формы, чтобы у зарегестрированного пользователя отключить возможность
-         редактирования поля имени. """
+        """Передаем маркер в формы, чтобы у зарегестрированного пользователя отключить
+        возможность редактирования поля имени. """
         kwargs = CreateView.get_form_kwargs(self)
         if self.request.user.is_authenticated:
             kwargs["author"] = "authenticated"
@@ -238,16 +290,20 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
 
     def form_valid(self, form):
         """Устанавливаем  куки для незарегестрированных пользователей. заносим значения пк
-        созданного объекта комментов в куки для того, чтобы данные пользователи обладающие данными
+        созданного объекта комментов в куки для того, чтобы данные пользователи обладающие
+        данными
         куками в последствии могли редактировать  свои комменты.
         пример кук:
         '42, 43, 1, 9, 50, 51:1hVs8G:lL7LoWgvybCofo06FTwJcJa6G1w'"""
         response = super().form_valid(form)
-        existing_allowed_comments = self.request.get_signed_cookie('allowed_comments', default=None)
+        existing_allowed_comments = self.request.get_signed_cookie('allowed_comments',
+                                                                   default=None)
         if not self.request.user.is_authenticated:
-            if existing_allowed_comments and str(self.object.pk) not in existing_allowed_comments:
+            if existing_allowed_comments and str(self.object.pk) not in \
+                    existing_allowed_comments:
                 response.set_signed_cookie('allowed_comments',
-                                        ", ".join([existing_allowed_comments, str(self.object.pk)]))
+                                        ", ".join([existing_allowed_comments,
+                                                   str(self.object.pk)]))
             elif not existing_allowed_comments:
                 response.set_signed_cookie('allowed_comments', str(self.object.pk))
         return response
@@ -256,6 +312,7 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
 """ Контроллер добавления ап-категории и субкатегории"""
 
 
+# без кеша
 @atomic
 @login_required_message(message="You must be logged in in order to create new heading")
 @login_required
@@ -294,6 +351,8 @@ def headingcreateview(request, pk):
 """ Контроллер восстановления статей"""
 
 
+#  инвалидация кеша в сигналах и в формах стр. 183
+@method_decorator(cache_page(60*60*24*7, key_prefix=vary_on_user_is_authenticated), name="dispatch")
 class ArticleResurrectionView(MessageLoginRequiredMixin, FormView):
     model = Article
     form_class = ArticleResurrectionForm
@@ -316,7 +375,8 @@ class ArticleResurrectionView(MessageLoginRequiredMixin, FormView):
                     message += " " + article.title + " "
                 else:
                     message += " " + article.title + ", "
-            message += ' are restored, totally - %s articles' % len(articles)
+            message += ' are restored, totally - %s articles' % len(articles) if len(articles) \
+                             > 1 else ' are restored, totally - %s article' % len(articles)
             messages.add_message(request, messages.SUCCESS, message=message,
                                  fail_silently=True)
             return self.form_valid(form)

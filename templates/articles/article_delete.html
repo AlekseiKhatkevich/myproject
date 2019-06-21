@@ -1,9 +1,13 @@
 <!-- templates/articles/article_delete.html  -->
  {% extends "base.html" %}
 {% load bootstrap4 %}
+{% load cache %}
+{% load filtersandtags %}
+
 {% block title %} Delete the article {% endblock %}
 
 {% block content %}
+    {% cache "60*60"|multiplier  article_delete object.title %}
 
 <div class="form-container container col-md-6  ">
         <div class="row">
@@ -15,18 +19,18 @@
                 <form method="post" >
                     {%  csrf_token %}
                     <div class="row">
-                        <div class="col-12 text-center">
+                        <div class="col-12 text-center mt-2">
 
-                        <h5> Are you sure that you want to delete this Article</h5>
+                        <h5 > Are you sure that you want to delete article "{{ object.title }}"</h5>
 
                             {% buttons %}
 
-                                <button type="submit" class="form-button btn btn-danger">
+                                <button type="submit" class="form-button btn btn-danger mt-3">
                                     Delete
                                 </button>
 
                                  <a href="{% url "articles:detail" object.foreignkey_to_subheading.pk    object.pk  %}">
-                                     <button type="button" class="form-button btn btn-info">
+                                     <button type="button" class="form-button btn btn-info mt-3">
                                     Back</button></a>
 
                             {% endbuttons %}
@@ -40,5 +44,5 @@
 
 
 
-
+{% endcache %}
 {% endblock content %}

@@ -98,7 +98,7 @@ class Article(models.Model):
     objects = ArticleManager()
 
     foreignkey_to_subheading = models.ForeignKey(SubHeading,
-                                                on_delete=models.PROTECT, verbose_name="Subheading",                                                    help_text="Please choose subheading")
+                            on_delete=models.PROTECT, verbose_name="Subheading",                                                    help_text="Please choose subheading")
     foreignkey_to_boat = models.ForeignKey(BoatModel, on_delete=models.SET_NULL,                                  verbose_name="Parent boat for article", help_text="Please choose the boat",
                                            blank=True, null=True)
     title = models.CharField(max_length=50, verbose_name="Article title",
@@ -110,8 +110,8 @@ class Article(models.Model):
     url_to_article = models.URLField(max_length=100, unique=True, verbose_name="URL to the "
                                         "article",help_text="Please insert URL of the article")
     show = models.BooleanField(default=True, blank=False, null=False, verbose_name="deleted mark",
-                               help_text='Marked articles are shown everywhere, unmarked considered '
-                                         'as deleted ones')
+                               help_text='Marked articles are shown everywhere, unmarked'
+                                         'considered ''as deleted ones')
     change_date = models.DateTimeField(blank=True, null=True, auto_now=True)
 
     def __str__(self):

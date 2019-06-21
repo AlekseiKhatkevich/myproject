@@ -1,9 +1,7 @@
 from django.contrib import admin
 from .models import *
 from reversion.admin import VersionAdmin
-from django.contrib.auth.admin import UserAdmin
 from django.utils.safestring import mark_safe
-from file_resubmit.admin import AdminResubmitMixin
 from .forms import BoatForm
 from .widgets import CustomKeepImageWidget
 
@@ -14,6 +12,8 @@ class BoatimageInline(admin.TabularInline):
     model = BoatImage
     readonly_fields = ["boat_image", "memory"]
     formfield_overrides = {models.ImageField: {"widget": CustomKeepImageWidget}}
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24
 
     @staticmethod
     def boat_image(obj):  # выводит миниатюры в админке http://books.agiliq.com/projects/django-admin-cookbook/en/latest/imagefield.html
@@ -39,6 +39,8 @@ class BoatsAdmin(VersionAdmin):
     radio_fields = {"author": admin.HORIZONTAL}
     exclude = ("boat_primary_photo", )
     form = BoatForm
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60*60*24
 
     def get_exclude(self, request, obj=None):
         """метод не показывает поле  "currency" для создаваемых записей, а показывает только для
@@ -65,3 +67,5 @@ class ExtraUserAdmin(VersionAdmin):  # VersionAdmin reversion app восстан
               )
     readonly_fields = ("last_login",)
     list_select_related = True
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24

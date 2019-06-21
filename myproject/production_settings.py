@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "file_resubmit",
     "django_extensions",
     'fancy_cache',
+    'django_admin_caching',
 
 ]
 

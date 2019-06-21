@@ -3,6 +3,9 @@ from django import forms
 from django.shortcuts import get_object_or_404
 import requests
 from django.core.validators import MinLengthValidator
+from django.db.transaction import atomic
+from django.shortcuts import reverse
+from fancy_cache.memory import find_urls
 
 """search form"""
 
@@ -167,11 +170,19 @@ class ArticleResurrectionForm(forms.ModelForm):
             "foreignkey_to_subheading").filter(author_id=author_id, show=False,).order_by(
             "-created_at")
 
+    @atomic
     def clean(self):
-        """Восстанавливаем статьи методом перевода show  в True"""
+        """Восстанавливаем статьи методом перевода show в True"""
         forms.ModelForm.clean(self)
         pk_list = self.cleaned_data["pk"]
         Article.default.filter(id__in=pk_list).update(show=True)
+        articles_to_reserect = Article.default.filter(id__in=pk_list)
+        for article in articles_to_reserect:
+            article.show = True
+            article.save(update_fields=["show", ])
+        #  инвалидируем кеш страницы восстановления статей
+        article_resurrection_url = reverse("articles:resurrection")
+        list(find_urls([article_resurrection_url], purge=True))
 
     class Meta:
         model = Article

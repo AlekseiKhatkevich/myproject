@@ -8,7 +8,8 @@ from django.contrib import messages
 class SubHeadingInline(admin.TabularInline):
     model = SubHeading
     show_change_link = True
-
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24
 
 """ап-категория """
 
@@ -17,6 +18,8 @@ class UpperHeadingAdmin(admin.ModelAdmin):
     exclude = ("foreignkey", )
     inlines = (SubHeadingInline, )
     raw_id_fields = ("one_to_one_to_boat", )
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24
 
 
 """статьи"""
@@ -80,6 +83,8 @@ class ArticlesAdmin(VersionAdmin):
     raw_id_fields = ("foreignkey_to_subheading", "foreignkey_to_boat")
     date_hierarchy = "created_at"
     actions = (fake_delete, kinda_undelete)
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24
 
     def get_queryset(self, request):
         return VersionAdmin.get_queryset(self, request)
@@ -104,6 +109,8 @@ class CommentAdmin(VersionAdmin):
     readonly_fields = ("created_at", )
     ordering = ("foreignkey_to_article", "foreignkey_to_boat", "-created_at", )
     list_select_related = True
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24
 
 
 admin.site.register(UpperHeading, UpperHeadingAdmin)
