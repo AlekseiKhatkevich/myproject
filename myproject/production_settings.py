@@ -364,8 +364,9 @@ LOGGING = {
         },
     },
 }
-
-
+#  настройки AWS, django-storages
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")  # new
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")  # new
 
 AWS_STORAGE_BUCKET_NAME = 'boatsprojectdevelopmentbucket'
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
