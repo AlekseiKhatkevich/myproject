@@ -106,7 +106,8 @@ class Article(models.Model):
     content = models.TextField(verbose_name='Description of the article',
                                blank=True, help_text="Please briefly describe the article")
     author = models.ForeignKey(ExtraUser, on_delete=models.SET(superuser))
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published at")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Published"
+                                                                                     " at")
     url_to_article = models.URLField(max_length=100, unique=True, verbose_name="URL to the "
                                         "article",help_text="Please insert URL of the article")
     show = models.BooleanField(default=True, blank=False, null=False, verbose_name="deleted mark",

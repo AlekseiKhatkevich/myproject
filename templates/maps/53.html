@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.4.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_2820afd1d5064fea828087d77ae36dbe {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>    
+    
+            <div class="folium-map" id="map_2820afd1d5064fea828087d77ae36dbe" ></div>
+        
+</body>
+<script>    
+    
+            var map_2820afd1d5064fea828087d77ae36dbe = L.map(
+                "map_2820afd1d5064fea828087d77ae36dbe",
+                {
+                    center: [59.2, 18.04],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 7,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_1c93cfc219ab4051a6a15d0a1550062f = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_2820afd1d5064fea828087d77ae36dbe);
+        
+    
+            var marker_cluster_314267ee1d924462adcb957df6e3664d = L.markerClusterGroup(
+                {}
+            );
+            map_2820afd1d5064fea828087d77ae36dbe.addLayer(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var marker_aa07a971ce474bc0bd202bae6b2168fe = L.marker(
+                [65.835667, 24.1357213],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_9f5b4dc7e4e94c73aabbe3bf4878304d = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_aa07a971ce474bc0bd202bae6b2168fe.setIcon(icon_9f5b4dc7e4e94c73aabbe3bf4878304d);
+        
+    
+        var popup_24914d2d759c43e5a57d0fea27736691 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_e03f899deb0346a2aa9569564535cb9f = $(`<div id="html_e03f899deb0346a2aa9569564535cb9f" style="width: 100.0%; height: 100.0%;"> Najad 34 -75. Ketch, location - Haparanda </div>`)[0];
+            popup_24914d2d759c43e5a57d0fea27736691.setContent(html_e03f899deb0346a2aa9569564535cb9f);
+        
+
+        marker_aa07a971ce474bc0bd202bae6b2168fe.bindPopup(popup_24914d2d759c43e5a57d0fea27736691)
+        ;
+
+        
+    
+    
+            var marker_8d7a5ab656eb47d3a25215677aabb895 = L.marker(
+                [57.7072326, 11.9670171],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_91e093b5b667406f8207701675d5e494 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_8d7a5ab656eb47d3a25215677aabb895.setIcon(icon_91e093b5b667406f8207701675d5e494);
+        
+    
+        var popup_bafb858eee16484c9adff8aef134a046 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_a508c69e8a844343b47492a2bd0d69b4 = $(`<div id="html_a508c69e8a844343b47492a2bd0d69b4" style="width: 100.0%; height: 100.0%;"> Najad 34 - 81, location - Göteborg </div>`)[0];
+            popup_bafb858eee16484c9adff8aef134a046.setContent(html_a508c69e8a844343b47492a2bd0d69b4);
+        
+
+        marker_8d7a5ab656eb47d3a25215677aabb895.bindPopup(popup_bafb858eee16484c9adff8aef134a046)
+        ;
+
+        
+    
+    
+            var marker_32847bd9ed3e4fd7a2c2b625f0b3c449 = L.marker(
+                [57.72487814316126, 12.002982373869264],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_87cf4875a008417795579e7939541f9d = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_32847bd9ed3e4fd7a2c2b625f0b3c449.setIcon(icon_87cf4875a008417795579e7939541f9d);
+        
+    
+        var popup_8fa45793434546f3b0c49e8531da5c28 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_a3321b2219754a36888b2a7a84ce5482 = $(`<div id="html_a3321b2219754a36888b2a7a84ce5482" style="width: 100.0%; height: 100.0%;"> Najad 391 / 1999, location - Göteborg </div>`)[0];
+            popup_8fa45793434546f3b0c49e8531da5c28.setContent(html_a3321b2219754a36888b2a7a84ce5482);
+        
+
+        marker_32847bd9ed3e4fd7a2c2b625f0b3c449.bindPopup(popup_8fa45793434546f3b0c49e8531da5c28)
+        ;
+
+        
+    
+    
+            var marker_daf5baff84864b7c9c776e78b049aaa8 = L.marker(
+                [59.3251172, 18.0710935],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_f7e9322a9ca04e21ae2214051b81ee20 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_daf5baff84864b7c9c776e78b049aaa8.setIcon(icon_f7e9322a9ca04e21ae2214051b81ee20);
+        
+    
+        var popup_7e95c4e0e288418dba96f11ff608e538 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_abf3cf9179154ed7804d2eea56fad170 = $(`<div id="html_abf3cf9179154ed7804d2eea56fad170" style="width: 100.0%; height: 100.0%;"> Najad 332 - 06 inkl. lån av båtplats i Sthlm, location - Stockholm </div>`)[0];
+            popup_7e95c4e0e288418dba96f11ff608e538.setContent(html_abf3cf9179154ed7804d2eea56fad170);
+        
+
+        marker_daf5baff84864b7c9c776e78b049aaa8.bindPopup(popup_7e95c4e0e288418dba96f11ff608e538)
+        ;
+
+        
+    
+    
+            var marker_6b64d73831f24fa0bdb57f02747430da = L.marker(
+                [59.36289313955395, 18.035508370641814],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_1b372a4d373d49bbb1a009c832d9c711 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_6b64d73831f24fa0bdb57f02747430da.setIcon(icon_1b372a4d373d49bbb1a009c832d9c711);
+        
+    
+        var popup_ef4c5996f32f41d4b4231b49d2a66cc7 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_dfce57bbffac49b4881635174974e033 = $(`<div id="html_dfce57bbffac49b4881635174974e033" style="width: 100.0%; height: 100.0%;"> Najad 332, location - Stockholm </div>`)[0];
+            popup_ef4c5996f32f41d4b4231b49d2a66cc7.setContent(html_dfce57bbffac49b4881635174974e033);
+        
+
+        marker_6b64d73831f24fa0bdb57f02747430da.bindPopup(popup_ef4c5996f32f41d4b4231b49d2a66cc7)
+        ;
+
+        
+    
+    
+            var marker_1156058d16b748dba0c72f4bfe418a99 = L.marker(
+                [63.05981315, 18.1062147640982],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_ed8842d0400441578689968e702d8bb2 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_1156058d16b748dba0c72f4bfe418a99.setIcon(icon_ed8842d0400441578689968e702d8bb2);
+        
+    
+        var popup_a0b41a07fe7f40bbb6e0a897b5ef22c8 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_62998211a5c24daead2e3679971263e1 = $(`<div id="html_62998211a5c24daead2e3679971263e1" style="width: 100.0%; height: 100.0%;"> Najad 360 S155 s/y Embla årsm. 1991, location - Västernorrland </div>`)[0];
+            popup_a0b41a07fe7f40bbb6e0a897b5ef22c8.setContent(html_62998211a5c24daead2e3679971263e1);
+        
+
+        marker_1156058d16b748dba0c72f4bfe418a99.bindPopup(popup_a0b41a07fe7f40bbb6e0a897b5ef22c8)
+        ;
+
+        
+    
+    
+            var marker_c930ad3fefce45a3a14cf726195562d7 = L.marker(
+                [59.36670750191938, 18.070785239372317],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_b3d8586ac3924f38bf9a0ae9adfab604 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_c930ad3fefce45a3a14cf726195562d7.setIcon(icon_b3d8586ac3924f38bf9a0ae9adfab604);
+        
+    
+        var popup_742f469428f6407a834595923d2a8550 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_2227147446434d0bb165f32dcde91735 = $(`<div id="html_2227147446434d0bb165f32dcde91735" style="width: 100.0%; height: 100.0%;"> SwedeStar 370 | 2010, location - Stockholm </div>`)[0];
+            popup_742f469428f6407a834595923d2a8550.setContent(html_2227147446434d0bb165f32dcde91735);
+        
+
+        marker_c930ad3fefce45a3a14cf726195562d7.bindPopup(popup_742f469428f6407a834595923d2a8550)
+        ;
+
+        
+    
+    
+            var marker_e97f6f866c40446f8b3e41582f5e5e68 = L.marker(
+                [56.6628826, 16.3662382],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_df0f1b9b96de440a989a92a9e8d17ed5 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_e97f6f866c40446f8b3e41582f5e5e68.setIcon(icon_df0f1b9b96de440a989a92a9e8d17ed5);
+        
+    
+        var popup_83da900e407f46ee8f0f309d0668d1db = L.popup({"maxWidth": "100%"});
+
+        
+            var html_28ac0da2f0074a4aba74fa0dca3004f7 = $(`<div id="html_28ac0da2f0074a4aba74fa0dca3004f7" style="width: 100.0%; height: 100.0%;"> Runn 37 - Långfärdsutrustad, location - Kalmar </div>`)[0];
+            popup_83da900e407f46ee8f0f309d0668d1db.setContent(html_28ac0da2f0074a4aba74fa0dca3004f7);
+        
+
+        marker_e97f6f866c40446f8b3e41582f5e5e68.bindPopup(popup_83da900e407f46ee8f0f309d0668d1db)
+        ;
+
+        
+    
+    
+            var marker_721280b6afc34ed4ad291c2b2be58a11 = L.marker(
+                [55.6052931, 13.0001566],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_efd5f694ab5448028d7456caa55d0d3c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_721280b6afc34ed4ad291c2b2be58a11.setIcon(icon_efd5f694ab5448028d7456caa55d0d3c);
+        
+    
+        var popup_80599d4132bc46faaaf1b01577c6c201 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_71d3fc997b604b609c69c61d2c921b0a = $(`<div id="html_71d3fc997b604b609c69c61d2c921b0a" style="width: 100.0%; height: 100.0%;"> Najad 373, location - Malmö </div>`)[0];
+            popup_80599d4132bc46faaaf1b01577c6c201.setContent(html_71d3fc997b604b609c69c61d2c921b0a);
+        
+
+        marker_721280b6afc34ed4ad291c2b2be58a11.bindPopup(popup_80599d4132bc46faaaf1b01577c6c201)
+        ;
+
+        
+    
+    
+            var marker_1c3500a8deeb43399d8dfb98d1ea1eea = L.marker(
+                [57.73134380167465, 11.925386845172781],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_ea111c3389f24be18a563bb3e04b29b8 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_1c3500a8deeb43399d8dfb98d1ea1eea.setIcon(icon_ea111c3389f24be18a563bb3e04b29b8);
+        
+    
+        var popup_3d7af2eb53714e0b89a0282d9235d087 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_8ed7511a85134bf8a17d7943cc4d16ac = $(`<div id="html_8ed7511a85134bf8a17d7943cc4d16ac" style="width: 100.0%; height: 100.0%;"> Najad 380 / 2008, location - Göteborg </div>`)[0];
+            popup_3d7af2eb53714e0b89a0282d9235d087.setContent(html_8ed7511a85134bf8a17d7943cc4d16ac);
+        
+
+        marker_1c3500a8deeb43399d8dfb98d1ea1eea.bindPopup(popup_3d7af2eb53714e0b89a0282d9235d087)
+        ;
+
+        
+    
+    
+            var marker_794c56ae7fd04e94910a14f8918e9350 = L.marker(
+                [59.300509145342645, 18.0408706162754],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_3383a1b6140e427c9a04c4ac739b4d14 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_794c56ae7fd04e94910a14f8918e9350.setIcon(icon_3383a1b6140e427c9a04c4ac739b4d14);
+        
+    
+        var popup_8ff01da8de7f46ff8e8ff43987ed3ded = L.popup({"maxWidth": "100%"});
+
+        
+            var html_16fad4dd37c942249b42718d8815e101 = $(`<div id="html_16fad4dd37c942249b42718d8815e101" style="width: 100.0%; height: 100.0%;"> Najad 373/2000, location - Stockholm </div>`)[0];
+            popup_8ff01da8de7f46ff8e8ff43987ed3ded.setContent(html_16fad4dd37c942249b42718d8815e101);
+        
+
+        marker_794c56ae7fd04e94910a14f8918e9350.bindPopup(popup_8ff01da8de7f46ff8e8ff43987ed3ded)
+        ;
+
+        
+    
+    
+            var marker_9dbafdbd7cb740aea54de91c782540f5 = L.marker(
+                [57.676044191039146, 11.925099554956136],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_1768fb14ed61411bbfa55e51b617f9d5 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_9dbafdbd7cb740aea54de91c782540f5.setIcon(icon_1768fb14ed61411bbfa55e51b617f9d5);
+        
+    
+        var popup_f596b513d9254817ac3499d69487c9af = L.popup({"maxWidth": "100%"});
+
+        
+            var html_da635384b9ff4d9cb76b902164855f19 = $(`<div id="html_da635384b9ff4d9cb76b902164855f19" style="width: 100.0%; height: 100.0%;"> Najad 330 1994, location - Göteborg </div>`)[0];
+            popup_f596b513d9254817ac3499d69487c9af.setContent(html_da635384b9ff4d9cb76b902164855f19);
+        
+
+        marker_9dbafdbd7cb740aea54de91c782540f5.bindPopup(popup_f596b513d9254817ac3499d69487c9af)
+        ;
+
+        
+    
+    
+            var marker_86056926b6ec499ab29022c278b8f275 = L.marker(
+                [56.0441984, 12.7040684],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_b9ecbf40266b49cdb6916d36c42b31bc = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_86056926b6ec499ab29022c278b8f275.setIcon(icon_b9ecbf40266b49cdb6916d36c42b31bc);
+        
+    
+        var popup_c179e18c525846829b5b0c9ce568c760 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_d92d64b0528547578d36d352310efbf9 = $(`<div id="html_d92d64b0528547578d36d352310efbf9" style="width: 100.0%; height: 100.0%;"> Najad 440 AC, location - Helsingborg </div>`)[0];
+            popup_c179e18c525846829b5b0c9ce568c760.setContent(html_d92d64b0528547578d36d352310efbf9);
+        
+
+        marker_86056926b6ec499ab29022c278b8f275.bindPopup(popup_c179e18c525846829b5b0c9ce568c760)
+        ;
+
+        
+    
+    
+            var marker_f583391e623144c2bbf660b4fe65fabb = L.marker(
+                [56.66347818566353, 16.376661948967005],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_f254436c98ba4d28be7eaa312b60ae25 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_f583391e623144c2bbf660b4fe65fabb.setIcon(icon_f254436c98ba4d28be7eaa312b60ae25);
+        
+    
+        var popup_8802d6c3b3e74c72b91c4818f7c56727 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_cc7656537c32431bbaab6854b4981c50 = $(`<div id="html_cc7656537c32431bbaab6854b4981c50" style="width: 100.0%; height: 100.0%;"> Najad 34 S, location - Kalmar </div>`)[0];
+            popup_8802d6c3b3e74c72b91c4818f7c56727.setContent(html_cc7656537c32431bbaab6854b4981c50);
+        
+
+        marker_f583391e623144c2bbf660b4fe65fabb.bindPopup(popup_8802d6c3b3e74c72b91c4818f7c56727)
+        ;
+
+        
+    
+    
+            var marker_91630b752c7c4c52ae3f258116dee891 = L.marker(
+                [59.29909165277012, 18.02792744941281],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_e257c70d2a414b8bbcb868560d110cbc = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_91630b752c7c4c52ae3f258116dee891.setIcon(icon_e257c70d2a414b8bbcb868560d110cbc);
+        
+    
+        var popup_1f0279ddcb0d4648a9c78fb62b655a1f = L.popup({"maxWidth": "100%"});
+
+        
+            var html_b657c4cc6da343bca5e78385462094e4 = $(`<div id="html_b657c4cc6da343bca5e78385462094e4" style="width: 100.0%; height: 100.0%;"> Najad 395 AC, location - Stockholm </div>`)[0];
+            popup_1f0279ddcb0d4648a9c78fb62b655a1f.setContent(html_b657c4cc6da343bca5e78385462094e4);
+        
+
+        marker_91630b752c7c4c52ae3f258116dee891.bindPopup(popup_1f0279ddcb0d4648a9c78fb62b655a1f)
+        ;
+
+        
+    
+    
+            var marker_182d596611a34b20abb86d92d0667685 = L.marker(
+                [57.66075773114758, 11.969938251180752],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_7e4ec641a33e4e63b9d23e34cc6e9edd = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_182d596611a34b20abb86d92d0667685.setIcon(icon_7e4ec641a33e4e63b9d23e34cc6e9edd);
+        
+    
+        var popup_d6998de6ad834948aa057337cd70910f = L.popup({"maxWidth": "100%"});
+
+        
+            var html_6676d7a8780b4bac80567bd66ff49523 = $(`<div id="html_6676d7a8780b4bac80567bd66ff49523" style="width: 100.0%; height: 100.0%;"> Najad 440 / 2011, location - Göteborg </div>`)[0];
+            popup_d6998de6ad834948aa057337cd70910f.setContent(html_6676d7a8780b4bac80567bd66ff49523);
+        
+
+        marker_182d596611a34b20abb86d92d0667685.bindPopup(popup_d6998de6ad834948aa057337cd70910f)
+        ;
+
+        
+    
+    
+            var marker_728e2837b49f4b869168d0fbe11a1325 = L.marker(
+                [57.657304613150906, 11.934683890588234],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_eb8d265f2b8e48b78f55f6997a39454e = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_728e2837b49f4b869168d0fbe11a1325.setIcon(icon_eb8d265f2b8e48b78f55f6997a39454e);
+        
+    
+        var popup_21e596554d4b4428ac5050cdc32a7762 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_5302fb8d31504f8ea4bdfea916099db4 = $(`<div id="html_5302fb8d31504f8ea4bdfea916099db4" style="width: 100.0%; height: 100.0%;"> Najad 505 / 2008, location - Göteborg </div>`)[0];
+            popup_21e596554d4b4428ac5050cdc32a7762.setContent(html_5302fb8d31504f8ea4bdfea916099db4);
+        
+
+        marker_728e2837b49f4b869168d0fbe11a1325.bindPopup(popup_21e596554d4b4428ac5050cdc32a7762)
+        ;
+
+        
+    
+    
+            var marker_0ab88f82a8f2469fabe12eb9d8924189 = L.marker(
+                [59.27699477853747, 18.067606358615922],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_36a60a11dd28481a83c363fe755ffd10 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_0ab88f82a8f2469fabe12eb9d8924189.setIcon(icon_36a60a11dd28481a83c363fe755ffd10);
+        
+    
+        var popup_29a03781e6b545a4a02cec4406980db8 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_2a670c97ca444e0c9c88584701b3f4bd = $(`<div id="html_2a670c97ca444e0c9c88584701b3f4bd" style="width: 100.0%; height: 100.0%;"> Beneteau 42 cc Clipper -04, location - Stockholm </div>`)[0];
+            popup_29a03781e6b545a4a02cec4406980db8.setContent(html_2a670c97ca444e0c9c88584701b3f4bd);
+        
+
+        marker_0ab88f82a8f2469fabe12eb9d8924189.bindPopup(popup_29a03781e6b545a4a02cec4406980db8)
+        ;
+
+        
+    
+    
+            var marker_06a1cc6cfde64fcd88db46fdcbacd46d = L.marker(
+                [56.9604279, 12.8074192470604],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_c0e44f3516d44580b036369cbe409b07 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_06a1cc6cfde64fcd88db46fdcbacd46d.setIcon(icon_c0e44f3516d44580b036369cbe409b07);
+        
+    
+        var popup_1355a85830d34aa7a56627f840dd9408 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_b4d35bd5961d438193b051caeabf0861 = $(`<div id="html_b4d35bd5961d438193b051caeabf0861" style="width: 100.0%; height: 100.0%;"> Segelbåt Granada 27+Vagn+Utombordare, location - Halland </div>`)[0];
+            popup_1355a85830d34aa7a56627f840dd9408.setContent(html_b4d35bd5961d438193b051caeabf0861);
+        
+
+        marker_06a1cc6cfde64fcd88db46fdcbacd46d.bindPopup(popup_1355a85830d34aa7a56627f840dd9408)
+        ;
+
+        
+    
+    
+            var marker_4e1c53d991004799af60e5a4ecde0c07 = L.marker(
+                [56.05682651355624, 12.70739425551991],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_c5212ef25f5e49399fc2249f2e7fb271 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_4e1c53d991004799af60e5a4ecde0c07.setIcon(icon_c5212ef25f5e49399fc2249f2e7fb271);
+        
+    
+        var popup_942d0fc7300249cc888ddcbcdafb6bfb = L.popup({"maxWidth": "100%"});
+
+        
+            var html_de811c8a21fd473485050e53f9e5e817 = $(`<div id="html_de811c8a21fd473485050e53f9e5e817" style="width: 100.0%; height: 100.0%;"> Najad 460 2004, location - Helsingborg </div>`)[0];
+            popup_942d0fc7300249cc888ddcbcdafb6bfb.setContent(html_de811c8a21fd473485050e53f9e5e817);
+        
+
+        marker_4e1c53d991004799af60e5a4ecde0c07.bindPopup(popup_942d0fc7300249cc888ddcbcdafb6bfb)
+        ;
+
+        
+    
+    
+            var marker_2dfd66c8298a424e94f86b08c0d4d7ac = L.marker(
+                [59.33706855690702, 18.06539485883071],
+                {"radius": 1}
+            ).addTo(marker_cluster_314267ee1d924462adcb957df6e3664d);
+        
+    
+            var icon_eda0e992c81f4b52a64b9dfb1858c61d = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "gray", "prefix": "glyphicon"}
+            );
+            marker_2dfd66c8298a424e94f86b08c0d4d7ac.setIcon(icon_eda0e992c81f4b52a64b9dfb1858c61d);
+        
+    
+        var popup_1a9fe58b96aa49979a36198ddf56d8ee = L.popup({"maxWidth": "100%"});
+
+        
+            var html_b89f7ecb984c4426859e40cd6c8b996c = $(`<div id="html_b89f7ecb984c4426859e40cd6c8b996c" style="width: 100.0%; height: 100.0%;"> Najad 34, välutrustad, ny motor, location - Stockholm </div>`)[0];
+            popup_1a9fe58b96aa49979a36198ddf56d8ee.setContent(html_b89f7ecb984c4426859e40cd6c8b996c);
+        
+
+        marker_2dfd66c8298a424e94f86b08c0d4d7ac.bindPopup(popup_1a9fe58b96aa49979a36198ddf56d8ee)
+        ;
+
+        
+    
+</script>
