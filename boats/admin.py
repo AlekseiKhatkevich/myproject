@@ -26,6 +26,13 @@ class BoatimageInline(admin.TabularInline):
             return mark_safe("File Not Found")
 
 
+""" Инлайн модели шаблонов карт лодки"""
+
+
+class MapTemplateModelInline(admin.TabularInline):
+    model = MapTemplateModel
+
+
 """ админ  основной модели лодок"""
 
 
@@ -34,21 +41,20 @@ class BoatsAdmin(VersionAdmin):
     list_display = ("boat_name", "boat_length", "boat_mast_type", "boat_keel_type", "author")
     list_display_links = ("boat_name",)
     search_fields = ("boat_name",)
-    inlines = (BoatimageInline, )
+    inlines = (BoatimageInline, MapTemplateModelInline)
     list_select_related = True
     radio_fields = {"author": admin.HORIZONTAL}
-    exclude = ("boat_primary_photo", )
     form = BoatForm
     admin_caching_enabled = True
     admin_caching_timeout_seconds = 60*60*24
 
-    def get_exclude(self, request, obj=None):
-        """метод не показывает поле  "currency" для создаваемых записей, а показывает только для
-        редактируемых"""
-        exclude = ["boat_primary_photo", ]
-        if obj:
-            exclude.append("currency")
-        return exclude
+    def get_fields(self, request, obj=None):
+        """Показываем поле currency только для создаваемой модели"""
+        fields = list(super(BoatsAdmin, self).get_fields(request, obj))
+        exclude_set = set()
+        if obj:  # obj will be None on the add page, and something on change pages
+            exclude_set.add('currency')
+        return [f for f in fields if f not in exclude_set]
 
 
 """ админ дополнительной (расширенной) модели пользователя"""
@@ -69,3 +75,5 @@ class ExtraUserAdmin(VersionAdmin):  # VersionAdmin reversion app восстан
     list_select_related = True
     admin_caching_enabled = True
     admin_caching_timeout_seconds = 60 * 60 * 24
+
+

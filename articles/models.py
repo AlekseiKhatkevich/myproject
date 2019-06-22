@@ -111,7 +111,7 @@ class Article(models.Model):
                                         "article",help_text="Please insert URL of the article")
     show = models.BooleanField(default=True, blank=False, null=False, verbose_name="deleted mark",
                                help_text='Marked articles are shown everywhere, unmarked'
-                                         'considered ''as deleted ones')
+                                         'considered as deleted ones')
     change_date = models.DateTimeField(blank=True, null=True, auto_now=True)
 
     def __str__(self):

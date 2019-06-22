@@ -17,6 +17,7 @@ from django.conf import settings
 from functools import lru_cache
 from django.core.cache import cache
 from django.core.files import File
+import boats.models
 
 signer = Signer()
 
@@ -152,17 +153,31 @@ def coords(city_name):
     return geocoder.osm(city_name + ', Sweden').latlng
 
 
+def save_file_to_aws(pk):
+    """сохранаяет файл карты на aws"""
+    f = open(os.path.join(settings.BASE_DIR, "templates", "maps", str(pk) + ".html"), "rb")
+    boats.models.MapTemplateModel.objects.update_or_create(boat_id=pk,
+    defaults={"map_template": File(f), "boat_id": pk})
+    f.close()
+
+
+def define_location():
+    """определяет где мы сейчас находимся"""
+    try:
+        if "windows" in os.environ.get("OS").lower():
+            return True  # вернуть обратно True
+        else:
+            return False
+    except AttributeError:
+        return False
+
+
 def map_folium(places: dict, pk: int):
     """Создает карту с маркерами позиций по координатам"""
-    #  если у нас есть html с резульатом работы функции с теми же входными аргументами, то мы
-    #  пропускаем функцию и используем готовый html файл
-    if not cache.get("map_folium", version=pk) or cache.get("map_folium", version=pk) \
-            != (places, pk) or not os.path.exists(os.path.join(settings.BASE_DIR, "templates",
-                                                               "maps",  str(pk) +".html")):
-        map = folium.Map(location=[59.20, 18.04], zoom_start=7)
-        marker_cluster = MarkerCluster().add_to(map)
-        known_coordinates = {}  # место: координаты
-        for boat_name, place in places.items():
+    map = folium.Map(location=[59.20, 18.04], zoom_start=7)
+    marker_cluster = MarkerCluster().add_to(map)
+    known_coordinates = {}  # место: координаты
+    for boat_name, place in places.items():
             # если место повторяется более 1го раза
             if list(known_coordinates.keys()).count(place) == 1:
                 location = known_coordinates.get(place)
@@ -171,8 +186,9 @@ def map_folium(places: dict, pk: int):
                     # кучковались метки)
                     location = [c + random.uniform(- 0.05, 0.05) for c in location]
             else:
-                #  если координаты данного места еще не установленны то мы их получаем и записываем
-                #  в словарь. Если это место уже известно то мы используем сохраненные координаты.
+                #  если координаты данного места еще не установленны то мы их получаем и
+                #  записываем в словарь. Если это место уже известно то мы используем сохраненные
+                #  координаты.
                 if place not in known_coordinates.keys():
                     langalt = coords(place)  # Широта, долгота определяем
                     known_coordinates.update({place: langalt})
@@ -182,11 +198,33 @@ def map_folium(places: dict, pk: int):
                 (boat_name, place), icon=folium.Icon(color='gray')).add_to(marker_cluster)
             except TypeError:
                 pass
-        map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
-        #  Записываем в кеш входные аргументы функции (типа аналог lru_cache :))
-        cache.set("map_folium", (places, pk), 60 * 60 * 24 * 7, version=pk)
-    else:
-        pass  # ничего не делаем так как шаблон с актуальными  данными уже есть в папке темплейтс
+    map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
+    #  Записываем в кеш входные аргументы функции (типа аналог lru_cache :))
+    cache.set("map_folium", (places, pk), 60 * 60 * 24 * 7, version=pk)
+
+
+def check_file_on_aws(pk):
+    """Жив ли файл на aws и есть ли запись в модели карт с таким boat_id=pk"""
+    try:
+        url = boats.models.MapTemplateModel.objects.get(boat_id=pk).map_template.url
+        return True
+    except (AttributeError, boats.models.MapTemplateModel.DoesNotExist):
+        return False
+
+
+def custom_lru_cache(places, pk):
+    """Запускаем функцию map_folium по разному в зависимости от сервера итд """
+    #  если у нас есть html с резульатом работы функции с теми же входными аргументами, то мы
+    #  пропускаем функцию и используем готовый html файл
+    local_path = os.path.join(settings.BASE_DIR, "templates", "maps", str(pk) +".html")
+    arguments = cache.get("map_folium", version=pk)  # сохраненные входящие аргументы
+    if define_location():  # на локальной машине
+        if not arguments or arguments != (places, pk) or not os.path.exists(local_path):
+            map_folium(places, pk)
+    else:  # на Heroku
+        if not arguments or arguments != (places, pk) or not check_file_on_aws(pk):
+            map_folium(places, pk)
+            save_file_to_aws(pk)
 
 
 def set_last_access_time(path):
@@ -212,4 +250,5 @@ def namestr(obj, namespace):
     ({namestr(x, globals()): x for x in (a, b)})
     {'a': 4, 'b': 6}"""
     return next(name for name in namespace if namespace[name] is obj)
+
 

@@ -44,8 +44,8 @@ def vary_on_paginated_or_not(request):
     count_eq = Article.objects.filter(foreignkey_to_subheading=int(pk)).count()
     # время удаления последней статьи
     try:
-        change_date_of_deleted_article = Article.default.filter(foreignkey_to_subheading=int(pk),
-        show=False).values_list("change_date", flat=True).latest("change_date")
+        change_date_of_deleted_article = Article.default.filter(foreignkey_to_subheading=int(
+            pk), show=False).values_list("change_date", flat=True).latest("change_date")
         timedelta = (datetime.datetime.now() - change_date_of_deleted_article).seconds > 1
     except (ObjectDoesNotExist, TypeError):
         timedelta = True

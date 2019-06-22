@@ -13,7 +13,7 @@ from django.core.signing import BadSignature
 from articles.models import Article, Comment
 from .forms import *
 import boats.utilities
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, FileResponse
 from django.db.transaction import atomic
 from django.db.models import Prefetch,  Min, Q
 from django.core.mail import send_mail, BadHeaderError
@@ -872,24 +872,20 @@ class BlocketView(DetailView):
 
 
 # кеширование в функции utilities.map_folium
-@method_decorator(gzip_page, name="dispatch")
-class MapView(TemplateView):
-    template_name = ""
+@gzip_page
+def map_show(request, pk):
+    # запускаем ф-цию map_folium через custom_lru_cache
+    boats.utilities.custom_lru_cache(places=cache.get(pk), pk=pk)
+    local_path = os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html")
+    if boats.utilities.define_location():  # на локальной машине
+        return FileResponse(open(local_path, "rb"), content_type="text/html")
+    else:  # на Heroku
+        if os.path.exists(local_path):  # если есть файл на Хероку (дино еще работает)
+            return FileResponse(open(local_path, "rb"), content_type="text/html")
+        else:  # если файла на хероку нет  то показываем url на карту на aws
+            return HttpResponseRedirect(MapTemplateModel.objects.get(
+               boat_id=pk).map_template.url)
 
-    def get_template_names(self):
-        TemplateView.get_template_names(self)
-        template_name = "maps/" + str(self.kwargs.get("pk")) + ".html"
-        return template_name
 
-    def get(self, request, *args, **kwargs):
-        boats.utilities.map_folium(cache.get(self.kwargs.get("pk")),
-                                   pk=self.kwargs.get("pk"))
-        return TemplateView.get(self, request, *args, **kwargs)
-
-
-from django.http import FileResponse
-def map_show(request):
-    fn = os.path.join(settings.BASE_DIR, "templates", "maps",  str(53) +".html")
-    return FileResponse(open(fn, "rb"), content_type="text/html")
 
 

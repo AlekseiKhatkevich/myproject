@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     "file_resubmit",
     "django_extensions",
     'fancy_cache',
-    'django_admin_caching',
+
 
 ]
 
@@ -382,6 +382,10 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 #ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
 MEDIA_URL = 'http://' + AWS_STORAGE_BUCKET_NAME + AWS_S3_HOST + "/"
 
+# django-BOTO settings https://github.com/qnub/django-boto
+BOTO_S3_BUCKET = AWS_STORAGE_BUCKET_NAME
+BOTO_S3_HOST = AWS_S3_HOST
+BOTO_BUCKET_LOCATION = AWS_S3_REGION_NAME
 
 #  настройки easy thumbnails для  работы с heroku
 THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE

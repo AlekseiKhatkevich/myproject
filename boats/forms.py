@@ -37,7 +37,8 @@ class BoatForm(forms.ModelForm):
         if self.pk:
             self.fields["currency"].widget = forms.HiddenInput()
             self.fields["currency"].required = False
-            #  передаем пк в валидатор для изключения редактируемого объекта из проверки уникальности
+            #  передаем пк в валидатор для изключения редактируемого объекта из проверки
+            #  уникальности
             #  урлов (чтобы не проверял сам себя)
             self.fields["boat_sailboatdata_link"].validators = \
                 [UniqueSailboatLinkValidator(pk=self.pk), ]

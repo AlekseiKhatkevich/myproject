@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .utilities import files_list, get_timestamp_path, clean_cache, clean_map
 from django.core.exceptions import ObjectDoesNotExist, EmptyResultSet
+from django.core import validators
 from django_countries.fields import CountryField
 from easy_thumbnails.files import get_thumbnailer
 from django.db.models.fields import Field
@@ -11,7 +12,7 @@ import os
 import sys
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
-
+from django_boto.s3.storage import S3Storage
 
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
@@ -24,8 +25,8 @@ class BoatImage(models.Model):
 
     boat_photo = models.ImageField(upload_to=get_timestamp_path, blank=True, null=True,
                                    verbose_name='Boat photo', )
-    boat = models.ForeignKey("BoatModel",  on_delete=models.SET_NULL, verbose_name="Boat ForeignKey",
-                             null=True)
+    boat = models.ForeignKey("BoatModel",  on_delete=models.SET_NULL, verbose_name="Boat "
+                                                                    "ForeignKey", null=True)
     memory = models.PositiveSmallIntegerField(blank=True, null=True)
     change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
@@ -46,7 +47,8 @@ class BoatImage(models.Model):
             self.memory = self.boat_id
         elif not self.boat_id and self.memory:  # восстанавливаем
             self.boat_id = self.memory
-        elif self.boat_id and self.memory and self.boat_id != self.memory:  # корректируем на крайняк
+        elif self.boat_id and self.memory and self.boat_id != self.memory:  # корректируем на
+            # крайняк
             self.memory = self.boat_id
 
         models.Model.save(self, force_insert=False, force_update=False, using=None,
@@ -86,7 +88,8 @@ class BoatImage(models.Model):
         if 'test' in sys.argv or 'test_coverage' in sys.argv:
             print("Do not use this method in tests. It is dangerous for your db!!!")
         else:
-            files_in_db = {image.filename() for image in BoatImage.objects.all().only("boat_photo")}
+            files_in_db = {image.filename() for image in BoatImage.objects.all().only(
+                "boat_photo")}
             useless_files = files_list() - files_in_db
             counter = 0
             for file in useless_files:
@@ -223,7 +226,8 @@ class BoatModel(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
-        clean_cache(path=settings.CACHES.get("file_resubmit").get("LOCATION"), time_interval=86400)
+        clean_cache(path=settings.CACHES.get("file_resubmit").get("LOCATION"),
+                    time_interval=86400)
         # очишаем#  кэш  ресубмита (интервал -сутки)
         import articles.models  # to avoid circular import with articles
         # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой
@@ -285,5 +289,20 @@ class ExtraUser(AbstractUser):
         indexes = (BrinIndex(fields=["date_joined"]), )
 
 
+"""Модель темплейта карты"""
+
+
+class MapTemplateModel(models.Model):
+    s3 = S3Storage()
+    map_template = models.FileField(storage=s3, upload_to="maps/", unique=True,
+        verbose_name="map template", validators=[validators.FileExtensionValidator(
+        allowed_extensions=("html", ))], error_messages={"invalid_extension":
+                                            "Only *.html files are allowed"})
+    boat = models.OneToOneField("BoatModel", on_delete=models.CASCADE, verbose_name="parent "
+                                                                                    "boat")
+
+    class Meta:
+        verbose_name = "map template"
+        verbose_name_plural = "map templates"
 
 

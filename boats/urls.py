@@ -29,7 +29,7 @@ urlpatterns = [
     path("boats/blocket/<int:pk>/<str:name>/", BlocketView.as_view(), name="blocket"),
     path("boats/", BoatListView.as_view(), name="boats"),
     path("feedback/", feedback_view, name="feedback"),
-    path("map/<int:pk>/", MapView.as_view(),   name="map"),
+    path("map/<int:pk>/", map_show, name="map"),
     path("", IndexPageView.as_view(), name="index"),
-    path("stream/", map_show, name="stream"),
+
 ]
