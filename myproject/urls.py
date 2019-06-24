@@ -35,8 +35,8 @@ handler403 = curry(permission_denied, exception=Exception('Permission Denied'),
 handler404 = curry(page_not_found, exception=Exception('Page not Found'),
                    template_name='errors/404.html')
 # обработчик ошибки 500 (Server Error)
-
-handler500 = 'boats.views.handler500'
+handler500 = curry(server_error, exception=Exception('Server Error'),
+                   template_name='errors/500.html')
 
 # названия для админки
 admin.site.site_header = "Boat's project  Admin"

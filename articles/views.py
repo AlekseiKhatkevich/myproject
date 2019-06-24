@@ -29,8 +29,18 @@ def vary_on_user_is_authenticated(request):
 """контроллер гл. стр. артиклес"""
 
 
-#  инвалидация в сигналах по урлу и в модели лодки в методе делит
-@method_decorator(cache_page(60*60*24*7, key_prefix=vary_on_user_is_authenticated), name='dispatch')
+def vary_on_ArticlesMainView(request):
+    upperhaeding_last_change = UpperHeading.objects.all().values_list('change_date',
+                                                                flat=True).latest("change_date")
+    subheading_last_change = SubHeading.objects.all().values_list('change_date', flat=True).latest(
+        "change_date")
+    timedelta1 = (datetime.datetime.now() - upperhaeding_last_change).seconds > 1
+    timedelta2 = (datetime.datetime.now() - subheading_last_change).seconds > 1
+    return "ArticlesMainView+%s+%s+%s" % (timedelta1, timedelta2, request.user.is_authenticated)
+
+
+#  инвалидация в сигналах по урлу и в модели лодки в методе делит и по key_prefix
+@method_decorator(cache_page(60*60*24, key_prefix=vary_on_ArticlesMainView), name='dispatch')
 class ArticlesMainView(TemplateView):
     template_name = "articles/articles_index.html"
 

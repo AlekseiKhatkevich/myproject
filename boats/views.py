@@ -908,10 +908,4 @@ def map_show(request, pk):
                boat_id=pk).map_template.url)
 
 
-from django.http import HttpResponseServerError
-from django.template import RequestContext
-def handler500(request):
-    response = HttpResponseServerError('errors/500.html', {},
-                                  context_instance=RequestContext(request))
-    response.status_code = 500
-    return response
+

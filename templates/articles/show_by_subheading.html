@@ -38,7 +38,9 @@
                                 {{ article.title }}</a>
 
                            {% if article.foreignkey_to_boat %}
-                                <span class="badge badge-warning text-muted ml-2"> CONNECTED TO BOAT </span>
+                                <span class="badge badge-warning text-muted ml-2">
+                                    <a href="{% url "boats:boat_detail" article.foreignkey_to_boat_id %}" class="text-muted ">Connected to boat</a>
+                                     </span>
                                {% endif %}
 
                            </h5>
