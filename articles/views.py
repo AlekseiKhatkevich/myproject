@@ -29,7 +29,7 @@ def vary_on_user_is_authenticated(request):
 """контроллер гл. стр. артиклес"""
 
 
-#  инвалидация в сигналах по урлу
+#  инвалидация в сигналах по урлу и в модели лодки в методе делит
 @method_decorator(cache_page(60*60*24*7, key_prefix=vary_on_user_is_authenticated), name='dispatch')
 class ArticlesMainView(TemplateView):
     template_name = "articles/articles_index.html"
@@ -109,7 +109,8 @@ class ContentListView(DetailView):
         context = DetailView.get_context_data(self, **kwargs)
         if self.request.user.is_authenticated:
             context['user'] = ExtraUser.objects.get(pk=self.request.user.pk)
-        context["comments"] = Comment.objects.filter(foreignkey_to_article_id=self.kwargs["pk"])
+        context["comments"] = Comment.objects.filter(foreignkey_to_article_id=self.kwargs[
+            "pk"])
         context["allowed_comments"] = \
            (self.request.get_signed_cookie('allowed_comments', default=None))
         return context
@@ -303,9 +304,10 @@ class DoubleCommentView(SuccessMessageMixin, CreateView):
                     existing_allowed_comments:
                 response.set_signed_cookie('allowed_comments',
                                         ", ".join([existing_allowed_comments,
-                                                   str(self.object.pk)]))
+                                                   str(self.object.pk)]), max_age=60*60*24*14)
             elif not existing_allowed_comments:
-                response.set_signed_cookie('allowed_comments', str(self.object.pk))
+                response.set_signed_cookie('allowed_comments', str(self.object.pk),
+                                           max_age=60*60*24*14)
         return response
 
 

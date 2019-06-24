@@ -22,35 +22,34 @@ def invalidate_by_Subheading(sender, instance, **kwargs):
 
 
 @receiver([post_save, post_delete], sender=Article)
-def invalidate_by_Article(sender, instance, update_fields, **kwargs):
+def invalidate_by_Article(sender, instance,  **kwargs):
     show_by_heading_page_url = reverse('articles:show_by_heading',
                                        args=(instance.foreignkey_to_subheading_id,))
     article_content_page_url = reverse("articles:detail",
                                        args=(instance.foreignkey_to_subheading_id, instance.id))
     article_resurrection_url = reverse("articles:resurrection")
+    main_page_url = reverse('articles:articles_main')
     urls = [show_by_heading_page_url, article_content_page_url]
-    if instance.show == False :  # если мы "удаляем статью" то инвалидируем кеш страницы
-        # восстановления
-        urls.append(article_resurrection_url)
+    if not instance.show:  # если мы "удаляем статью" то инвалидируем кеш страницы
+        # восстановления и главной страницы так как счетчики поменяються
+        urls.extend([article_resurrection_url, main_page_url])
+    #  В случае создания новой статьи мы должны инвалидировать кеш так как счетчик статей в
+    #  субкатегориях измениться.
+    if kwargs.get("created"):
+        urls.append(main_page_url)
     list(find_urls(urls, purge=True))
-
-"""
-@receiver(pre_save, sender=Article)
-def invalidate_by_Article_v_pre_save(sender, instance, **kwargs):
-   
-    article_resurrection_url = reverse("articles:resurrection")
-    if instance.show == False:
-        list(find_urls([article_resurrection_url], purge=True))"""
 
 
 @receiver([post_save, post_delete], sender=Comment)
 def invalidate_by_Comment(sender, instance, **kwargs):
+    urls = []
     try:
         article_content_page_url = reverse("articles:detail", args=(
         instance.foreignkey_to_article.foreignkey_to_subheading_id,
         instance.foreignkey_to_article_id))
-    except NoReverseMatch:
-        article_content_page_url = None
-    list(find_urls([article_content_page_url], purge=True))
+        urls.append(article_content_page_url)
+    except (NoReverseMatch, AttributeError):
+        pass
+    list(find_urls(urls, purge=True))
 
 

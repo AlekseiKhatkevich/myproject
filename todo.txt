@@ -3,10 +3,7 @@ backup postgree
 
 _план_____________________________________________
 -Тесты
--страницу server error 500
-
-
-
+-https://pypi.org/project/django-picklefield/
 
 
 HEROKU

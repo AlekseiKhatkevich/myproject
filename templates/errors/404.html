@@ -3,12 +3,12 @@
 {% load static %}
 {% load cache %}
 
-{% cache None 404.html %}
+
 
 {% block title %} error 404   {%  endblock %}
 
 {% block content %}
-
+{% cache None 404.html %}
 
 <style>
         body {
@@ -22,7 +22,7 @@
     {% comment %}
     <img  src="{% static "boats/404.png"%}" alt="404">
     {% endcomment %}
-
+{% endcache %}
 {% endblock content %}
 
-{% endcache %}
+

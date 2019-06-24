@@ -78,7 +78,8 @@ class ArticlesAdmin(VersionAdmin):
     list_display_links = ("foreignkey_to_subheading", "title",)
     list_editable = ("show", )
     search_fields = ("^title", "^content")
-    list_filter = (DeletedFilter, "foreignkey_to_subheading", )
+    list_filter = (DeletedFilter, "foreignkey_to_subheading__foreignkey__name",
+                   "foreignkey_to_subheading__name", )
     list_select_related = True
     raw_id_fields = ("foreignkey_to_subheading", "foreignkey_to_boat")
     date_hierarchy = "created_at"

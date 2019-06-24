@@ -3,10 +3,11 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.contrib. staticfiles.views import serve
 from django.views.decorators.cache import never_cache
-from django.views.defaults import permission_denied, page_not_found
+from django.views.defaults import permission_denied, page_not_found, server_error
 from django.utils.functional import curry
 from django.conf import settings
 from django.conf.urls import url
+
 
 
 urlpatterns = [
@@ -33,6 +34,9 @@ handler403 = curry(permission_denied, exception=Exception('Permission Denied'),
 # обработчик 404 ошибки(Not Found)
 handler404 = curry(page_not_found, exception=Exception('Page not Found'),
                    template_name='errors/404.html')
+# обработчик ошибки 500 (Server Error)
+
+handler500 = 'boats.views.handler500'
 
 # названия для админки
 admin.site.site_header = "Boat's project  Admin"

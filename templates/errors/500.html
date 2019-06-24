@@ -1,0 +1,24 @@
+<!-- templates/errors/500.html  -->
+ {% extends "base.html" %}
+{% load static %}
+{% load cache %}
+
+
+
+{% block title %} error 500   {%  endblock %}
+
+{% block content %}
+{% cache None error500  %}
+<style>
+        body {
+            background-image: url({% static "boats/giant-bomb.png"%});
+            background-repeat: no-repeat, repeat;
+            background-position: center;
+            background-size: 33%;
+        }
+    </style>
+
+{% endcache %}
+{% endblock content %}
+
+

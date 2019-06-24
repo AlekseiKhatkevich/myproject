@@ -19,8 +19,8 @@ class SearchForm(forms.Form):
 
 class ArticleForm(forms.ModelForm):
     title = forms.CharField(help_text="Please add a title", label="Article title",
-                            validators=[MinLengthValidator(message="Title must contain at least 6 "
-                                                                   "symbols", limit_value=6)])
+                            validators=[MinLengthValidator(message="Title must contain at least "
+                                                                   "6 symbols", limit_value=6)])
 
     def clean_foreignkey_to_boat(self):
         # в случае, если мы сохраняем статью  в категории "Articles on boats" то проверяется была
@@ -28,8 +28,8 @@ class ArticleForm(forms.ModelForm):
         foreignkey_to_boat = self.cleaned_data["foreignkey_to_boat"]
         foreignkey_to_subheading = int(self.cleaned_data["foreignkey_to_subheading"].pk)
         current_subheading = get_object_or_404(SubHeading, pk=foreignkey_to_subheading)
-        if current_subheading.foreignkey.name == "Articles on boats" and not foreignkey_to_boat and\
-                current_subheading.one_to_one_to_boat:
+        if current_subheading.foreignkey.name == "Articles on boats" and not foreignkey_to_boat\
+                and current_subheading.one_to_one_to_boat:
             msg1 = 'You must choose the boat if you want to save this article inside upper' \
                    ' heading"Articles on boats"'
             self.add_error("foreignkey_to_boat", msg1)

@@ -101,6 +101,15 @@ class BoatDeleteView(DeleteView):
         message = 'Boat "%s"  has deleted from the database' % self.get_object().boat_name
         messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True,
                              extra_tags="alert alert-info")
+        #  удаляем кеш шаблона "boat_detail_view", куска который отвечает за изображения для
+        #  того, чтобы после  восстановления лодки  отображались фотографии на ее странице
+        pk = self.kwargs.get("pk")
+        data_obj = cache.get("boat_detail_view" + str(pk), None)
+        if data_obj:
+            eq_images = data_obj.get("eq_images")
+            key1 = make_template_fragment_key("boat_detail_images", [eq_images, True])
+            key2 = make_template_fragment_key("boat_detail_images", [eq_images, False])
+            cache.delete_many((key1, key2))
         return DeleteView.post(self, request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
@@ -150,8 +159,8 @@ class BoatListView(SearchableListMixin, ListView):
         self.field = self.request.GET.get('ordering')
         self.mark = self.request.GET.get("mark")
         if self.field == '' or self.mark == "":
-            messages.add_message(self.request, messages.WARNING, message="Please choose sorting "
-                                                                "pattern", fail_silently=True)
+            messages.add_message(self.request, messages.WARNING, message="Please choose "
+                                            "sorting pattern", fail_silently=True)
             return None
         if all([self.field, self.mark]):
             try:
@@ -222,12 +231,12 @@ def boat_detail_view(request, pk):
         get_for_object_reference(BoatModel, pk).only("id", "revision")
     allowed_comments = request.get_signed_cookie('allowed_comments', default=None)
 
-    data_obj = cache.get("boat_detail_view" + current_boat.boat_name)
+    data_obj = cache.get("boat_detail_view" + str(current_boat.pk))
     if not data_obj:
         eq_images = images.values_list("change_date", flat=True).latest("change_date") \
             if images else None
-        eq_current_boat = BoatModel.objects.filter(pk=pk).values_list("change_date", flat=True).\
-            latest("change_date")
+        eq_current_boat = BoatModel.objects.filter(pk=pk).values_list("change_date",
+                                                            flat=True).latest("change_date")
         eq_articles = articles.values_list("change_date", flat=True).latest("change_date") \
             if articles else None
         eq_versions = versions.values_list("revision__date_created", flat=True).\
@@ -241,8 +250,8 @@ def boat_detail_view(request, pk):
         EQ = data_obj
 
     context = {"images": images, "current_boat": current_boat, "comments": comments,
-               "articles": articles, "versions": versions, "allowed_comments": allowed_comments,
-               "EQ": EQ}
+               "articles": articles, "versions": versions,
+               "allowed_comments": allowed_comments, "EQ": EQ}
 
     if request.method == "GET":
         return render(request, "boat_detail.html", context)
@@ -328,8 +337,9 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
             message = "%d broken image instances  has been deleted from DB" % score
             messages.add_message(request, messages.WARNING, message=message,
                                  fail_silently=True)
-        message = "You successfully rolled back %(name)s  data. Rollback date is %(date)s " % \
-                  ({"name": self.get_object().boat_name, "date": version.revision.date_created})
+        message = "You successfully rolled back %(name)s  data. Rollback date is %(date)s " \
+                  % ({"name": self.get_object().boat_name, "date":
+            version.revision.date_created})
         messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
         return HttpResponseRedirect(reverse_lazy('boats:boat_detail',
                                                  args=(self.kwargs["pk"], )))
@@ -432,7 +442,8 @@ def vary_on_user_profile(request):
     try:
         eq_comments_by_user = Comment.objects.filter(Q(
             foreignkey_to_article__author=request.user,
-        is_active=True) | Q(foreignkey_to_boat__author=request.user, is_active=True)).order_by(
+        is_active=True) | Q(foreignkey_to_boat__author=request.user,
+                            is_active=True)).order_by(
         "-created_at")[: 5].values_list("change_date", flat=True)[0]
     except IndexError:
         eq_comments_by_user = None
@@ -771,7 +782,8 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
             version.delete()
         for image in images:
             try:
-                Version.objects.get(object_id=image.pk, content_type_id=ContentType.objects.get(
+                Version.objects.get(object_id=image.pk,
+                                    content_type_id=ContentType.objects.get(
                     model="boatimage").id).delete()  # удалаяем версии связанных изображений
             except ObjectDoesNotExist:
                 pass
@@ -820,7 +832,8 @@ def reversion_confirm_view(request, pk):
         existing_boat_pk = BoatModel.objects.filter(boat_name__iexact=current_boat_name).only(
             "pk")[0].pk
         #  Урл на существующую лодку с таким-же именем
-        url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,))))\
+        url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,
+                                                                         ))))\
               + "'>%s</a>" % current_boat_name
         message = 'Boat with the name "%s" is already exist on the site .' \
                   ' You can not restore it! ' % url
@@ -836,9 +849,17 @@ def reversion_confirm_view(request, pk):
             versions[0].revision.revert()
             restored_boat = BoatModel.objects.get(boat_name=versions[0].object_repr)
             restored_boat.save()
+            # восстанавливаем комменты тоже
+            comments = Version.objects.get_for_model(Comment).filter(
+                content_type_id=ContentType.objects.get(model="comment").pk).only(
+                "serialized_data").iterator()
+            for comment in comments:
+                if comment.field_dict.get("foreignkey_to_boat_id") == pk:
+                    comment.revision.revert()
             message = 'Boat "%(boat_name)s" is restored!' % {"boat_name":
                                                                  versions[0].object_repr}
-            messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            messages.add_message(request, messages.SUCCESS, message=message,
+                                 fail_silently=True)
             return HttpResponseRedirect(reverse_lazy("boats:boat_detail",  args=(pk, )))
     else:
         context = {"versions": versions, "current_boat_name": current_boat_name}
@@ -887,5 +908,10 @@ def map_show(request, pk):
                boat_id=pk).map_template.url)
 
 
-
-
+from django.http import HttpResponseServerError
+from django.template import RequestContext
+def handler500(request):
+    response = HttpResponseServerError('errors/500.html', {},
+                                  context_instance=RequestContext(request))
+    response.status_code = 500
+    return response

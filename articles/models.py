@@ -65,7 +65,7 @@ class SubHeading(Heading):
 
     class Meta:
         proxy = True
-        ordering = ("foreignkey__order", "foreignkey__name", "order", "name")
+        ordering = ("foreignkey__name", "name")
         verbose_name = "Sub heading"
         verbose_name_plural = "Sub headings"
 
@@ -149,14 +149,16 @@ class Comment(ModelFieldRequiredMixin, models.Model):
     foreignkey_to_article = models.ForeignKey(Article, blank=True, null=True,
                                 on_delete=models.CASCADE, verbose_name="Article",                                                       help_text='Please choose the article to comment on')
     foreignkey_to_boat = models.ForeignKey(BoatModel, blank=True, null=True,
-                                           on_delete=models.CASCADE,verbose_name="Boat",
+                                           on_delete=models.CASCADE, verbose_name="Boat",
                                            help_text="Please choose the boat to comment on")
     author = models.CharField(max_length=30, verbose_name="Author",
                               help_text="Please type in your name ")
-    content = models.TextField(verbose_name="Comment text", help_text="Please type in comment here")
+    content = models.TextField(verbose_name="Comment text", help_text="Please type in comment "
+                                                                      "here")
     is_active = models.BooleanField(default=True, db_index=True,
                                     verbose_name="Published", help_text="publish?")
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Publish date")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Publish "
+                                                                                     "date")
     change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
     REQUIRED_TOGGLE_FIELDS = [["foreignkey_to_article", "foreignkey_to_boat"], ]
@@ -170,5 +172,6 @@ class Comment(ModelFieldRequiredMixin, models.Model):
         verbose_name_plural = "Comments"
         ordering = ["-created_at", ]
         indexes = (BrinIndex(fields=["created_at"]),)
+
 
 

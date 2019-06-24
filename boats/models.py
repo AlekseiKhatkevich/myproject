@@ -13,6 +13,8 @@ import sys
 from datetime import datetime
 from django.contrib.postgres.indexes import BrinIndex
 from django_boto.s3.storage import S3Storage
+from django.shortcuts import reverse
+from fancy_cache.memory import find_urls
 
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
@@ -210,6 +212,9 @@ class BoatModel(models.Model):
             if not articles.models.SubHeading.objects.get(
                     one_to_one_to_boat=self).article_set.exists():
                 self.heading.delete()  # удаляем, если не содержит статей
+                # инвалидируем кеш Артиклес майн
+            main_page_url = reverse('articles:articles_main')
+            list(find_urls([main_page_url], purge=True))
         except articles.models.SubHeading.DoesNotExist or ObjectDoesNotExist:
             pass
         for image in self.boatimage_set.all():  # удаляем (не по настоящему) ассоциированные
@@ -219,6 +224,7 @@ class BoatModel(models.Model):
             image.delete()
         # удаляем карту, если она есть
         clean_map(pk=self.id)
+
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки

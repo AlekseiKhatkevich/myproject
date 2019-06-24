@@ -51,7 +51,9 @@
                     {% endif %}
 
                     {% if heading.boat_num %}
-                        <span class="badge badge-warning text-muted">  BOAT </span>
+                        <span class="badge badge-warning text-muted">
+                            <a href="{% url 'boats:boat_detail' pk=heading.one_to_one_to_boat_id %}" class="text-muted">BOAT</a>
+                        </span>
                     {% endif %}
 
                 </div>
