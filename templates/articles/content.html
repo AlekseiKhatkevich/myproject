@@ -28,7 +28,7 @@
                     <div class="btn-group-vertical text-right  rounded mr-3" role="group" aria-label="page management">
 
 
-                    {% if request.GET.code == "boats"  %}
+                    {% if request.GET.code == "boats"  and object.foreignkey_to_boat %}
                              <a href="{% url "boats:boat_detail" pk=object.foreignkey_to_boat_id %}"><button type="button" class="form-button btn secondary border-success" data-toggle="tooltip" data-placement="top" title="get back to the boat" > Back to the boat</button></a>
 
 
