@@ -17,7 +17,7 @@ def invalidate_by_UpperHeading(sender, instance, **kwargs):
 @receiver([post_save, post_delete], sender=SubHeading)
 def invalidate_by_Subheading(sender, instance, **kwargs):
     main_page_url = reverse('articles:articles_main')
-    show_by_heading_page_url = reverse('articles:show_by_heading',args=(instance.id, ))
+    show_by_heading_page_url = reverse('articles:show_by_heading', args=(instance.id, ))
     list(find_urls([main_page_url, show_by_heading_page_url], purge=True))
 
 

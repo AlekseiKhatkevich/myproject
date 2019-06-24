@@ -179,10 +179,12 @@ class ArticleResurrectionForm(forms.ModelForm):
         articles_to_reserect = Article.default.filter(id__in=pk_list)
         for article in articles_to_reserect:
             article.show = True
-            article.save(update_fields=["show", ])
+            article.change_date = datetime.datetime.now
+            article.save(update_fields=["show", "change_date"])
         #  инвалидируем кеш страницы восстановления статей
         article_resurrection_url = reverse("articles:resurrection")
-        list(find_urls([article_resurrection_url], purge=True))
+        main_page_url = reverse('articles:articles_main')
+        list(find_urls([article_resurrection_url, main_page_url], purge=True))
 
     class Meta:
         model = Article

@@ -20,6 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from boats.decorators import login_required_message, MessageLoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
+import datetime
 
 
 def vary_on_user_is_authenticated(request):
@@ -34,9 +35,13 @@ def vary_on_ArticlesMainView(request):
                                                                 flat=True).latest("change_date")
     subheading_last_change = SubHeading.objects.all().values_list('change_date', flat=True).latest(
         "change_date")
+    article_last_change = Article.objects.all().exclude(change_date__isnull=True).values_list(
+        'change_date', flat=True).latest("change_date")
     timedelta1 = (datetime.datetime.now() - upperhaeding_last_change).seconds > 1
     timedelta2 = (datetime.datetime.now() - subheading_last_change).seconds > 1
-    return "ArticlesMainView+%s+%s+%s" % (timedelta1, timedelta2, request.user.is_authenticated)
+    timedelta3 = (datetime.datetime.now() - article_last_change).seconds > 1
+    return "ArticlesMainView+%s+%s+%s+%s" % (timedelta3, timedelta1, timedelta2,
+                                             request.user.is_authenticated)
 
 
 #  инвалидация в сигналах по урлу и в модели лодки в методе делит и по key_prefix
@@ -59,11 +64,11 @@ def vary_on_paginated_or_not(request):
         timedelta = (datetime.datetime.now() - change_date_of_deleted_article).seconds > 1
     except (ObjectDoesNotExist, TypeError):
         timedelta = True
-    return "show_by_heading_view+%s+%s+%s" % (True if count_eq > 10 else False,
-                                           request.user.is_authenticated, timedelta)
+    return "show_by_heading_view+%s+%s+%s+%s" % (True if count_eq > 10 else False,
+                                           request.user.is_authenticated, timedelta, count_eq)
 
 
-#  инвалидация в сигналах по урлу и по key_prefix
+#  инвалидация в сигналах по урлу и по key_prefix и в формах ArticleResurrectionForm
 @cache_page(60*60*24*7, key_prefix=vary_on_paginated_or_not)
 def show_by_heading_view(request, pk): #597
     current_heading = get_object_or_404(SubHeading, pk=pk)
