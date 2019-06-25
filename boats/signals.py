@@ -39,7 +39,7 @@ def invalidate_by_BoatImage(sender, instance, **kwargs):
 
 
 @receiver([post_save, post_delete], sender=Comment)
-def invalidate_by_Comment(sender, instance, **kwargs):
+def invalidate_by_Comment_boats_app(sender, instance, **kwargs):
     try:
         cache_key = "boat_detail_view" + str(instance.foreignkey_to_boat_id)
         cache.delete(cache_key)
@@ -47,8 +47,8 @@ def invalidate_by_Comment(sender, instance, **kwargs):
         pass
 
 
-@receiver([post_save, post_delete], sender=Article)
-def invalidate_by_Article(sender, instance, **kwargs):
+@receiver([post_save, post_delete], sender=Article, dispatch_uid=2)
+def invalidate_by_Article_boats_app(sender, instance, **kwargs):
     try:
         cache_key = "boat_detail_view" + str(instance.foreignkey_to_boat_id)
         cache.delete(cache_key)

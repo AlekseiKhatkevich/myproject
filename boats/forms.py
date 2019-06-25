@@ -118,21 +118,6 @@ class BoatForm(forms.ModelForm):
         return url
 
 
-"""
-    def save(self, commit=True):
-        Пересчитываем валюту в евро
-        boat = forms.ModelForm.save(self, commit=False)
-        boat.currency = self.cleaned_data["currency"]
-        if commit:
-            #  конвертируем только для вновь создаваемых лодок  и если валюта уже не равна EUR
-            if boat.currency != "EUR" and not self.pk:
-                    boat.boat_price = currency_converter_original(boat.boat_price,
-                                                                  boat.currency)
-        boat.save()
-        return boat
-    """
-
-
 """форма доп. изображений лодки"""
 
 

@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic import ListView, DetailView, FormView
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .models import *
+from .models import Article, Comment, Heading, SubHeading, UpperHeading
 from .forms import *
 import unidecode
 from django.contrib import messages
@@ -35,12 +35,10 @@ def vary_on_ArticlesMainView(request):
                                                                 flat=True).latest("change_date")
     subheading_last_change = SubHeading.objects.all().values_list('change_date', flat=True).latest(
         "change_date")
-    article_last_change = Article.objects.all().exclude(change_date__isnull=True).values_list(
-        'change_date', flat=True).latest("change_date")
     timedelta1 = (datetime.datetime.now() - upperhaeding_last_change).seconds > 1
     timedelta2 = (datetime.datetime.now() - subheading_last_change).seconds > 1
-    timedelta3 = (datetime.datetime.now() - article_last_change).seconds > 1
-    return "ArticlesMainView+%s+%s+%s+%s" % (timedelta3, timedelta1, timedelta2,
+    mark2 = cache.get("mark2")  # forms 187 str
+    return "ArticlesMainView+%s+%s+%s+%s" % (mark2, timedelta1, timedelta2,
                                              request.user.is_authenticated)
 
 
@@ -159,13 +157,14 @@ class AddArticleView(SuccessMessageMixin, MessageLoginRequiredMixin, CreateView)
         """ передача через гет параметры кода того, была ли создана статьия из boats:detail.
          Нужно для корректной работы кнопки Back to Heading Или back to boat в зависимости
          откуда была создана статья"""
-        referer = self.request.POST.get("button", None)
-        if referer and "boats" in referer:
+        path = self.request.POST.get("button", None)
+        #  'http://127.0.0.1:8000/articles/add_article/329/'   пример
+        if path and path.split("/")[3] == "boats":
             code = "boats"
         else:
             code = "articles"
         return "%s?code=%s" % (reverse('articles:detail',
-                    args=(self.object.foreignkey_to_subheading.pk, self.object.pk,)), code)
+                    args=(self.object.foreignkey_to_subheading_id, self.object.pk,)), code)
 
 
 """ контроллер редактирования статьи"""

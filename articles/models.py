@@ -1,9 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, EmptyResultSet
 from boats.models import BoatModel, ExtraUser
 from dynamic_validator import ModelFieldRequiredMixin
-from captcha.fields import CaptchaField
 from django.contrib.postgres.indexes import BrinIndex
 import datetime
 
@@ -96,6 +94,7 @@ class Article(models.Model):
     # менеджеры прямой связи
     default = models.Manager()  # админ использует первый сверху менеджер
     objects = ArticleManager()
+    reverse = ArticleManager()
 
     foreignkey_to_subheading = models.ForeignKey(SubHeading,
                             on_delete=models.PROTECT, verbose_name="Subheading",                                                    help_text="Please choose subheading")

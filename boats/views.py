@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages, auth
 from django.core.signing import BadSignature
-from articles.models import Article, Comment
+from articles.models import Article, Comment, ArticleManager
 from .forms import *
 import boats.utilities
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse
@@ -220,13 +220,15 @@ class BoatListView(SearchableListMixin, ListView):
 """ просмотр  детальной информации о лодке"""
 
 
-#  кэширование в шаблоне
+#  кэширование в шаблоне , инвалидация ключа data_obj в сигналах и медоте клин
+#  ArticleResurrectionForm
 def boat_detail_view(request, pk):
-    current_boat = BoatModel.objects.prefetch_related("boatimage_set", "comment_set",
-                                                      "article_set").get(pk=pk)
+    pr = Prefetch("article_set", queryset=Article.objects.all().exclude(show=False).only(
+        "change_date", 'title'))
+    current_boat = BoatModel.objects.prefetch_related("boatimage_set", "comment_set", pr).get(pk=pk)
     images = current_boat.boatimage_set.all()
     comments = current_boat.comment_set.all()
-    articles = current_boat.article_set.all()
+    articles = current_boat.article_set(manager='reverse').all()
     versions = Version.objects.select_related("revision").\
         get_for_object_reference(BoatModel, pk).only("id", "revision")
     allowed_comments = request.get_signed_cookie('allowed_comments', default=None)
@@ -237,8 +239,8 @@ def boat_detail_view(request, pk):
             if images else None
         eq_current_boat = BoatModel.objects.filter(pk=pk).values_list("change_date",
                                                             flat=True).latest("change_date")
-        eq_articles = articles.values_list("change_date", flat=True).latest("change_date") \
-            if articles else None
+        eq_articles = (articles.values_list("change_date", flat=True).latest("change_date") \
+            if articles else None, articles.count())
         eq_versions = versions.values_list("revision__date_created", flat=True).\
             latest("revision__date_created") if versions else None
         eq_comments = comments.values_list("change_date", flat=True).latest("change_date")\

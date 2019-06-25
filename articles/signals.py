@@ -21,8 +21,8 @@ def invalidate_by_Subheading(sender, instance, **kwargs):
     list(find_urls([main_page_url, show_by_heading_page_url], purge=True))
 
 
-@receiver([post_save, post_delete], sender=Article)
-def invalidate_by_Article(sender, instance,  **kwargs):
+@receiver([post_save, post_delete], sender=Article, dispatch_uid=1)
+def invalidate_by_Article_articles_app(sender, instance,  **kwargs):
     show_by_heading_page_url = reverse('articles:show_by_heading',
                                        args=(instance.foreignkey_to_subheading_id,))
     article_content_page_url = reverse("articles:detail",

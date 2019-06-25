@@ -6,6 +6,9 @@ from django.core.validators import MinLengthValidator
 from django.db.transaction import atomic
 from django.shortcuts import reverse
 from fancy_cache.memory import find_urls
+from captcha.fields import CaptchaField
+from django.core.cache import cache
+import datetime
 
 """search form"""
 
@@ -177,14 +180,20 @@ class ArticleResurrectionForm(forms.ModelForm):
         pk_list = self.cleaned_data["pk"]
         Article.default.filter(id__in=pk_list).update(show=True)
         articles_to_reserect = Article.default.filter(id__in=pk_list)
+        mark2 = []
+        foreignkey_id = []
         for article in articles_to_reserect:
             article.show = True
             article.change_date = datetime.datetime.now
+            mark2.append(article.change_date)
+            foreignkey_id.append(article.foreignkey_to_boat_id) if article.foreignkey_to_boat else 0
             article.save(update_fields=["show", "change_date"])
         #  инвалидируем кеш страницы восстановления статей
         article_resurrection_url = reverse("articles:resurrection")
         main_page_url = reverse('articles:articles_main')
         list(find_urls([article_resurrection_url, main_page_url], purge=True))
+        cache.delete_many(["boat_detail_view" + str(fk_id) for fk_id in foreignkey_id])
+        cache.set("mark2", mark2, 2)
 
     class Meta:
         model = Article
