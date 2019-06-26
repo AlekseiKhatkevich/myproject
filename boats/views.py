@@ -682,7 +682,7 @@ def invalidate_pdf(request):
     return EQ
 
 
-@method_decorator(cache_page(60*60*24, key_prefix=invalidate_pdf), name="dispatch")
+#@method_decorator(cache_page(60*60*24, key_prefix=invalidate_pdf), name="dispatch")
 class Pdf(TemplateView):
 
     def get(self, request, *args, **kwargs):
