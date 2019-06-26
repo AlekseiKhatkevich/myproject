@@ -134,7 +134,6 @@ class BoatModel(models.Model):
     )
 
     author = models.ForeignKey("ExtraUser", on_delete=models.DO_NOTHING,
-                               null=True, blank=True,
                                verbose_name="Author of the entry")
 
     boat_name = models.CharField(max_length=20, unique=True, db_index=True,

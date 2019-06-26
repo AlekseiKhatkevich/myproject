@@ -32,6 +32,7 @@ class BoatForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.pk = kwargs.pop("pk", None)
+        self.marker = kwargs.pop("marker", None)
         forms.ModelForm.__init__(self, *args, **kwargs)
         #  Не показываем поле "currency" в форме редактирования
         if self.pk:
@@ -42,8 +43,12 @@ class BoatForm(forms.ModelForm):
             #  урлов (чтобы не проверял сам себя)
             self.fields["boat_sailboatdata_link"].validators = \
                 [UniqueSailboatLinkValidator(pk=self.pk), ]
-        else:
+        elif not self.pk and self.marker:
             self.fields["boat_sailboatdata_link"].validators = [UniqueSailboatLinkValidator(), ]
+        if self.marker:  # настройки для работы из приложения. В админе все наоборот
+            self.fields["author"].widget = forms.HiddenInput()
+            self.fields["author"].queryset = ExtraUser.objects.none()
+            self.fields["author"].required = False
 
     boat_name = forms.CharField(validators=[UniqueNameValidator(), RegexValidator
     (regex='^.{4,}$')], error_messages={"invalid": "Name is to short"}, label="Boat model name",
@@ -61,6 +66,7 @@ class BoatForm(forms.ModelForm):
     currency = forms.ChoiceField(choices=currency_choices, initial=None,
                                  help_text="Please choice desirable currency",
                                  label="currency(to be converted to EURO)")
+    author = forms.ModelChoiceField(queryset=ExtraUser.objects.all(), required=True)
 
     class Meta:
         model = BoatModel
@@ -96,7 +102,6 @@ class BoatForm(forms.ModelForm):
             if self.cleaned_data["boat_price"] == 0:
                 msg = "Currency converter cant convert it. Please chose EURO to save"
                 self.add_error("currency", msg)
-
         return cleaned_data
 
         # проверяет живой ли урл и , что урл веден на 'sailboatdata.com'
@@ -156,7 +161,7 @@ class NewUserForm(forms.ModelForm):
                                 help_text=password_validation.password_validators_help_text_html(), )
     password2 = forms.CharField(label="Confirm your password", widget=forms.PasswordInput(
         render_value=True), help_text="Please input password again", )
-    captcha = CaptchaField()
+    captcha = CaptchaField(error_messages={"invalid": "Wrong captcha. Please type it in again"})
     username = forms.CharField(required=True, label="Please input username",
                             help_text="Please input username", validators=[MinLengthValidator(
                             message="Username must contain at least 3 symbols", limit_value=3)])

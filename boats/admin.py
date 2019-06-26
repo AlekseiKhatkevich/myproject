@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 from .forms import BoatForm
 from .widgets import CustomKeepImageWidget
 
+
 """ Инлайн вторичной модели изображений для админа лодок"""
 
 
@@ -48,13 +49,15 @@ class BoatsAdmin(VersionAdmin):
     admin_caching_enabled = True
     admin_caching_timeout_seconds = 60*60*24
 
+"""
     def get_fields(self, request, obj=None):
-        """Показываем поле currency только для создаваемой модели"""
+        " Показываем поле currency только для создаваемой модели" 
         fields = list(super(BoatsAdmin, self).get_fields(request, obj))
         exclude_set = set()
         if obj:  # obj will be None on the add page, and something on change pages
             exclude_set.add('currency')
         return [f for f in fields if f not in exclude_set]
+"""
 
 
 """ админ дополнительной (расширенной) модели пользователя"""

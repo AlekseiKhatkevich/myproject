@@ -35,10 +35,10 @@ def files_list():
 
 def send_activation_notofication(user):
     """ функция отправки писем"""
-    if settings.ALLOWED_HOSTS:
-        host = "http://" + settings.ALLOWED_HOSTS[0] + ":8000"
+    if define_location():
+        host = "http://localhost:8000"  # на локальной машине
     else:
-        host = "http://localhost:8000"
+        host = "https://boatsproject-eu.herokuapp.com"  # на Heroku
     context = {"user": user, "host": host, "sign": signer.sign(user.username)}
     subject = render_to_string("email/activation_letter_subject.txt", context)
     body_text = render_to_string("email/activation_letter_body.txt", context)

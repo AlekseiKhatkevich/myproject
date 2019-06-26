@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login, authenticate
 from django.contrib import messages, auth
 from django.core.signing import BadSignature
 from articles.models import Article, Comment, ArticleManager
@@ -50,7 +50,7 @@ def viewname_edit(request, pk):
     obj1 = BoatModel.objects.get(pk=pk)
     if request.method == 'POST':
         form1 = BoatForm(request.POST, request.FILES, prefix="form1",
-                         instance=obj1, pk=pk)
+                         instance=obj1, pk=pk, marker=True)
         form2 = boat_image_inline_formset(request.POST, request.FILES, prefix="form2",
                                           instance=obj1)
         if form1.is_valid() and form2.is_valid():
@@ -76,7 +76,7 @@ def viewname_edit(request, pk):
             return render(request, "edit_boat.html", context)
     else:
         if request.user == obj1.author:
-            form1 = BoatForm(prefix="form1", instance=obj1, pk=pk)
+            form1 = BoatForm(prefix="form1", instance=obj1, pk=pk, marker=True)
             form2 = boat_image_inline_formset(prefix="form2", instance=obj1)
 
             context = {"form1": form1, "form2": form2}
@@ -363,7 +363,7 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
 @login_required_message(message="You must be logged in in order to create new boat entry")
 @login_required
 def viewname(request):
-    form1 = BoatForm(request.POST or None, request.FILES or None, prefix="form1")
+    form1 = BoatForm(request.POST or None, request.FILES or None, prefix="form1", marker=True)
     if request.method == 'POST':
         if "add_row" in request.POST:
             cp = request.POST.copy()
@@ -433,13 +433,13 @@ def vary_on_user_profile(request):
         eq_boats_by_user = BoatModel.objects.filter(
         author=request.user).order_by("-boat_publish_date")[:10].values_list("change_date",
                                                                              flat=True)[0]
-    except IndexError:
+    except (IndexError, TypeError):
         eq_boats_by_user = None
     try:
         eq_articles_by_user = Article.objects.filter(author=request.user).exclude(
         change_date__isnull=True).order_by("-created_at")[: 10].values_list("change_date",
                                                                             flat=True)[0]
-    except IndexError:
+    except (IndexError, TypeError):
         eq_articles_by_user = None
     try:
         eq_comments_by_user = Comment.objects.filter(Q(
@@ -447,11 +447,14 @@ def vary_on_user_profile(request):
         is_active=True) | Q(foreignkey_to_boat__author=request.user,
                             is_active=True)).order_by(
         "-created_at")[: 5].values_list("change_date", flat=True)[0]
-    except IndexError:
+    except (IndexError, TypeError):
         eq_comments_by_user = None
-    finally:
+    try:
         eq_user_change_data = ExtraUser.objects.filter(id=request.user.pk).values_list(
             "change_date", flat=True).latest("change_date")
+    except (IndexError, TypeError, ObjectDoesNotExist):
+        eq_user_change_data = None
+
     EQ = (eq_boats_by_user, eq_articles_by_user, eq_comments_by_user, eq_user_change_data)
     #  для того, чтобы мессадж о успешном входе показывался только после успешного логина, а не
     #  всегда
@@ -549,6 +552,7 @@ def user_activate_view(request, sign):  # 575
         user.is_active = True
         user.is_activated = True
         user.save(update_fields=["is_active", "is_activated"])
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
     return render(request, template)
 
 
