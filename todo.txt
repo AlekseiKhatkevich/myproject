@@ -4,10 +4,11 @@ backup postgree
 _план_____________________________________________
 -Тесты
 -https://pypi.org/project/django-picklefield/
-Same link to the "Sailboatdata" is already exist in database!  в админе при редактировании лодки
+
 
 HEROKU
 -------------------------
-миграция
+
+
 
 

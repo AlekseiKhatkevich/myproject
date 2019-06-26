@@ -198,6 +198,8 @@ def map_folium(places: dict, pk: int):
                 (boat_name, place), icon=folium.Icon(color='gray')).add_to(marker_cluster)
             except TypeError:
                 pass
+    if not os.path.exists(os.path.join(settings.BASE_DIR, "templates", "maps")):
+        os.mkdir(os.path.join(settings.BASE_DIR, "templates", "maps"))
     map.save(os.path.join(settings.BASE_DIR, "templates", "maps",  str(pk) + ".html"))
     #  Записываем в кеш входные аргументы функции (типа аналог lru_cache :))
     cache.set("map_folium", (places, pk), 60 * 60 * 24 * 7, version=pk)
