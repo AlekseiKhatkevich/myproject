@@ -43,7 +43,8 @@ class BoatImage(models.Model):
                 if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
                     image.true_delete(self)  # удаляем по настоящему
             except NotImplementedError:  # на случай работы сайта на Heroku
-                pass
+                if (datetime.now() - image.change_date).seconds > 5184000:
+                    image.true_delete(self)
 
         if self.boat_id and not self.memory:  # сохраняем
             self.memory = self.boat_id
@@ -52,11 +53,10 @@ class BoatImage(models.Model):
         elif self.boat_id and self.memory and self.boat_id != self.memory:  # корректируем на
             # крайняк
             self.memory = self.boat_id
-
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
 
-    def true_save(self):
+    def true_save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         """сохраняем по настоящему"""
         return models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
@@ -71,6 +71,8 @@ class BoatImage(models.Model):
             os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp()))
         except NotImplementedError:  # на случай работы сайта на Heroku
             pass
+        self.true_save(update_fields=["change_date", ])  # для обновления даты последнего изменения.
+        # Нужно для реализации метода очистки  удаленных фоток через Х дней на Хероку
 
     def true_delete(self, using=None, keep_parents=False):
         """ Удаляем по настоящему"""
@@ -195,21 +197,31 @@ class BoatModel(models.Model):
             # - условия срабатывания системы очистки:
             # 1 находится в папке Articles on boats
             # 2 нет связи с лодкой
-            # 3 нет связанных статей 
+            # 3 нет связанных не удаленных статей 
         """
+
         try:
             subheadings_query_set = articles.models.SubHeading.objects.filter(
                 foreignkey_id=articles.models.UpperHeading.objects.get(
                             name__exact="Articles on boats").pk,
                 one_to_one_to_boat_id__isnull=True)
             for subheading in subheadings_query_set:
-                if not subheading.article_set.exists():
+                if not subheading.article_set(manager='reverse').exists():
+                    # удаляем "удаленные" статьи связанные с лодкой при удалении лодки
+                    for article in subheading.article_set.filter(show=False):
+                        article.true_delete()
+                    #  удаляем подзаголовок
                     subheading.delete()
         except EmptyResultSet:
             pass
+
         try:  # удаление sub категорий   связанных с лодкой при ее удалении
-            if not articles.models.SubHeading.objects.get(
-                    one_to_one_to_boat=self).article_set.exists():
+            current_subheading = articles.models.SubHeading.objects.get(
+                one_to_one_to_boat=self).article_set
+            if not current_subheading.filter(show=True).exists():
+                #  удаляем "удаленные" статьи, связанные с лодкой
+                for article in current_subheading.filter(show=False):
+                    article.true_delete()
                 self.heading.delete()  # удаляем, если не содержит статей
                 # инвалидируем кеш Артиклес майн
             main_page_url = reverse('articles:articles_main')
@@ -223,7 +235,6 @@ class BoatModel(models.Model):
             image.delete()
         # удаляем карту, если она есть
         clean_map(pk=self.id)
-
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки
@@ -236,8 +247,7 @@ class BoatModel(models.Model):
         # очишаем#  кэш  ресубмита (интервал -сутки)
         import articles.models  # to avoid circular import with articles
         # смотрим есть ли  уже категория статей в "Articles on boats"  с именем создаваемой
-        # лодки и
-        # без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной
+        # лодки и без связи с  лодкой . На случае если мы  создаем лодку с именем когда то удаленной
         # лодки.
         try:
             subheading = articles.models.SubHeading.objects.prefetch_related("article_set").get(

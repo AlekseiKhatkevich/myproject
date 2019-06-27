@@ -3,11 +3,11 @@ backup postgree
 
 _план_____________________________________________
 -Тесты
--https://pypi.org/project/django-picklefield/
 
 
 HEROKU
 -------------------------
+-celery
 
 
 

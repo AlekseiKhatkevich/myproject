@@ -113,7 +113,7 @@
 {% endcache %}
 
 
-{% cache "60*60*24"|multiplier boat_detail_articles   EQ.eq_articles  request.user.is_authenticated %}
+{% cache "60*60*24"|multiplier boat_detail_articles   EQ.eq_articles  current_boat.boat_name %}
 
                 <div class = row >
                     <div class="col mr-1">

@@ -759,7 +759,7 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
             "object_id")
         context["versions"] = versions
         context["id_eq"] = [version.id for version in versions]
-        #  ограничиваев кол-во выдаваемых фоток 3-мя штуками
+        #  ограничиваем кол-во выдаваемых фоток 3-мя штуками
         memory_limiter = set(BoatImage.objects.filter(boat_id__isnull=True).exclude(
             memory__in=existing_boats_pk).values_list("memory", "pk"))
         cnt = []
@@ -804,8 +804,7 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
             version.delete()
         for image in images:
             try:
-                Version.objects.get(object_id=image.pk,
-                                    content_type_id=ContentType.objects.get(
+                Version.objects.filter(object_id=image.pk, content_type_id=ContentType.objects.get(
                     model="boatimage").id).delete()  # удалаяем версии связанных изображений
             except ObjectDoesNotExist:
                 pass
@@ -814,6 +813,9 @@ class ReversionDeleteView(MessageLoginRequiredMixin, TemplateView):
             del self.request.session["versions"]
         except KeyError:
             self.request.session.get("versions").clean()
+        message = "'%s' data has fully and completely deleted. You can not restore it any " \
+                  "longer " % versions[0].object_repr
+        messages.add_message(request, messages.WARNING, message=message, fail_silently=True)
         return redirect("boats:reversion")
 
     def get_context_data(self, **kwargs):
