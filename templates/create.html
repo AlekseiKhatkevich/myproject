@@ -9,8 +9,6 @@
 {% block title %} Adding new boat{% endblock title %}
 {% block content %}
 
- {% cache "60*60*24"|multiplier create  request.POST request.FILES %}
-
 
     <div class="form-container container col-md-6 bg-light" style="margin-top: 10px">
         <div class="row">
@@ -91,7 +89,6 @@
 
 
 
-{% endcache %}
 {% endblock content %}
 
 

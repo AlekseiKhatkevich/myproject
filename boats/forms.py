@@ -265,6 +265,19 @@ class SPForm(SetPasswordForm):
 
 
 class PwdChgForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        PasswordChangeForm.__init__(self, *args, **kwargs)
+        self.fields['old_password'].help_text = "Please type in your old password"
+        self.fields['new_password1'].help_text = "Please type in your new  password"
+        self.fields['new_password2'].help_text = "Please type in your new  password here one more " \
+                                                 "time"
+        for field in self.fields:   # нужен javascript
+            help_text = self.fields[field].help_text
+            self.fields[field].help_text = None
+            if help_text != '':
+                self.fields[field].widget.attrs.update(
+                    {'class': 'has-popover', 'data-content': help_text, 'data-placement': 'right',
+                     'data-container': 'body'})
 
     def save(self, commit=True):
         self.user.is_activated = False

@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView, DetailView
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, requires_csrf_token
+from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
@@ -16,6 +18,7 @@ import boats.utilities
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse
 from django.db.transaction import atomic
 from django.db.models import Prefetch,  Min, Q
+from django.db import IntegrityError
 from django.core.mail import send_mail, BadHeaderError
 from ratelimit.mixins import RatelimitMixin
 from extra_views import SearchableListMixin
@@ -31,7 +34,6 @@ from reversion.views import RevisionMixin, create_revision
 from reversion import RevertError
 import os
 from django.core.cache import cache
-from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 from fancy_cache import cache_page
 from django.core.cache.utils import make_template_fragment_key
 from django.conf import settings
@@ -318,7 +320,7 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
         version = Version.objects.get(id=self.kwargs["version_id"])
         try:
             version.revision.revert()
-        except RevertError as err:
+        except (RevertError, IntegrityError) as err:
             messages.add_message(self.request, messages.ERROR, message=str(err),
                                  fail_silently=True)
             return redirect(request.META.get('HTTP_REFERER'))
@@ -333,8 +335,14 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
                 if not os.path.exists(image.boat_photo.path):
                     image.true_delete(self)  # удаляем по настоящему
                     score += 1
-            except NotImplementedError:
+            except NotImplementedError:  # не работает на Хероку
                 pass
+
+            try:
+                image.boat_photo.url  # если файла нет на Хероку то мы удаляем запись из базы
+            except AttributeError:
+                image.true_delete(self)
+                score += 1
         if score != 0:
             message = "%d broken image instances  has been deleted from DB" % score
             messages.add_message(request, messages.WARNING, message=message,
@@ -358,7 +366,8 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
 """ Контроллер добавления новой лодки"""
 
 
-#  кеширование в шаблоне "60*60*24"
+#  без кеширования
+
 @atomic
 @login_required_message(message="You must be logged in in order to create new boat entry")
 @login_required
@@ -487,6 +496,7 @@ class UserProfileView(LoginRequiredMixin,  TemplateView):
 
 
 #  кеширование в шаблоне "60*60*24*30"
+@method_decorator(ensure_csrf_cookie, name="dispatch")  # для решения проблем с кешированием csrf
 class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = ExtraUser
     template_name = "admin/correct_user_info.html"
@@ -507,13 +517,19 @@ class CorrectUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
 """ Изменение пароля"""
 
 
-#  кеширование в шаблоне None
+#  без кеширования
 class PasswordCorrectionView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
     template_name = "admin/password_change.html"
-    success_url = reverse_lazy("boats:user_profile")
+    success_url = reverse_lazy("boats:index")
     success_message = "Your password has been changed. Please confirm the change " \
                       "via email you will have received shortly "
     form_class = PwdChgForm
+
+    def form_valid(self, form):
+        PasswordChangeView.form_valid(self, form)
+        messages.success(self.request, message=self.success_message, fail_silently=True)
+        logout(self.request)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 """ добавление нового пользователя"""
@@ -580,9 +596,9 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
             logout(self.request)
             return HttpResponseRedirect(reverse_lazy("boats:index"))
         else:
-            logout(request)
             message = 'Your profile  is deleted.'
             messages.add_message(request, messages.SUCCESS, message=message, fail_silently=True)
+            logout(request)
             return DeleteView.post(self, request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -682,7 +698,7 @@ def invalidate_pdf(request):
     return EQ
 
 
-#@method_decorator(cache_page(60*60*24, key_prefix=invalidate_pdf), name="dispatch")
+@method_decorator(cache_page(60*60*24, key_prefix=invalidate_pdf), name="dispatch")
 class Pdf(TemplateView):
 
     def get(self, request, *args, **kwargs):
