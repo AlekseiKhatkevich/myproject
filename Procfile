@@ -1,3 +1,3 @@
 web: gunicorn myproject.wsgi --log-file -
-worker:  celery worker --without-gossip --without-mingle --loglevel=info
-beat:  celery beat –loglevel=info
+worker:  celery -A myproject worker --pool=solo -l info
+beat:  celery -A myproject beat
