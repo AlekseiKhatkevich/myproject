@@ -316,7 +316,7 @@ BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 # время жизни кеша (15 минут)
-#CACHE_TTL = 60*15
+# CACHE_TTL = 60*15
 
 
 # CELERY related settings
@@ -326,7 +326,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 # celery -A myproject worker --pool=solo -l info для запуска воркера под винду
-#celery -A myproject beat -для запуска задач по рассписанию
+# celery -A myproject beat -для запуска задач по рассписанию
 
 
 #  whitenoise

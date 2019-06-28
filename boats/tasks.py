@@ -22,7 +22,7 @@ def clean_media_root():
 
 
 @app.task
-def add(x, y):
+def add(x=2, y=2):
     return x + y
 
 
