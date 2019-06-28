@@ -344,7 +344,7 @@ X_FRAME_OPTIONS = "DENY"
 
 # Heroku: Update database configuration from $DATABASE_URL.
 import dj_database_url
-db_from_env = dj_database_url.config(conn_max_age=500, ssl_require=True)  # new ssl_require=True
+db_from_env = dj_database_url.config(conn_max_age=500, ssl_require=True)
 DATABASES['default'].update(db_from_env)
 
 
@@ -365,8 +365,8 @@ LOGGING = {
     },
 }
 #  настройки AWS, django-storages
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")  # new
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")  # new
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 AWS_STORAGE_BUCKET_NAME = 'boatsprojectdevelopmentbucket'
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"

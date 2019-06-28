@@ -235,6 +235,7 @@ class BoatModel(models.Model):
             image.delete()
         # удаляем карту, если она есть
         clean_map(pk=self.id)
+        self.maptemplatemodel.delete()  # удаляем карту на Хероку
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки
@@ -267,8 +268,7 @@ class BoatModel(models.Model):
                 current_subheading.delete()  # удаляем текущий подзаголовок
 
                 # связываем подзаголовок с лодкой. С этого места и ниже идет код для создаваемой с
-                # нуля
-                # лодки. Выше был для лодки в случае изменения ее имени ( уже сущ. лодки)
+                # нуля лодки. Выше был для лодки в случае изменения ее имени ( уже сущ. лодки)
             subheading.one_to_one_to_boat = self
             subheading.save(update_fields=['one_to_one_to_boat', ])
             # связываем все статьи с текущей или новой лодкой
@@ -276,8 +276,7 @@ class BoatModel(models.Model):
                 self.article_set.add(article)
                 article.save(update_fields=['foreignkey_to_boat', ])
         except articles.models.SubHeading.DoesNotExist:  # если нет, то создаем или обновляем
-            # категорию
-            # согласно имени лодки
+            # категорию согласно имени лодки
             articles.models.SubHeading.objects.update_or_create(one_to_one_to_boat_id=self.id,                          foreignkey_id=articles.models.UpperHeading.objects.get
                 (name__exact="Articles on boats").pk, defaults={"name": self.boat_name})
             #  удаляем модуль из памяти для исключения циклического импорта(на всякий случай)

@@ -1,4 +1,3 @@
-
 from __future__ import absolute_import, unicode_literals
 from celery import Celery
 import os
@@ -38,10 +37,14 @@ def debug_task(self):
 
 app.conf.beat_schedule = {
 
-    "clean cache  ": {
+    "clean cache": {
         "task": "boats.tasks.clean_cache",
         'schedule': 20000,
         },
+    "add": {
+        "task": "boats.tasks.add",
+        "schedule": 5
+    }
 
 }
 

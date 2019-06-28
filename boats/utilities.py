@@ -56,8 +56,7 @@ def clean_cache(path, time_interval):  # https://pastebin.com/0SPBLJfD
         for (dirpath, dirnames, filenames) in os.walk(path):
             for filename in filenames:
                 if datetime.now().timestamp() - os.path.getctime(os.path.join(dirpath,
-                                                                              filename))\
-                        > time_interval:  # проверяем насколько файлы старые
+                filename)) > time_interval:  # проверяем насколько файлы старые
                     os.remove(os.path.join(dirpath, filename))
 
 
