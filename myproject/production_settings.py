@@ -313,7 +313,7 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
-CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL') + '/0'
 # время жизни кеша (15 минут)
 CACHE_TTL = 60*15
 
