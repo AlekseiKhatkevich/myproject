@@ -235,7 +235,10 @@ class BoatModel(models.Model):
             image.delete()
         # удаляем карту, если она есть
         clean_map(pk=self.id)
-        self.maptemplatemodel.delete()  # удаляем карту на Хероку
+        try:  # удаляем карту на Хероку
+            self.maptemplatemodel.delete()
+        except ObjectDoesNotExist:
+            pass
         models.Model.delete(self, using=None, keep_parents=False)
 
     #  создание связанной категории статей при создании лодки
