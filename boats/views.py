@@ -140,7 +140,8 @@ class IndexPageView(TemplateView):
 def vary_on_database(request):
     cache_key = "BoatListView"
     data_obj = cache.get(cache_key)
-    if not data_obj:
+    if not data_obj and BoatModel.objects.all().exists():  # на случай пустой страницы списка
+        # лодок
         change_obj = BoatModel.objects.all().values_list("change_date", flat=True).latest(
                 "change_date").timestamp()
         count_obj = BoatModel.objects.all().count()
