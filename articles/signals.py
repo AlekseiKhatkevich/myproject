@@ -1,5 +1,6 @@
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from .models import Article, Heading, SubHeading, Comment, UpperHeading
@@ -48,7 +49,7 @@ def invalidate_by_Comment(sender, instance, **kwargs):
         instance.foreignkey_to_article.foreignkey_to_subheading_id,
         instance.foreignkey_to_article_id))
         urls.append(article_content_page_url)
-    except (NoReverseMatch, AttributeError):
+    except (NoReverseMatch, AttributeError, ObjectDoesNotExist):
         pass
     list(find_urls(urls, purge=True))
 

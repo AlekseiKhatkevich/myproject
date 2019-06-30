@@ -45,6 +45,7 @@ from django.contrib.contenttypes.models import ContentType
 """Контроллер редактирования данных о лодке"""
 
 
+#  без кеширования
 @atomic
 @login_required_message(message=_("You must be logged in in order to edit this boat entry"))
 @login_required
@@ -894,7 +895,7 @@ def reversion_confirm_view(request, pk):
 """Контроллер показа объявлений о лодке на https://www.blocket.se """
 
 
-@method_decorator(cache_page(60*60), name="dispatch")
+#@method_decorator(cache_page(60*60), name="dispatch")
 class BlocketView(DetailView):
     model = BoatModel
     template_name = 'blocket.html'
