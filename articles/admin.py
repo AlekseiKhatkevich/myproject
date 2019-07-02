@@ -5,11 +5,51 @@ from reversion.admin import VersionAdmin
 from django.contrib import messages
 
 
+def delete_within_deleted_articles(SubHeadingAdmin, request, queryset):
+    """Метод удаляет подкатегорию вместе с "удаленными" статьями """
+    subheadings_cnt = 0
+    articles_cnt = 0
+    for subheading in queryset:  # если нет "неудаленных" статей и есть "удаленные":
+        if not subheading.article_set(manager="reverse").exists() and \
+                subheading.article_set.exists():
+            for article in subheading.article_set.all():
+                article.true_delete()  # мы удаляем "удаленные статьи"  чтобы on_delete.PROTECT
+            # позволил удалить  Subheading
+                articles_cnt += 1
+                subheading.delete()
+                subheadings_cnt += 1
+    if subheadings_cnt:  # Если что то удалили...
+        if subheadings_cnt == 1:
+            message = "Subheading  is deleted within %d articles marked as deleted ones" % \
+                      articles_cnt
+        else:
+            message = "Subheadings  - %d pcs. are deleted within %d articles marked as deleted " \
+                          "ones" % (subheadings_cnt, articles_cnt)
+    else:  # Если ничего не удалили
+        message = "You have non-deleted articles in subheading. Can not delete subheading " \
+                  "because of that"
+    SubHeadingAdmin.message_user(request, message=message, fail_silently=True)
+
+
+"""Инлайн подкатегорий"""
+
+
 class SubHeadingInline(admin.TabularInline):
     model = SubHeading
     show_change_link = True
     admin_caching_enabled = True
     admin_caching_timeout_seconds = 60 * 60 * 24
+
+
+"""Подкатегории(отдельно, не инлайн)"""
+
+
+@admin.register(SubHeading)
+class SubHeadingAdmin(VersionAdmin):
+    admin_caching_enabled = True
+    admin_caching_timeout_seconds = 60 * 60 * 24
+    actions = [delete_within_deleted_articles, ]
+
 
 """ап-категория """
 
@@ -115,5 +155,5 @@ class CommentAdmin(VersionAdmin):
 
 
 admin.site.register(UpperHeading, UpperHeadingAdmin)
-admin.site.register(SubHeading)
+
 

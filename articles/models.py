@@ -18,7 +18,7 @@ class Heading(models.Model):
                                               blank=True, verbose_name="correspondent boat"
                                                                        " for the category", )
     change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
-
+       
 
 """ менеджер ап-группы"""
 
@@ -60,6 +60,14 @@ class SubHeading(Heading):
 
     def __str__(self):
         return "%s - %s" % (self.foreignkey.name, self.name)
+
+    def delete(self, using=None, keep_parents=False):
+        #  усли нет неудаленных статей и есть "удаленные статьи"
+        if not self.article_set(manager="reverse").all().exists() and self.article_set.exists():
+            for article in self.article_set.all():
+                article.true_delete()  # мы удаляем "удаленные статьи"  чтобы on_delete.PROTECT
+                # позволил удалить  Subheading
+        models.Model.delete(self, using=None, keep_parents=False)
 
     class Meta:
         proxy = True
