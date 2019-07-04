@@ -68,10 +68,12 @@ class BoatImage(models.Model):
         self.boat.boatimage_set.remove(self)
         #  Устанавливаем время последнего доступа и последнего изменения файла на текущее время
         try:
-            os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp()))
+            os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp(
+            )))
         except NotImplementedError:  # на случай работы сайта на Heroku
             pass
-        self.true_save(update_fields=["change_date", ])  # для обновления даты последнего изменения.
+        models.Model.save(self, update_fields=["change_date", ])  # для обновления даты
+        # последнего изменения.
         # Нужно для реализации метода очистки  удаленных фоток через Х дней на Хероку
 
     def true_delete(self, using=None, keep_parents=False):

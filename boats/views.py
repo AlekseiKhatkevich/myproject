@@ -67,14 +67,12 @@ def viewname_edit(request, pk):
                 return HttpResponseRedirect(reverse_lazy("boats:boat_detail", args=(pk, )))
             else:
                 messages.add_message(request, messages.INFO,
-                                     "You have changed nothing in this form yet",
-                                     fail_silently=True)
+                    "You have changed nothing in this form yet", fail_silently=True)
                 context = {"form1": form1, "form2": form2}
                 return render(request, "edit_boat.html", context)
         else:
             messages.add_message(request, messages.WARNING,
-                                 "Forms are not valid. Please check the data",
-                                 fail_silently=True)
+                "Forms are not valid. Please check the data", fail_silently=True)
             context = {"form1": form1, "form2": form2}
             return render(request, "edit_boat.html", context)
     else:
@@ -268,7 +266,8 @@ def boat_detail_view(request, pk):
             "Please choose the rollback point date", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         elif current_boat.author != request.user:
-            messages.add_message(request, messages.WARNING, message="You can only rollback your                                                     own entries", fail_silently=True)
+            messages.add_message(request, messages.WARNING, message="You can only rollback "
+                            "your own entries", fail_silently=True)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         return HttpResponseRedirect(reverse_lazy("boats:rollback",  args=(pk, version_num)))
