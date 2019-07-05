@@ -128,6 +128,7 @@ class BoatModel(models.Model):
     KETCH = "KE"
     YAWL = "YA"
     CAT_KETCH = "CK"
+    CUTTER = "CU"
 
     CHOICES = (
         (None, "Please choose  the rigging type"),
@@ -135,6 +136,7 @@ class BoatModel(models.Model):
         (KETCH, "Ketch"),
         (YAWL, "Yawl"),
         (CAT_KETCH, "Cat Ketch"),
+        (CUTTER, "Cutter")
     )
 
     author = models.ForeignKey("ExtraUser", on_delete=models.DO_NOTHING,
