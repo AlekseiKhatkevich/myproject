@@ -36,7 +36,7 @@ body {
                 <h4 > Boat details</h4>
                 <li>Boat name -{{ current_boat.boat_name }}</li>
                 <li>Boat waterline length-{{ current_boat.boat_length }} feats </li>
-                <li>Boat rigging type-{{ current_boat.boat_mast_type }}</li>
+                <li>Boat rigging type-{{ current_boat.get_boat_mast_type_display }}</li>
                 <li >Country of origin-{{ current_boat.boat_country_of_origin.name }}
                     <img class=" align-self-center " style="margin: 6px 4px 0; width: 35px; height: 20px; align-content: center" src='{{current_boat.boat_country_of_origin.flag}}'/> </li>
 
