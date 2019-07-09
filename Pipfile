@@ -41,6 +41,7 @@ django-storages = "*"
 pyyaml = "*"
 python-dotenv = "*"
 django-fancy-cache = "*"
+djangorestframework = "*"
 
 [requires]
 python_version = "3.7"

@@ -37,10 +37,12 @@ class BoatImage(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         # удаляем изображения без привязки к лодкам со сроком последнего доступа к файлам более 2
         # месяцев
-        useless_old_images = BoatImage.objects.filter(boat_id__isnull=True, memory__isnull=False)
+        useless_old_images = BoatImage.objects.filter(boat_id__isnull=True,
+                                                      memory__isnull=False)
         for image in useless_old_images:
             try:
-                if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > 5184000:
+                if datetime.now().timestamp() - os.path.getmtime(image.boat_photo.path) > \
+                        5184000:
                     image.true_delete(self)  # удаляем по настоящему
             except NotImplementedError:  # на случай работы сайта на Heroku
                 if (datetime.now() - image.change_date).seconds > 5184000:
@@ -56,7 +58,8 @@ class BoatImage(models.Model):
         models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
 
-    def true_save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def true_save(self, force_insert=False, force_update=False, using=None,
+                  update_fields=None):
         """сохраняем по настоящему"""
         return models.Model.save(self, force_insert=False, force_update=False, using=None,
                           update_fields=None)
@@ -68,8 +71,8 @@ class BoatImage(models.Model):
         self.boat.boatimage_set.remove(self)
         #  Устанавливаем время последнего доступа и последнего изменения файла на текущее время
         try:
-            os.utime(self.boat_photo.path, (datetime.now().timestamp(), datetime.now().timestamp(
-            )))
+            os.utime(self.boat_photo.path, (datetime.now().timestamp(),
+                                datetime.now().timestamp()))
         except NotImplementedError:  # на случай работы сайта на Heroku
             pass
         models.Model.save(self, update_fields=["change_date", ])  # для обновления даты
@@ -146,8 +149,8 @@ class BoatModel(models.Model):
                                  verbose_name="Boat model",
                                  help_text="Please input boat model")
 
-    boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line length",
-                                    help_text="Please input boat water-line length",)
+    boat_length = models.FloatField(null=False, blank=False, verbose_name="Boat water-line "
+                                "length", help_text="Please input boat water-line length",)
 
     boat_description = models.TextField(blank=True, verbose_name="Boat description",
                                         help_text="Please describe the boat", )

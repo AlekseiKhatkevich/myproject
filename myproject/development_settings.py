@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     # custom
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
-    "testapp.apps.TestappConfig",
+    "api.apps.ApiConfig",
     # 3rd party
     "captcha",
     "bootstrap4",
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "file_resubmit",
     "django_extensions",
     'fancy_cache',
+    "rest_framework",
 
 
 ]
@@ -71,7 +72,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # для переводчика
-    "django.middleware.http.ConditionalGetMiddleware",  # new
+    "django.middleware.http.ConditionalGetMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
@@ -79,6 +80,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'reversion.middleware.RevisionMiddleware',  # for django reversion
+
 ]
 
 RevisionMiddleware.atomic = True  # new  Для reversion middleware https://django-reversion.readthedocs.io/en/stable/middleware.html

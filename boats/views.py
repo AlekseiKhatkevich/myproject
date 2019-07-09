@@ -854,7 +854,8 @@ def reversion_confirm_view(request, pk):
     current_boat_name = versions[0].field_dict["boat_name"]
     #  РК существующей лодки с таким - же именем, если есть
     try:
-        existing_boat_pk = BoatModel.objects.filter(boat_name__iexact=current_boat_name).only(
+        existing_boat_pk = BoatModel.objects.filter(
+            boat_name__iexact=current_boat_name).only(
             "pk")[0].pk
         #  Урл на существующую лодку с таким-же именем
         url = "<a href='" + str((reverse_lazy("boats:boat_detail", args=(existing_boat_pk,

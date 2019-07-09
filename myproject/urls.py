@@ -9,15 +9,14 @@ from django.conf import settings
 from django.conf.urls import url
 
 
-
 urlpatterns = [
     path("social/", include('social_django.urls', namespace='social')),
     path("captcha/", include("captcha.urls")),
     path('admin/', admin.site.urls),
     path("articles/", include("articles.urls")),
-    path("test/", include("testapp.urls")),
     path("", include("boats.urls")),
     url(r'fancy-cache', include('fancy_cache.urls')),
+    path("api/", include("api.urls")),
 ]
 
 # для отдачи статики в дебаг = фалс ---manage.py runserver --insecure
