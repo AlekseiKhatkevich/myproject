@@ -1,13 +1,15 @@
 from rest_framework import generics
-from articles.models import Heading, UpperHeading, SubHeading, Article, Comment
 from boats.models import BoatModel, BoatImage
 from rest_framework.response import Response
-from .serializers import UpperHeadingSerializer, SubHeadingSerializer, BoatModelSerializer, BoatSerializer
+from .serializers import BoatModelSerializer,  ExtraUserSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework import mixins
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db import models
 
 
 @api_view(["GET", "POST"])
@@ -48,40 +50,25 @@ def boat_detail(request, pk, format=None):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BoatsList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+class BoatsList(generics.ListCreateAPIView):
     queryset = BoatModel.objects.all()
     serializer_class = BoatModelSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+class BoatDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BoatModel.objects.all()
+    serializer_class = BoatModelSerializer
 
 
-class BoatDetail(APIView):
+class ExtraUserListView(generics.ListAPIView):
+    pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk", "author_id"))
+    queryset = get_user_model().objects.all().prefetch_related(pr).only("id", "username",
+                                                                        "first_name", "last_name")
+    serializer_class = ExtraUserSerializer
 
-    def get_object(self, pk):
-        try:
-            return BoatModel.objects.get(pk=pk)
-        except BoatModel.DoesNotExist:
-            raise Http404
 
-    def get(self, request, pk, format=None):
-        boat = self.get_object(pk)
-        serializer = BoatModelSerializer(boat)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        boat = self.get_object(pk)
-        serializer = BoatModelSerializer(boat, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        boat = self.get_object(pk)
-        boat.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+class ExtraUserDetailView(generics.RetrieveAPIView):
+    pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk", "author_id"))
+    queryset = get_user_model().objects.all().prefetch_related(pr).\
+        only("id", "username", "first_name", "last_name", "email", "last_login",)
+    serializer_class = ExtraUserSerializer
