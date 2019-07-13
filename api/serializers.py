@@ -67,4 +67,12 @@ class ExtraUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ("username", "firs_name", "last_name")
+        fields = ("username", "first_name", "last_name", "email", "last_login", "boats")
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get('request')
+        if request is not None and not request.parser_context.get('kwargs'):
+            fields.pop('email', None)
+            fields.pop('last_login', None)
+        return fields

@@ -8,8 +8,8 @@ app_name = 'api'
 urlpatterns = [
     path("boats/<int:pk>/", views.BoatDetail.as_view(), name="boat_detail"),
     path('boats/', views.BoatsList.as_view(), name="boats"),
-    path("users/<int:pk>/", views.ExtraUserListView.as_view(), name='extrauser_list'),
-    path("users/", views.ExtraUserDetailView.as_view(), name='extrauser_detail'),
+    path("users/<int:pk>/", views.ExtraUserDetailView.as_view(), name='extrauser_list'),
+    path("users/", views.ExtraUserListView.as_view(), name='extrauser_detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
