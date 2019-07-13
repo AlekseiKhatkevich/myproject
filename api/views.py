@@ -4,10 +4,7 @@ from rest_framework.response import Response
 from .serializers import BoatModelSerializer,  ExtraUserSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework import mixins
-from django.conf import settings
+from rest_framework import permissions
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -53,11 +50,16 @@ def boat_detail(request, pk, format=None):
 class BoatsList(generics.ListCreateAPIView):
     queryset = BoatModel.objects.all()
     serializer_class = BoatModelSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class BoatDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = BoatModel.objects.all()
     serializer_class = BoatModelSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 class ExtraUserListView(generics.ListAPIView):

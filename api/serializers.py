@@ -52,6 +52,7 @@ class BoatSerializer(serializers.Serializer):
 
 
 class BoatModelSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source="author.username")
 
     class Meta:
         model = BoatModel

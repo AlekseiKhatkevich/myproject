@@ -16,6 +16,7 @@ urlpatterns = [
     path("articles/", include("articles.urls")),
     path("", include("boats.urls")),
     url(r'fancy-cache', include('fancy_cache.urls')),
+    path('api-auth/', include('rest_framework.urls')),
     path("api/", include("api.urls")),
 ]
 
