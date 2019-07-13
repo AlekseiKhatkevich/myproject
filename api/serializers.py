@@ -51,20 +51,23 @@ class BoatSerializer(serializers.Serializer):
     last_year = serializers.IntegerField(required=True)
 
 
-class BoatModelSerializer(serializers.ModelSerializer):
+class BoatModelSerializer(serializers.HyperlinkedModelSerializer):
     author = serializers.ReadOnlyField(source="author.username")
+    highlight = serializers.HyperlinkedIdentityField(view_name="api:boat-highlight",
+                                                     format="html")
 
     class Meta:
         model = BoatModel
-        fields = ("id", "boat_name", "boat_length", "boat_description", "boat_mast_type",
+        fields = ("id", "boat_name", "highlight", "boat_length", "boat_description",
+                  "boat_mast_type",
                   "boat_price", "boat_sailboatdata_link", "boat_keel_type",
                   "boat_publish_date", "first_year", "last_year", "author",
                   "boat_country_of_origin")
 
 
-class ExtraUserSerializer(serializers.ModelSerializer):
-    boats = serializers.PrimaryKeyRelatedField(many=True, queryset=get_user_model().
-                                               objects.all(), source="boatmodel_set")
+class ExtraUserSerializer(serializers.HyperlinkedModelSerializer):
+    boats = serializers.HyperlinkedIdentityField(many=True, view_name="api:boat-detail",
+                                                   read_only=True, source="boatmodel_set")
 
     class Meta:
         model = get_user_model()
