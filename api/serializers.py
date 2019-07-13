@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from articles.models import Heading, UpperHeading, SubHeading, Article, Comment
 from boats.models import BoatModel
+from django.contrib.auth import get_user_model
 
 
 class UpperHeadingSerializer(serializers.Serializer):
@@ -59,3 +60,11 @@ class BoatModelSerializer(serializers.ModelSerializer):
                   "boat_publish_date", "first_year", "last_year", "author",
                   "boat_country_of_origin")
 
+
+class ExtraUserSerializer(serializers.ModelSerializer):
+    boats = serializers.PrimaryKeyRelatedField(many=True, queryset=get_user_model().
+                                               objects.all(), source="boatmodel_set")
+
+    class Meta:
+        model = get_user_model()
+        fields = ("username", "firs_name", "last_name")

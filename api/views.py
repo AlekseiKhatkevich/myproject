@@ -61,14 +61,16 @@ class BoatDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ExtraUserListView(generics.ListAPIView):
-    pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk", "author_id"))
+    pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk",
+                                                                                "author_id"))
     queryset = get_user_model().objects.all().prefetch_related(pr).only("id", "username",
                                                                         "first_name", "last_name")
     serializer_class = ExtraUserSerializer
 
 
 class ExtraUserDetailView(generics.RetrieveAPIView):
-    pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk", "author_id"))
+    pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk",
+                                                                                "author_id"))
     queryset = get_user_model().objects.all().prefetch_related(pr).\
-        only("id", "username", "first_name", "last_name", "email", "last_login",)
+        only("id", "username", "first_name", "last_name", "email", "last_login", )
     serializer_class = ExtraUserSerializer
