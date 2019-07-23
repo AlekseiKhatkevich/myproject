@@ -377,3 +377,10 @@ THUMBNAIL_MEDIA_URL = MEDIA_URL
 #  Django fancy cache
 FANCY_REMEMBER_ALL_URLS = True
 FANCY_REMEMBER_STATS_ALL_URLS = True
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    "DATETIME_FORMAT": "%d %B, %Y: %X",
+}

@@ -52,7 +52,7 @@ class BoatForm(forms.ModelForm):
 
     boat_name = forms.CharField(validators=[UniqueNameValidator(), RegexValidator
     (regex='^.{4,}$')], error_messages={"invalid": "Name is to short"}, label="Boat model name",
-                                help_text="Please type in boat model  name")
+                                help_text="Please type in boat model name")
     boat_length = forms.FloatField(min_value=10, help_text="Please input boat water-line"
                                                            " length",)
     first_year = forms.TypedChoiceField(coerce=int, choices=year_choices,
@@ -294,7 +294,7 @@ class AuthCustomForm(AuthenticationForm):
     def get_invalid_login_error(self):
         try:  # проверяем существует ли пользователь с таким логином
             user = ExtraUser.objects.get(username=self.cleaned_data.get('username'))
-        except ExtraUser.DoesNotExist or ObjectDoesNotExist:
+        except (ExtraUser.DoesNotExist, ObjectDoesNotExist):
             #  если нет, то возвращаем стандарный блок get_invalid_login_error()
             return AuthenticationForm.get_invalid_login_error(self)
         else:

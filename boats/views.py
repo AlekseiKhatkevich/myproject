@@ -26,7 +26,7 @@ from .decorators import login_required_message, MessageLoginRequiredMixin
 from .render import Render, link_callback
 from django.template.loader import get_template
 import xhtml2pdf.pisa as pisa
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.utils.decorators import method_decorator
 from reversion.models import Version
@@ -771,7 +771,8 @@ class ReversionView(MessageLoginRequiredMixin, TemplateView):
                 superfluous_images.add(memory)
         # фото всех удаленных лодок
         images = BoatImage.objects.filter(boat_id__isnull=True, pk__in=[pk for memory, pk in
-                    (memory_limiter - superfluous_images)]).exclude(memory__in=existing_boats_pk)
+                    (memory_limiter - superfluous_images)]).exclude(
+            memory__in=existing_boats_pk)
         # список рк всех фоток не привязанных к лодкам
         images.memory_list = str(images.values_list("memory", flat=True))
         for image in images:

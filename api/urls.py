@@ -1,17 +1,25 @@
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
+from rest_framework.schemas import get_schema_view
 from api import views
-from rest_framework.urlpatterns import format_suffix_patterns
 
 
-app_name = 'api'
+schema_view = get_schema_view(title="Pastebin Api")
+
+
+router = DefaultRouter()
+#router.register('boats', views.BoatviewSet)
+#router.register("users", views.ExtraUserViewSet)
+
 urlpatterns = [
-    path("boats/<int:pk>/highlight/", views.BoatHighlight.as_view(), name='boat-highlight'),
-    path("boats/<int:pk>/", views.BoatDetail.as_view(), name="boat-detail"),
-    path('boats/', views.BoatsList.as_view(), name="boats-list"),
-    path("users/<int:pk>/", views.ExtraUserDetailView.as_view(), name='extrauser-detail'),
-    path("users/", views.ExtraUserListView.as_view(), name='extrauser-list'),
-    path("", views.api_root, name="api_root"),
+    path("schema/", schema_view),
+    path("", views.api_root, name="api-root"),
+    path("boats/", views.BoatsListView.as_view(), name="boatmodel-list"),
+    path("boats/<int:pk>/", views.BoatDetailView.as_view(), name="boatmodel-detail"),
+    path("users", views.ExtraUserListView.as_view(), name="extrauser-list"),
+    path("users/<int:pk>/", views.ExtraUserDetailView.as_view(), name="extrauser-detail"),
+
 ]
 
-urlpatterns = format_suffix_patterns(urlpatterns)
+
+

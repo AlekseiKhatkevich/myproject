@@ -42,6 +42,8 @@ pyyaml = "*"
 python-dotenv = "*"
 django-fancy-cache = "*"
 djangorestframework = "*"
+coreapi = "*"
+drf-extensions = "*"
 
 [requires]
 python_version = "3.7"

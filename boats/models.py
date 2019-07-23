@@ -84,8 +84,11 @@ class BoatImage(models.Model):
         return models.Model.delete(self, using=None, keep_parents=False)
 
     def __str__(self):
-        return "Boat photo - %s, boat name - %s, boat id - %s  " % \
+        try:
+            return "Boat photo - %s, boat name - %s, boat id - %s  " % \
                (self.boat_photo.name, self.boat.boat_name, self.boat_id)
+        except AttributeError:
+            return "No image"
 
     def filename(self):
         """метод возвращает имя файла"""
