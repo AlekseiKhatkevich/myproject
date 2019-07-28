@@ -1,13 +1,12 @@
 from boats.models import BoatModel, BoatImage
 from rest_framework.response import Response
 from api import serializers
-from rest_framework import status, permissions, generics, renderers, viewsets
+from rest_framework import status, permissions, generics,  viewsets, mixins
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from django.contrib.auth import get_user_model
 from django.db import models
 from .permissions import IsOwnerOrFuckOff
-from rest_framework.views import APIView
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from django.utils.decorators import method_decorator
@@ -40,8 +39,8 @@ class BoatsListView(generics.ListCreateAPIView):
     serializer_class = serializers.BoatModelDetailSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrFuckOff)
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    #def perform_create(self, serializer):
+        #serializer.save(author=self.request.user)
 
     def get_serializer(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:
@@ -83,4 +82,23 @@ def api_root(request, format=None):
         "boats": reverse("boatmodel-list", request=request, format=format)
     })
 
+
+class UserRegistrationView(mixins.DestroyModelMixin, generics.CreateAPIView):
+    queryset = get_user_model().objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return serializers.UserRegisterSerializer
+        elif self.request.method == "DELETE":
+            return serializers.UserDeleteSerializer
+
+    def allowed_methods(self):
+        self._allowed_methods()
+        if self.request.parser_context.get('kwargs'):
+            return self._allowed_methods() + "DELETE"
+        else:
+            return self._allowed_methods() + "POST"
 

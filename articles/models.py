@@ -181,4 +181,3 @@ class Comment(ModelFieldRequiredMixin, models.Model):
         indexes = (BrinIndex(fields=["created_at"]),)
 
 
-

@@ -1,8 +1,11 @@
 from rest_framework import serializers, validators
 from boats.models import BoatModel, BoatImage
 from articles.models import Comment
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
+from django.contrib.auth.hashers import make_password
 import datetime
+from boats.signals import user_registrated
+from smtplib import SMTPRecipientsRefused
 
 
 class BoatImageSerializer(serializers.ModelSerializer):
@@ -13,9 +16,15 @@ class BoatImageSerializer(serializers.ModelSerializer):
 
 
 class BoatModelDetailSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source="author.username")
+    #  author = serializers.ReadOnlyField(source="author.username")
+    #  https://medium.com/profil-software-blog/10-things-you-need-to-know-to-effectively-use
+    #  -django-rest-framework-7db7728910e0
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     image = serializers.PrimaryKeyRelatedField(many=True, queryset=BoatImage.objects.all(),
                                                source="boatimage_set")
+    default_error_messages = {**serializers.ModelSerializer.default_error_messages, **{
+        'small_length': 'Boat length is way to small ({length} feats). Should be at least 10',
+    }}
 
     class Meta:
         model = BoatModel
@@ -36,12 +45,12 @@ class BoatModelDetailSerializer(serializers.ModelSerializer):
         if first_year > last_year:
             raise serializers.ValidationError('last year should be greater then first '
                                                    'year')
-        #data["author"] = self.context.get("request").user
+
         return data
 
     def validate_boat_length(self, value):
         if value < 10:
-            raise serializers.ValidationError("Boat length is way to small")
+            self.fail("small_length", length=value)
         return value
 
 
@@ -80,7 +89,39 @@ class ExtraUserSerializer(serializers.ModelSerializer):
         return fields
 
 
+class UserRegisterSerializer(serializers.ModelSerializer):
+    """ Сериалайзер регистрации нового пользователя"""
+
+    default_error_messages = {**serializers.ModelSerializer.default_error_messages, **
+                {'SMTP-error': "This email address - {email} isn't correct one"}
+                              }
+
+    class Meta:
+        model = get_user_model()
+        fields = ("password", "username", "first_name", "last_name", "email")
+        extra_kwargs = {
+            "password": {"write_only": True, "required": True},
+            "username": {"min_length": 3}
+        }
+
+    @staticmethod
+    def validate_password(value):
+        #  Валидируем пароль и делаем с него хаш
+        password_validation.validate_password(value)
+        return make_password(value)
+
+    def create(self, validated_data):
+        validated_data.update({"is_active": False, "is_activated": False})
+        user = serializers.ModelSerializer.create(self, validated_data)
+        try:
+            user_registrated.send(UserRegisterSerializer, instance=user)
+        except SMTPRecipientsRefused:
+            self.fail("SMTP-error", email=validated_data.get("email"))
+        return user
 
 
-
+class UserDeleteSerializer(serializers.ModelSerializer):
+    """Сериалайзер удления пользователя"""
+    class Meta:
+        model = get_user_model()
 
