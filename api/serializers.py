@@ -8,11 +8,11 @@ from boats.signals import user_registrated
 from smtplib import SMTPRecipientsRefused
 
 
-class BoatImageSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = BoatImage
-        fields = "__all__"
+        model = Comment
+        fields = ("content", "created_at")
 
 
 class BoatModelDetailSerializer(serializers.ModelSerializer):
@@ -20,8 +20,9 @@ class BoatModelDetailSerializer(serializers.ModelSerializer):
     #  https://medium.com/profil-software-blog/10-things-you-need-to-know-to-effectively-use
     #  -django-rest-framework-7db7728910e0
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    image = serializers.PrimaryKeyRelatedField(many=True, queryset=BoatImage.objects.all(),
-                                               source="boatimage_set")
+    image = serializers.StringRelatedField(many=True, source="boatimage_set")
+    comments = CommentSerializer(many=True, read_only=True, source="comment_set")
+
     default_error_messages = {**serializers.ModelSerializer.default_error_messages, **{
         'small_length': 'Boat length is way to small ({length} feats). Should be at least 10',
     }}
@@ -45,7 +46,6 @@ class BoatModelDetailSerializer(serializers.ModelSerializer):
         if first_year > last_year:
             raise serializers.ValidationError('last year should be greater then first '
                                                    'year')
-
         return data
 
     def validate_boat_length(self, value):
@@ -62,14 +62,9 @@ class BoatModelListSerializer(serializers.ModelSerializer):
         fields = ("url", "id", "boat_name", "boat_length", "boat_mast_type", "author")
 
 
-class CommentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ("content", "created_at")
-
-
 class ExtraUserSerializer(serializers.ModelSerializer):
-    boats = serializers.PrimaryKeyRelatedField(many=True, read_only=True, source="boatmodel_set")
+    boats = serializers.SlugRelatedField(many=True, read_only=True, source="boatmodel_set",
+                                         slug_field="boat_name")
 
     class Meta:
         model = get_user_model()
@@ -93,8 +88,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     """ Сериалайзер регистрации нового пользователя"""
 
     default_error_messages = {**serializers.ModelSerializer.default_error_messages, **
-                {'SMTP-error': "This email address - {email} isn't correct one"}
-                              }
+                {
+                    'SMTP-error': "This email address - {email} isn't correct one"
+                 }}
 
     class Meta:
         model = get_user_model()
@@ -119,9 +115,4 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             self.fail("SMTP-error", email=validated_data.get("email"))
         return user
 
-
-class UserDeleteSerializer(serializers.ModelSerializer):
-    """Сериалайзер удления пользователя"""
-    class Meta:
-        model = get_user_model()
 

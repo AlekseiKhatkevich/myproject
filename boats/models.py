@@ -85,8 +85,8 @@ class BoatImage(models.Model):
 
     def __str__(self):
         try:
-            return "Boat photo - %s, boat name - %s, boat id - %s  " % \
-               (self.boat_photo.name, self.boat.boat_name, self.boat_id)
+            return "Boat photo - %s, boat name - %s, boat id - %s, photo id - %d " % \
+               (self.boat_photo.name, self.boat.boat_name, self.boat_id, self.pk)
         except AttributeError:
             return "No image"
 

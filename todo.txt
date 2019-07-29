@@ -2,7 +2,7 @@ backup postgree
 
 
 _план_____________________________________________
--allowed methods views
+
 
 
 

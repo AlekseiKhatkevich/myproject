@@ -4,12 +4,13 @@ from api import serializers
 from rest_framework import status, permissions, generics,  viewsets, mixins
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
+from rest_framework.serializers import ValidationError
 from django.contrib.auth import get_user_model
 from django.db import models
 from .permissions import IsOwnerOrFuckOff
 from rest_framework.permissions import SAFE_METHODS
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
-from django.utils.decorators import method_decorator
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 
 
 class ExtraUserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -85,20 +86,25 @@ def api_root(request, format=None):
 
 class UserRegistrationView(mixins.DestroyModelMixin, generics.CreateAPIView):
     queryset = get_user_model().objects.all()
+    lookup_field = ("username", )
+    serializer_class = serializers.UserRegisterSerializer
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return serializers.UserRegisterSerializer
-        elif self.request.method == "DELETE":
-            return serializers.UserDeleteSerializer
+    def get_object(self):
+        try:
+            obj = self.queryset.get(username=self.request.data.get("username", None))
+        except ObjectDoesNotExist:
+            raise Http404
+        return obj
 
-    def allowed_methods(self):
-        self._allowed_methods()
-        if self.request.parser_context.get('kwargs'):
-            return self._allowed_methods() + "DELETE"
+    def perform_destroy(self, instance):
+        mark = self.request.GET.get("mark")
+        if mark == "True":
+            instance.delete()
+        elif mark == "False":
+            instance.is_active = instance.is_activated = False
+            instance.save()
         else:
-            return self._allowed_methods() + "POST"
-
+            raise ValidationError("Please provide marks in range(True, False)")
