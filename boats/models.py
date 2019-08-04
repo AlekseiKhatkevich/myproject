@@ -16,6 +16,7 @@ from django_boto.s3.storage import S3Storage
 from django.shortcuts import reverse
 from fancy_cache.memory import find_urls
 
+
 #   регистрация кастомного lookup
 Field.register_lookup(NotEqual)
 
@@ -194,6 +195,9 @@ class BoatModel(models.Model):
         verbose_name_plural = "Boats primary data"
         ordering = ["-boat_publish_date"]
         indexes = (BrinIndex(fields=["boat_publish_date"]),)
+        constraints = [
+        models.CheckConstraint(check=models.Q(first_year__gte=1950), name='first_year__gte=1950'),
+        ]
 
     def __str__(self):
         return self.boat_name
@@ -314,6 +318,18 @@ class ExtraUser(AbstractUser):
     class Meta(AbstractUser.Meta):
         unique_together = ("first_name", "last_name", )
         indexes = (BrinIndex(fields=["date_joined"]), )
+
+    def get_comments(self):
+        import articles.models as articles_models
+        articles_comments = articles_models.Comment.objects.filter(models.Q(
+            foreignkey_to_article__author=self, is_active=True) |
+            models.Q(foreignkey_to_boat__author=self, is_active=True)).order_by(
+            "-created_at")[: 5]
+        return articles_comments
+
+    def get_boats(self):
+        return self.boatmodel_set.all().only("boat_name").order_by(
+            "-boat_publish_date")[: 10]
 
 
 """Модель темплейта карты"""

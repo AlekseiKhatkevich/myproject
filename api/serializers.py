@@ -1,6 +1,6 @@
 from rest_framework import serializers, validators
 from boats.models import BoatModel, BoatImage
-from articles.models import Comment
+from articles.models import Comment, Article
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import make_password
 import datetime
@@ -35,7 +35,6 @@ class BoatModelDetailSerializer(serializers.ModelSerializer):
             "first_year": {'min_value': 1950, 'max_value': current_year},
             "last_year": {'min_value': 1950, 'max_value': current_year},
             "change_date": {'write_only': True},
-
         }
 
     def validate(self, data):
@@ -71,8 +70,7 @@ class ExtraUserSerializer(serializers.ModelSerializer):
         fields = ("url", "username", "first_name", "last_name", "email", "last_login",
                   "boats", )
         validators = validators.UniqueTogetherValidator(
-            queryset=get_user_model().objects.all().only("pk", "username", "first_name",
-                                                         "last_name"),
+            queryset=get_user_model().objects.all().only("pk", "username", "first_name", "last_name"),
             fields=("first_name", "last_name"))
 
     def get_fields(self):
@@ -114,5 +112,22 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         except SMTPRecipientsRefused:
             self.fail("SMTP-error", email=validated_data.get("email"))
         return user
+
+
+class UserProfileSrializer(serializers.Serializer):
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        serializers.Serializer.__init__(self, *args, **kwargs)
+
+    #  "get_boats" $ "get_comments"  в моделях
+    boats = serializers.SlugRelatedField(many=True, source="get_boats", slug_field="boat_name",
+                                         read_only=True)
+    articles = serializers.SerializerMethodField(read_only=True)
+    comment = serializers.StringRelatedField(many=True, source="get_comments", read_only=True)
+
+    def get_articles(self, obj):
+        return obj.article_set.all().values_list("title", flat=True).order_by("-created_at")[: 10]
+
 
 

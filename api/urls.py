@@ -19,7 +19,7 @@ urlpatterns = [
     path("users", views.ExtraUserListView.as_view(), name="extrauser-list"),
     path("users/<int:pk>/", views.ExtraUserDetailView.as_view(), name="extrauser-detail"),
     path("users/registration/", views.UserRegistrationView.as_view(), name="user-registration"),
-    #path("users/delete/<int:pk>/", views.UserRegistrationView.as_view(), name="user-delete"),
+    path("users/profile/<int:pk>/", views.UserProfileView.as_view(), name="user-profile"),
 
 ]
 

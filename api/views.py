@@ -1,7 +1,7 @@
 from boats.models import BoatModel, BoatImage
 from rest_framework.response import Response
 from api import serializers
-from rest_framework import status, permissions, generics,  viewsets, mixins
+from rest_framework import status, permissions, generics,  viewsets, mixins, views
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ValidationError
@@ -108,3 +108,15 @@ class UserRegistrationView(mixins.DestroyModelMixin, generics.CreateAPIView):
             instance.save()
         else:
             raise ValidationError("Please provide marks in range(True, False)")
+
+
+class UserProfileView(views.APIView):  # http://127.0.0.1:8000/api/users/profile/1/
+
+    def get(self, request, format=None, **kwargs):
+        user = self.request.user
+        serializer = serializers.UserProfileSrializer(user)
+        data = serializer.data
+        return Response(data)
+
+
+
