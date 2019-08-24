@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django_extensions",
     'fancy_cache',
     "rest_framework",
+    'rest_framework.authtoken'
 
 
 ]

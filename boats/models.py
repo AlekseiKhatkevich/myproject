@@ -33,6 +33,11 @@ class BoatImage(models.Model):
     memory = models.PositiveSmallIntegerField(blank=True, null=True)
     change_date = models.DateTimeField(db_index=True, editable=False, auto_now=True)
 
+    class Meta:
+        verbose_name = "Boat photo"
+        verbose_name_plural = "Boat photos"
+        order_with_respect_to = "boat"  # new
+
     #  запоминаем значение ФК на случай  срабатывания on_delete = SET_NULL (для последующего
     #  восстановления)
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
@@ -109,10 +114,6 @@ class BoatImage(models.Model):
                 os.remove(os.path.join(settings.MEDIA_ROOT, file))
                 counter += 1
             print(counter, "\xa0\\files were removed from MEDIA_ROOT")
-
-    class Meta:
-        verbose_name = "Boat photo"
-        verbose_name_plural = "Boat photos"
 
 
 """ Первичная модель информации о лодке"""
@@ -320,6 +321,7 @@ class ExtraUser(AbstractUser):
         indexes = (BrinIndex(fields=["date_joined"]), )
 
     def get_comments(self):
+        """Последние 5 комментов на посты автора"""
         import articles.models as articles_models
         articles_comments = articles_models.Comment.objects.filter(models.Q(
             foreignkey_to_article__author=self, is_active=True) |
@@ -328,6 +330,7 @@ class ExtraUser(AbstractUser):
         return articles_comments
 
     def get_boats(self):
+        """Последние 10 лодок автора"""
         return self.boatmodel_set.all().only("boat_name").order_by(
             "-boat_publish_date")[: 10]
 

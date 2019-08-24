@@ -308,7 +308,7 @@ class RollbackView(MessageLoginRequiredMixin, RevisionMixin, DetailView):
             #  объект сохраненного изображения имеют один и тот же revision_id но разный
             #  content_type_id. Через это можно установить взаимосвязь
             image_version = Version.objects.filter(revision_id=version.revision_id,
-            content_type_id=ContentType.objects.get(model="boatimage").id).\
+                content_type_id=ContentType.objects.get(model="boatimage").id).\
                 only("object_id").order_by("?").first()
             image = BoatImage.objects.get(pk=image_version.object_id)
             context["image"] = image

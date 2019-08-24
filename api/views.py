@@ -11,21 +11,20 @@ from .permissions import IsOwnerOrFuckOff
 from rest_framework.permissions import SAFE_METHODS
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
 
 class ExtraUserViewSet(viewsets.ReadOnlyModelViewSet):
     pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk",
                                                                                 "author_id"))
     queryset = get_user_model().objects.all().prefetch_related(pr). \
         only("id", "username", "first_name", "last_name", "email", "last_login", )
-    #serializer_class = ExtraUserSerializer
 
 
 class BoatviewSet(viewsets.ModelViewSet):
     pr = models.Prefetch("boatimage_set", queryset=BoatImage.objects.all().only("pk",
                                                                                 "boat_id"))
     queryset = BoatModel.objects.select_related("author").prefetch_related(pr).all()
-    #serializer_class = BoatModelSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrFuckOff)
 
     def perform_create(self, serializer):
@@ -35,6 +34,7 @@ class BoatviewSet(viewsets.ModelViewSet):
 
 
 class BoatsListView(generics.ListCreateAPIView):
+    """Список лодок"""
     queryset = BoatModel.objects.all().only("pk", "boat_name", "boat_length", "author_id",
                                             "boat_mast_type", "author")
     serializer_class = serializers.BoatModelDetailSerializer
@@ -53,6 +53,7 @@ class BoatsListView(generics.ListCreateAPIView):
 
 
 class BoatDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Отдельная лодка"""
     pr = models.Prefetch("boatimage_set", queryset=BoatImage.objects.all().only("pk",
                                                                                 "boat_id"))
     queryset = BoatModel.objects.select_related("author").prefetch_related(pr).all()
@@ -61,6 +62,7 @@ class BoatDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ExtraUserListView(generics.ListAPIView):
+    """Список пользователей"""
     pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk",
                                                                                 "author_id"))
     queryset = get_user_model().objects.all().prefetch_related(pr).only("id", "username",
@@ -69,6 +71,7 @@ class ExtraUserListView(generics.ListAPIView):
 
 
 class ExtraUserDetailView(generics.RetrieveAPIView):
+    """Отдельный пользователь"""
     pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk",
                                                                                 "author_id"))
     queryset = get_user_model().objects.all().prefetch_related(pr).\
@@ -78,9 +81,11 @@ class ExtraUserDetailView(generics.RetrieveAPIView):
 
 @api_view(("GET",))
 def api_root(request, format=None):
+    """АПИ рут"""
     return Response({
         "users": reverse("extrauser-list", request=request, format=format),
-        "boats": reverse("boatmodel-list", request=request, format=format)
+        "boats": reverse("boatmodel-list", request=request, format=format),
+        "schema": reverse("schema", request=request, format=format),
     })
 
 
@@ -100,7 +105,7 @@ class UserRegistrationView(mixins.DestroyModelMixin, generics.CreateAPIView):
         return obj
 
     def perform_destroy(self, instance):
-        mark = self.request.GET.get("mark")
+        mark = self.request.query_params.get("mark")
         if mark == "True":
             instance.delete()
         elif mark == "False":
@@ -119,4 +124,13 @@ class UserProfileView(views.APIView):  # http://127.0.0.1:8000/api/users/profile
         return Response(data)
 
 
+@method_decorator(sensitive_post_parameters(), name="dispatch")
+class UserLoginView(generics.GenericAPIView):
+    serializer_class = serializers.LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_202_ACCEPTED)
 

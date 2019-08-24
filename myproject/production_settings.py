@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     # custom
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
-    "testapp.apps.TestappConfig",
     # 3rd party
     "captcha",
     "bootstrap4",
@@ -51,7 +50,7 @@ INSTALLED_APPS = [
     "file_resubmit",
     "django_extensions",
     'fancy_cache',
-
+    'rest_framework.authtoken'
 
 ]
 

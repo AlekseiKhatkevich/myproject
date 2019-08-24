@@ -1,8 +1,9 @@
 from rest_framework import serializers, validators
 from boats.models import BoatModel, BoatImage
 from articles.models import Comment, Article
-from django.contrib.auth import get_user_model, password_validation
+from django.contrib.auth import get_user_model, password_validation, authenticate, login
 from django.contrib.auth.hashers import make_password
+from django.conf import settings
 import datetime
 from boats.signals import user_registrated
 from smtplib import SMTPRecipientsRefused
@@ -16,6 +17,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class BoatModelDetailSerializer(serializers.ModelSerializer):
+    """Сериалайзер лодки"""
     #  author = serializers.ReadOnlyField(source="author.username")
     #  https://medium.com/profil-software-blog/10-things-you-need-to-know-to-effectively-use
     #  -django-rest-framework-7db7728910e0
@@ -43,8 +45,7 @@ class BoatModelDetailSerializer(serializers.ModelSerializer):
         if not all((first_year, last_year)):
             return data
         if first_year > last_year:
-            raise serializers.ValidationError('last year should be greater then first '
-                                                   'year')
+            raise serializers.ValidationError('last year should be greater then first year')
         return data
 
     def validate_boat_length(self, value):
@@ -52,16 +53,31 @@ class BoatModelDetailSerializer(serializers.ModelSerializer):
             self.fail("small_length", length=value)
         return value
 
+    def to_representation(self, instance):
+        ret = serializers.ModelSerializer.to_representation(self, instance)
+        ret["image"] = [img.boat_photo.url for img in instance.boatimage_set.all().only(
+            "boat_photo", "pk", "boat_id")]
+        ret["boat_mast_type"] = instance.get_boat_mast_type_display()
+        ret["boat_country_of_origin"] = instance.boat_country_of_origin.name
+        return ret
+
 
 class BoatModelListSerializer(serializers.ModelSerializer):
+    """Сериалайзер лодок"""
     author = serializers.ReadOnlyField(source="author.username")
 
     class Meta:
         model = BoatModel
         fields = ("url", "id", "boat_name", "boat_length", "boat_mast_type", "author")
 
+    def to_representation(self, instance):
+        ret = serializers.ModelSerializer.to_representation(self, instance)
+        ret["boat_mast_type"] = instance.get_boat_mast_type_display()
+        return ret
+
 
 class ExtraUserSerializer(serializers.ModelSerializer):
+    """Сериалайзер пользователя"""
     boats = serializers.SlugRelatedField(many=True, read_only=True, source="boatmodel_set",
                                          slug_field="boat_name")
 
@@ -70,7 +86,8 @@ class ExtraUserSerializer(serializers.ModelSerializer):
         fields = ("url", "username", "first_name", "last_name", "email", "last_login",
                   "boats", )
         validators = validators.UniqueTogetherValidator(
-            queryset=get_user_model().objects.all().only("pk", "username", "first_name", "last_name"),
+            queryset=get_user_model().objects.all().only("pk", "username", "first_name",
+                                                         "last_name"),
             fields=("first_name", "last_name"))
 
     def get_fields(self):
@@ -115,11 +132,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSrializer(serializers.Serializer):
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        serializers.Serializer.__init__(self, *args, **kwargs)
-
+    """Профиль пользователя"""
     #  "get_boats" $ "get_comments"  в моделях
     boats = serializers.SlugRelatedField(many=True, source="get_boats", slug_field="boat_name",
                                          read_only=True)
@@ -130,4 +143,37 @@ class UserProfileSrializer(serializers.Serializer):
         return obj.article_set.all().values_list("title", flat=True).order_by("-created_at")[: 10]
 
 
+class LoginSerializer(serializers.Serializer):
+
+    def __init__(self, *args, **kwargs):
+        serializers.Serializer.__init__(self, *args, **kwargs)
+        self.request = self.context["request"]
+        self.user_cache = None
+
+    username_field = get_user_model()._meta.get_field(get_user_model().USERNAME_FIELD)
+
+    username = serializers.CharField(max_length=username_field.max_length or 254, write_only=True)
+    password = serializers.CharField(write_only=True)
+
+    default_error_messages = {**serializers.Serializer.default_error_messages, **{
+        'invalid_username': "Please enter a correct username and password. Note that both"
+                            " fields may be case-sensitive.",
+        'inactive': "This account is inactive.",
+    }}
+
+    def validate(self, data):
+        username = data["username"]
+        password = data["password"]
+        if username is not None and password:
+            self.user_cache = authenticate(self.request, username=username, password=password)
+            if self.user_cache is None:
+                self.fail("invalid_username")
+            elif not self.user_cache.is_active:
+                    self.fail("inactive")
+
+        return data
+
+    def save(self, **kwargs):
+        login(self.request, self.user_cache,
+              backend="django.contrib.auth.backends.ModelBackend")
 
