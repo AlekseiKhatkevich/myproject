@@ -13,6 +13,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity, TrigramDistance
+
 
 class ExtraUserViewSet(viewsets.ReadOnlyModelViewSet):
     pr = models.Prefetch("boatmodel_set", queryset=BoatModel.objects.all().only("pk",
@@ -133,4 +135,42 @@ class UserLoginView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_202_ACCEPTED)
+
+
+class ProductSearchListView(generics.ListAPIView):
+    serializer_class = serializers.ProductSearchSerializer
+    model = serializer_class.Meta.model
+    tablename = model._meta.db_table
+    fields = [f.name for f in model._meta.get_fields(include_parents=False)]
+
+    def get_queryset(self):
+        dict_of_keywords = {f: self.request.query_params.get(f, None) for f in self.fields}
+
+        #if {dict_of_keywords.get(f) for f in dict_of_keywords} == {None}:
+        if all(value is None for value in dict_of_keywords.values()):
+            return self.model.objects.all()
+        else:
+            keyword = dict_of_keywords.get('description')
+            qs = self.model.objects.raw(
+                "SELECT *,"
+                "ts_rank_cd(to_tsvector('english', description),"
+                "to_tsquery('english', %(keyword)s), 32) as rnk "
+                "FROM api_product "
+                "WHERE to_tsvector('english', description) @@ to_tsquery('english', %(keyword)s)"
+                "ORDER BY rnk DESC, id ",
+                params={
+                    'keyword': keyword,
+                    'tablename': self.tablename
+                }
+            )
+
+            return qs
+
+
+
+    # def get_paginated_response(self, data):
+    #     for entry in data:
+    #         entry['list_of_keywords'] = {field: self.request.query_params.get(field, None) for field in self.fields}
+    #     return generics.ListAPIView.get_paginated_response(self, data)
+
 

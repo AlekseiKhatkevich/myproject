@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-django = "*"
+django = "==2.2.6"
 django-bootstrap4 = "*"
 pillow = "*"
 easy-thumbnails = "*"
@@ -44,6 +44,8 @@ django-fancy-cache = "*"
 djangorestframework = "*"
 coreapi = "*"
 drf-extensions = "*"
+django-elasticsearch-dsl-drf = "*"
+markdown = "*"
 
 [requires]
 python_version = "3.7"

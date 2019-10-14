@@ -7,6 +7,7 @@ from django.conf import settings
 import datetime
 from boats.signals import user_registrated
 from smtplib import SMTPRecipientsRefused
+from .models import Product
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -177,3 +178,12 @@ class LoginSerializer(serializers.Serializer):
         login(self.request, self.user_cache,
               backend="django.contrib.auth.backends.ModelBackend")
 
+
+class ProductSearchSerializer(serializers.ModelSerializer):
+    rank = serializers.FloatField(source='rnk', required=False)
+
+    class Meta:
+        model = Product
+        fields =\
+            ('rank', 'pk', 'name', 'department', 'standard', 'weight', 'dimensions', 'description',)
+        read_only_fields = fields

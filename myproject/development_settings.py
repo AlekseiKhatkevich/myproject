@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "django.forms",  # for a custom widgets
+    'django.contrib.postgres',
     # custom
     "boats.apps.BoatsConfig",
     "articles.apps.ArticlesConfig",
@@ -56,9 +57,9 @@ INSTALLED_APPS = [
     "django_extensions",
     'fancy_cache',
     "rest_framework",
-    'rest_framework.authtoken'
-
-
+    'rest_framework.authtoken',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf'
 ]
 
 
@@ -381,7 +382,12 @@ FANCY_REMEMBER_STATS_ALL_URLS = True
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
     "DATETIME_FORMAT": "%d %B, %Y: %X",
+}
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'localhost:9200'
+    },
 }

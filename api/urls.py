@@ -9,8 +9,6 @@ schema_view = get_schema_view(title="Pastebin Api")
 
 
 router = DefaultRouter()
-#router.register('boats', views.BoatviewSet)
-#router.register("users", views.ExtraUserViewSet)
 
 urlpatterns = [
     path('api-token-auth/', authtoken_views.obtain_auth_token, name="obtain-token"),
@@ -22,6 +20,7 @@ urlpatterns = [
     path("users/profile/", views.UserProfileView.as_view(), name="user-profile"),
     path("users/<int:pk>/", views.ExtraUserDetailView.as_view(), name="extrauser-detail"),
     path("users", views.ExtraUserListView.as_view(), name="extrauser-list"),
+    path("product/search/", views.ProductSearchListView.as_view(), name="product-search"),
     path("", views.api_root, name="api-root"),
 
 ]
