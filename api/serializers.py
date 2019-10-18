@@ -184,6 +184,6 @@ class ProductSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields =\
-            ('rank', 'pk', 'name', 'department', 'standard', 'weight', 'dimensions', 'description',)
+        fields = ('rank', 'pk', 'name', 'department', 'standard', 'weight', 'dimensions',
+                  'description', 'lang')
         read_only_fields = fields

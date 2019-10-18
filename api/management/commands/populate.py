@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.contrib.postgres.search import SearchVector
+from django.db.models import F
 from api import models
 import uuid
 import json
@@ -40,7 +42,7 @@ class Command(BaseCommand):
                  round(random.uniform(50, 2000), 2),
                  round(random.uniform(50, 2000), 2)),
             'description': (random.choice(self.text_lines)).strip(),
-            'department': random.choice(self.departments)
+            'department': random.choice(self.departments),
         }
         return data
 
@@ -59,5 +61,9 @@ class Command(BaseCommand):
             (
                 models.Product(**self.genarate_product_data()) for i in range(quantity)
             )
+        )
+
+        models.Product.objects.all().update(
+            textsearchable_index_col=SearchVector(F('description'), config=F('lang'))
         )
 

@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
+import more_itertools
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity, TrigramDistance
 
 
@@ -140,37 +141,47 @@ class UserLoginView(generics.GenericAPIView):
 class ProductSearchListView(generics.ListAPIView):
     serializer_class = serializers.ProductSearchSerializer
     model = serializer_class.Meta.model
-    tablename = model._meta.db_table
+    db_table = model._meta.db_table
     fields = [f.name for f in model._meta.get_fields(include_parents=False)]
+    analyzers_list = model.get_list_of_analyzers()
+
+    def dict_of_keywords(self):
+        keywords = {f: self.request.query_params.get(f, None)
+                    for f in self.fields
+                    if self.request.query_params.get(f, None) is not None
+                            }
+        return keywords
 
     def get_queryset(self):
-        dict_of_keywords = {f: self.request.query_params.get(f, None) for f in self.fields}
-
-        #if {dict_of_keywords.get(f) for f in dict_of_keywords} == {None}:
-        if all(value is None for value in dict_of_keywords.values()):
+        if not self.dict_of_keywords():
             return self.model.objects.all()
         else:
-            keyword = dict_of_keywords.get('description')
+            keyword = self.dict_of_keywords().get(
+                more_itertools.one(self.dict_of_keywords().keys())
+            )
             qs = self.model.objects.raw(
-                "SELECT *,"
-                "ts_rank_cd(to_tsvector('english', description),"
-                "to_tsquery('english', %(keyword)s), 32) as rnk "
-                "FROM api_product "
-                "WHERE to_tsvector('english', description) @@ to_tsquery('english', %(keyword)s)"
-                "ORDER BY rnk DESC, id ",
+                """
+                SELECT *,
+                ts_rank_cd(to_tsvector('english', description),
+                to_tsquery(%(analyzer)s, %(keyword)s), 32) as rnk 
+                FROM api_product 
+                WHERE to_tsvector(%(analyzer)s, description) @@ 
+                to_tsquery(%(analyzer)s, %(keyword)s)
+                ORDER BY rnk DESC, id 
+                """
+                ,
                 params={
                     'keyword': keyword,
-                    'tablename': self.tablename
+                    'db_table': self.db_table,
+                    'analyzer': 'english'
                 }
             )
 
             return qs
 
+    def get_paginated_response(self, data):
+        return generics.ListAPIView.get_paginated_response(self, self.analyzers_list + data)
 
 
-    # def get_paginated_response(self, data):
-    #     for entry in data:
-    #         entry['list_of_keywords'] = {field: self.request.query_params.get(field, None) for field in self.fields}
-    #     return generics.ListAPIView.get_paginated_response(self, data)
 
 

@@ -19,25 +19,25 @@ class Migration(migrations.Migration):
             migrations.RunSQL(
                 """           
                 DROP TRIGGER IF EXISTS text_searchable_update ON api_product  
-                """,
-
+                """
+                ,
                 reverse_sql=migrations.RunSQL.noop
-
                 ,
             ),
 
-            migrations.RunSQL(
-                """
-                CREATE TRIGGER text_searchable_update BEFORE INSERT OR UPDATE
-                ON api_product FOR EACH ROW EXECUTE FUNCTION
-                tsvector_update_trigger(textsearchable_index_col, 'pg_catalog.english', description)
-                """,
-
+            migrations.RunSQL(migrations.RunSQL.noop  # заглушка
+                # """
+                # CREATE TRIGGER text_searchable_update BEFORE INSERT OR UPDATE
+                # ON api_product
+                # FOR EACH ROW EXECUTE FUNCTION
+                # tsvector_update_trigger(textsearchable_index_col, 'pg_catalog.english', description)
+                # """
+                ,
                 reverse_sql=
-
                 """           
                 DROP TRIGGER IF EXISTS text_searchable_update ON api_product  
-                """,
+                """
+                ,
             )
         ]
     except ContentType.DoesNotExist:
