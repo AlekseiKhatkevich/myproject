@@ -68,27 +68,43 @@ class UniqueWordsTriGramm(models.Model):
     def __str__(self):
         return self.word
 
+    class Meta:
+        indexes = (postgres_indexes.GinIndex(
+            fields=["word"],
+            name='words_idx',
+            fastupdate=False),
+        )
+
     @classmethod
     def populate(cls):
         # get list of unique words
         with connection.cursor() as cursor:
             cursor.execute(
-                """SELECT word FROM ts_stat(
-                'SELECT to_tsvector(''simple'', description) FROM api_product');""",
+                """
+                SELECT word FROM ts_stat(
+                'SELECT to_tsvector(''simple'', description)
+                FROM api_product');
+                """,
                 #[source, ]
             )
-            words_in_product_model = {more_itertools.one(word) for word in cursor.fetchall()}
-
-        existing_words_trigram_holder =\
-            {word for word in cls.objects.all().values_list('word', flat=True)}
-
+            words_in_product_model = frozenset(
+                more_itertools.one(word) for word in cursor.fetchall()
+                                               )
+        #  words in this model
+        existing_words_trigram_holder = frozenset(
+            word for word in cls.objects.all().values_list('word', flat=True)
+        )
+        # delete stale words
         words_to_delete = existing_words_trigram_holder.difference(words_in_product_model)
 
         cls.objects.filter(word__in=words_to_delete).delete()
-
+        # add new words
         words_to_add = words_in_product_model.difference(existing_words_trigram_holder)
 
         cls.objects.bulk_create(
             [cls(word=word) for word in words_to_add]
         )
+        return 'Added %d new words, deleted %d old ones' % \
+               (len(words_to_add), len(words_to_delete))
 
+#SELECT * FROM api_uniquewordstrigramm WHERE word %>> 'acce';
