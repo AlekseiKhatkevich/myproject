@@ -21,6 +21,7 @@ urlpatterns = [
     path("users/<int:pk>/", views.ExtraUserDetailView.as_view(), name="extrauser-detail"),
     path("users", views.ExtraUserListView.as_view(), name="extrauser-list"),
     path("product/search/", views.ProductSearchListView.as_view(), name="product-search"),
+    path("product/suggest/<str:word>/", views.SuggestionView.as_view(), name="product-suggest"),
     path("", views.api_root, name="api-root"),
 
 ]

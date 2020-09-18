@@ -7,7 +7,7 @@ from django.conf import settings
 import datetime
 from boats.signals import user_registrated
 from smtplib import SMTPRecipientsRefused
-from .models import Product
+from .models import Product, UniqueWordsTriGramm
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -186,4 +186,13 @@ class ProductSearchSerializer(serializers.ModelSerializer):
         model = Product
         fields = ('rank', 'pk', 'name', 'department', 'standard', 'weight', 'dimensions',
                   'description', 'lang')
+        read_only_fields = fields
+
+
+class SuggestionSerializer(serializers.ModelSerializer):
+    similarity = serializers.FloatField(source='sml')
+
+    class Meta:
+        model = UniqueWordsTriGramm
+        fields = ('word', 'similarity')
         read_only_fields = fields

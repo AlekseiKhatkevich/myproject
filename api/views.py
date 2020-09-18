@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from rest_framework.serializers import ValidationError
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, connection
 from .permissions import IsOwnerOrFuckOff
 from rest_framework.permissions import SAFE_METHODS
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,6 +14,7 @@ from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 import more_itertools
+from .models import UniqueWordsTriGramm
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity, TrigramDistance
 
 
@@ -183,5 +184,27 @@ class ProductSearchListView(generics.ListAPIView):
         return generics.ListAPIView.get_paginated_response(self, self.analyzers_list + data)
 
 
+class SuggestionView(views.APIView):
+    serializer_class = serializers.SuggestionSerializer
+    model = serializer_class.Meta.model
+    db_table = model._meta.db_table
+    lookup_field = 'word'
+    lookup_url_kwarg = lookup_field
 
+    def get(self, request, format=None, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT word FROM ts_stat(
+                'SELECT to_tsvector(''simple'', description)
+                FROM api_product');
+                """,
+                # [source, ]
+            )
+        return Response()
 
+    # def get(self, request, format=None, **kwargs):
+    #     user = self.request.user
+    #     serializer = serializers.UserProfileSrializer(user)
+    #     data = serializer.data
+    #     return Response(data)
